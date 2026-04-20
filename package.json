@@ -1,6 +1,6 @@
 {
   "name": "wicked-testing",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "type": "module",
   "description": "Standalone QE library for AI coding CLIs — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, 3-agent acceptance pipeline, bus+brain optional integration.",
   "keywords": [
@@ -24,14 +24,14 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/mikeparcewski/wicked-testing.git"
+    "url": "git+https://github.com/mikeparcewski/wicked-testing.git"
   },
   "homepage": "https://github.com/mikeparcewski/wicked-testing",
   "bugs": "https://github.com/mikeparcewski/wicked-testing/issues",
   "main": "install.mjs",
   "bin": {
-    "wicked-testing": "./install.mjs",
-    "wicked-testing-install": "./install.mjs"
+    "wicked-testing": "install.mjs",
+    "wicked-testing-install": "install.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^12.0.0"
