@@ -199,6 +199,8 @@ async function cmdInstall({ mode }) {
 
   const skillDirs = readdirSafe(skillsSrc).filter(d => !d.startsWith("."));
   const agentFiles = readdirSafe(agentsSrc).filter(f => f.endsWith(".md"));
+  const specialistsSrc = join(agentsSrc, "specialists");
+  const specialistFiles = readdirSafe(specialistsSrc).filter(f => f.endsWith(".md"));
   const commandFiles = readdirSafe(commandsSrc).filter(f => f.endsWith(".md"));
 
   let totalSkills = 0, totalAgents = 0, totalCommands = 0;
@@ -217,7 +219,8 @@ async function cmdInstall({ mode }) {
     if (target.agentDir) {
       mkdirSync(target.agentDir, { recursive: true });
       for (const f of agentFiles) cpSync(join(agentsSrc, f), join(target.agentDir, `wicked-testing-${f}`), { force: true });
-      totalAgents += agentFiles.length;
+      for (const f of specialistFiles) cpSync(join(specialistsSrc, f), join(target.agentDir, `wicked-testing-${f}`), { force: true });
+      totalAgents += agentFiles.length + specialistFiles.length;
     }
 
     if (target.commandDir) {
@@ -228,7 +231,7 @@ async function cmdInstall({ mode }) {
     }
 
     writeMarker(target);
-    console.log(`[${target.name}] installed ${VERSION} (skills=${skillDirs.length} agents=${agentFiles.length} commands=${commandFiles.length})`);
+    console.log(`[${target.name}] installed ${VERSION} (skills=${skillDirs.length} agents=${agentFiles.length}+${specialistFiles.length} commands=${commandFiles.length})`);
   }
 
   if (!skipSelfTest && mode !== "update") {
@@ -251,8 +254,10 @@ function cmdUninstall() {
     console.error("No AI CLIs detected.");
     exit(1);
   }
+  const agentsSrc = join(__dirname, "agents");
   const skillDirs = readdirSafe(join(__dirname, "skills")).filter(d => !d.startsWith("."));
-  const agentFiles = readdirSafe(join(__dirname, "agents")).filter(f => f.endsWith(".md"));
+  const agentFiles = readdirSafe(agentsSrc).filter(f => f.endsWith(".md"));
+  const specialistFiles = readdirSafe(join(agentsSrc, "specialists")).filter(f => f.endsWith(".md"));
 
   for (const target of targets) {
     let removed = 0;
@@ -262,6 +267,10 @@ function cmdUninstall() {
     }
     if (target.agentDir) {
       for (const f of agentFiles) {
+        const p = join(target.agentDir, `wicked-testing-${f}`);
+        if (existsSync(p)) { rmSync(p, { force: true }); removed++; }
+      }
+      for (const f of specialistFiles) {
         const p = join(target.agentDir, `wicked-testing-${f}`);
         if (existsSync(p)) { rmSync(p, { force: true }); removed++; }
       }
