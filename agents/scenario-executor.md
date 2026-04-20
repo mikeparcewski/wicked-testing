@@ -1,5 +1,6 @@
 ---
 name: scenario-executor
+subagent_type: wicked-testing:scenario-executor
 description: |
   Runs wicked-testing scenario files end-to-end. Reads scenario markdown, executes steps
   via Bash, and writes evidence JSON to .wicked-testing/runs/{run-id}/.

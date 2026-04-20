@@ -56,7 +56,10 @@
   "scripts": {
     "install": "node install.mjs --skip-self-test",
     "status": "node install.mjs status",
-    "doctor": "node install.mjs doctor"
+    "doctor": "node install.mjs doctor",
+    "test": "node scripts/dev/validate.mjs",
+    "evals:list": "node scripts/dev/evals.mjs list",
+    "evals:plan": "node scripts/dev/evals.mjs plan"
   },
   "engines": {
     "node": ">=18.0.0"

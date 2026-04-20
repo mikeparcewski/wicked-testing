@@ -1,0 +1,41 @@
+{
+  "agent": "test-designer",
+  "subagent_type": "wicked-testing:test-designer",
+  "description": "Pilot eval set — test-designer must produce a valid evidence manifest with a verdict for a given scenario.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Execute the scenario at scenarios/examples/api-health-check.md end-to-end. Capture evidence, write the manifest per docs/EVIDENCE.md, and return the verdict.",
+      "input_files": ["scenarios/examples/api-health-check.md"],
+      "expected_shape": "manifest",
+      "assertions": [
+        { "kind": "produces-artifact", "path": ".wicked-testing/evidence/*/manifest.json" },
+        { "kind": "manifest-valid",    "schema": "schemas/evidence.json" },
+        { "kind": "verdict-in",        "values": ["PASS", "FAIL", "N-A", "SKIP"] }
+      ],
+      "notes": "Happy path — a well-formed scenario should produce a well-formed manifest."
+    },
+    {
+      "id": 2,
+      "prompt": "Produce a plan-only output for scenarios/examples/login-with-bad-credentials.md. Do not execute; return the evidence-gated plan.",
+      "input_files": ["scenarios/examples/login-with-bad-credentials.md"],
+      "expected_shape": "plan",
+      "assertions": [
+        { "kind": "contains-text", "text": "Expected evidence" },
+        { "kind": "contains-text", "text": "Assertion" }
+      ],
+      "notes": "Plan-only mode — every step declares expected evidence and an assertion."
+    },
+    {
+      "id": 3,
+      "prompt": "Review the pre-existing evidence at .wicked-testing/evidence/00000000-0000-0000-0000-000000000000/ and render a verdict-only response.",
+      "input_files": [],
+      "expected_shape": "verdict-only",
+      "assertions": [
+        { "kind": "verdict-in",   "values": ["PASS", "FAIL", "N-A", "SKIP"] },
+        { "kind": "contains-text", "text": "reviewer" }
+      ],
+      "notes": "Verdict-only mode with missing evidence — agent should return N-A or SKIP with a reason, not crash."
+    }
+  ]
+}

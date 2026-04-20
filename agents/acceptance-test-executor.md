@@ -1,5 +1,6 @@
 ---
 name: acceptance-test-executor
+subagent_type: wicked-testing:acceptance-test-executor
 description: |
   Follows structured wicked-testing test plans step-by-step, collecting evidence artifacts.
   Executes and captures only — does not judge or grade pass/fail.

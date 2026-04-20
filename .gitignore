@@ -9,8 +9,12 @@ yarn-error.log*
 .wicked-testing/
 .wicked-testing-bootstrap/
 
-# AI CLI install targets (when developing inside the repo dir)
-.claude/
+# AI CLI install targets (when developing inside the repo dir) — but keep
+# repo-local project skills under .claude/skills/ checked in.
+.claude/agents/
+.claude/commands/
+.claude/**/workspace/
+.claude/settings.local.json
 .gemini/
 .codex/
 .cursor/

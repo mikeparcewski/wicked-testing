@@ -1,5 +1,6 @@
 ---
 name: acceptance-test-writer
+subagent_type: wicked-testing:acceptance-test-writer
 description: |
   Reads wicked-testing acceptance scenarios and produces structured, evidence-gated test plans.
   Transforms qualitative criteria into concrete, verifiable artifact requirements.

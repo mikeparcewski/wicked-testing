@@ -1,5 +1,6 @@
 ---
 name: acceptance-test-reviewer
+subagent_type: wicked-testing:acceptance-test-reviewer
 description: |
   Evaluates evidence artifacts against test plan assertions independently.
   CRITICAL ISOLATION: Receives ONLY evidence file paths. Never sees execution context.
