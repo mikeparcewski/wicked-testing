@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/mikeparcewski/wicked-testing/schemas/evidence.json",
+  "title": "wicked-testing evidence manifest",
+  "description": "Public manifest schema for .wicked-testing/evidence/<run-id>/manifest.json. See docs/EVIDENCE.md.",
+  "type": "object",
+  "required": [
+    "manifest_version",
+    "run_id",
+    "project_id",
+    "scenario_id",
+    "scenario_name",
+    "started_at",
+    "finished_at",
+    "duration_ms",
+    "status",
+    "verdict",
+    "environment",
+    "artifacts"
+  ],
+  "properties": {
+    "manifest_version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Semver for the manifest schema."
+    },
+    "run_id":      { "type": "string", "format": "uuid" },
+    "project_id":  { "type": "string", "format": "uuid" },
+    "scenario_id": { "type": "string", "format": "uuid" },
+    "scenario_name": { "type": "string", "minLength": 1 },
+    "scenario_path": { "type": "string" },
+    "started_at":  { "type": "string", "format": "date-time" },
+    "finished_at": { "type": "string", "format": "date-time" },
+    "duration_ms": { "type": "integer", "minimum": 0 },
+    "status": {
+      "type": "string",
+      "enum": ["passed", "failed", "errored", "skipped"]
+    },
+    "verdict": {
+      "type": "object",
+      "required": ["value", "reviewer", "recorded_at"],
+      "properties": {
+        "value":    { "type": "string", "enum": ["PASS", "FAIL", "N-A", "SKIP"] },
+        "reviewer": { "type": "string", "minLength": 1 },
+        "reason":   { "type": "string" },
+        "recorded_at": { "type": "string", "format": "date-time" }
+      },
+      "additionalProperties": false
+    },
+    "environment": {
+      "type": "object",
+      "required": ["os", "wicked_testing_version"],
+      "properties": {
+        "os":   { "type": "string" },
+        "node": { "type": "string" },
+        "cli":  { "type": "string" },
+        "wicked_testing_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+" }
+      },
+      "additionalProperties": true
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "kind", "path", "bytes", "sha256", "captured_at"],
+        "properties": {
+          "name":  { "type": "string", "minLength": 1 },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "screenshot",
+              "video",
+              "http-response",
+              "http-request",
+              "log",
+              "stack-trace",
+              "metric",
+              "trace",
+              "coverage",
+              "diff",
+              "misc"
+            ]
+          },
+          "path":   { "type": "string", "minLength": 1, "description": "Relative to manifest.json." },
+          "bytes":  { "type": "integer", "minimum": 0 },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "captured_at": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "assertions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "passed"],
+        "properties": {
+          "id":          { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "passed":      { "type": "boolean" },
+          "expected":    { "type": "string" },
+          "actual":      { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

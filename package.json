@@ -1,0 +1,64 @@
+{
+  "name": "wicked-testing",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Standalone QE library for AI coding CLIs — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, 3-agent acceptance pipeline, bus+brain optional integration.",
+  "keywords": [
+    "ai",
+    "testing",
+    "qe",
+    "quality-engineering",
+    "acceptance-testing",
+    "skills",
+    "claude-code",
+    "gemini-cli",
+    "copilot",
+    "cursor",
+    "codex",
+    "kiro",
+    "sqlite",
+    "test-oracle",
+    "wicked-garden"
+  ],
+  "author": "Mike Parcewski",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikeparcewski/wicked-testing.git"
+  },
+  "homepage": "https://github.com/mikeparcewski/wicked-testing",
+  "bugs": "https://github.com/mikeparcewski/wicked-testing/issues",
+  "main": "install.mjs",
+  "bin": {
+    "wicked-testing": "./install.mjs",
+    "wicked-testing-install": "./install.mjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.0.0"
+  },
+  "files": [
+    "install.mjs",
+    "skills/",
+    "agents/",
+    "commands/",
+    "lib/",
+    "scripts/",
+    "scenarios/",
+    "schemas/",
+    "docs/",
+    ".claude-plugin/",
+    "README.md",
+    "ARCHITECTURE.md",
+    "HOW-IT-WORKS.md",
+    "SCENARIO-FORMAT.md",
+    "DATA-DOMAIN.md"
+  ],
+  "scripts": {
+    "install": "node install.mjs --skip-self-test",
+    "status": "node install.mjs status",
+    "doctor": "node install.mjs doctor"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

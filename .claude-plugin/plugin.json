@@ -1,0 +1,42 @@
+{
+  "name": "wicked-testing",
+  "version": "0.1.0",
+  "description": "Standalone QE library — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, optional wicked-bus + wicked-brain integration.",
+  "skills": [
+    { "name": "wicked-testing:plan",      "path": "skills/plan/SKILL.md",      "command": "/wicked-testing:plan" },
+    { "name": "wicked-testing:authoring", "path": "skills/authoring/SKILL.md", "command": "/wicked-testing:authoring" },
+    { "name": "wicked-testing:execution", "path": "skills/execution/SKILL.md", "command": "/wicked-testing:execution" },
+    { "name": "wicked-testing:review",    "path": "skills/review/SKILL.md",    "command": "/wicked-testing:review" },
+    { "name": "wicked-testing:insight",   "path": "skills/insight/SKILL.md",   "command": "/wicked-testing:insight" }
+  ],
+  "agents": [
+    { "name": "test-strategist",                "path": "agents/test-strategist.md" },
+    { "name": "test-designer",                  "path": "agents/test-designer.md" },
+    { "name": "test-automation-engineer",       "path": "agents/test-automation-engineer.md" },
+    { "name": "testability-reviewer",           "path": "agents/testability-reviewer.md" },
+    { "name": "requirements-quality-analyst",   "path": "agents/requirements-quality-analyst.md" },
+    { "name": "risk-assessor",                  "path": "agents/risk-assessor.md" },
+    { "name": "code-analyzer",                  "path": "agents/code-analyzer.md" },
+    { "name": "semantic-reviewer",              "path": "agents/semantic-reviewer.md" },
+    { "name": "contract-testing-engineer",      "path": "agents/contract-testing-engineer.md" },
+    { "name": "continuous-quality-monitor",     "path": "agents/continuous-quality-monitor.md" },
+    { "name": "production-quality-engineer",    "path": "agents/production-quality-engineer.md" },
+    { "name": "acceptance-test-writer",         "path": "agents/acceptance-test-writer.md" },
+    { "name": "acceptance-test-executor",       "path": "agents/acceptance-test-executor.md" },
+    { "name": "acceptance-test-reviewer",       "path": "agents/acceptance-test-reviewer.md" },
+    { "name": "scenario-executor",              "path": "agents/scenario-executor.md" },
+    { "name": "test-oracle",                    "path": "agents/test-oracle.md" }
+  ],
+  "commands": [
+    { "name": "plan",      "path": "commands/plan.md",      "slash": "/wicked-testing:plan" },
+    { "name": "authoring", "path": "commands/authoring.md", "slash": "/wicked-testing:authoring" },
+    { "name": "execution", "path": "commands/execution.md", "slash": "/wicked-testing:execution" },
+    { "name": "review",    "path": "commands/review.md",    "slash": "/wicked-testing:review" },
+    { "name": "insight",   "path": "commands/insight.md",   "slash": "/wicked-testing:insight" },
+    { "name": "setup",     "path": "commands/setup.md",     "slash": "/wicked-testing:setup" },
+    { "name": "oracle",    "path": "commands/oracle.md",    "slash": "/wicked-testing:oracle" },
+    { "name": "tasks",     "path": "commands/tasks.md",     "slash": "/wicked-testing:tasks" },
+    { "name": "stats",     "path": "commands/stats.md",     "slash": "/wicked-testing:stats" },
+    { "name": "report",    "path": "commands/report.md",    "slash": "/wicked-testing:report" }
+  ]
+}
