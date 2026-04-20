@@ -1,0 +1,43 @@
+{
+  "agent": "data-quality-tester",
+  "subagent_type": "wicked-testing:data-quality-tester",
+  "description": "Tier-2 specialist — great_expectations / dbt-test suites, migration forward+rollback verification, distribution drift detection.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Write a great_expectations suite for a `users` table with columns: id (bigint, PK, not null), email (varchar, unique, not null), role (enum: admin/user/viewer, not null), created_at (timestamp, not null). Cover schema, nullability, uniqueness, and enum range.",
+      "input_files": [],
+      "expected_shape": "test-suite",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.json" },
+        { "kind": "matches-regex",     "pattern": "(?i)(great_expectations|expect_column|expectation|expect_)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(not_null|null|unique|distinct)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(admin|user|viewer|enum|value.set|be_in_set)" }
+      ],
+      "notes": "Must use great_expectations expectations. Must cover all 4 checks: schema, nullability, uniqueness, enum."
+    },
+    {
+      "id": 2,
+      "prompt": "We're running a migration that adds a non-null `plan_tier` column (varchar, default 'free') to the `subscriptions` table (10M rows). Describe the forward migration test, rollback test, and pre-flight dry-run plan.",
+      "input_files": [],
+      "expected_shape": "migration-test-plan",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(forward|up.migration|down.migration|rollback)" },
+        { "kind": "matches-regex", "pattern": "(?i)(pre-?flight|dry.run|snapshot|representative.dataset)" },
+        { "kind": "matches-regex", "pattern": "(?i)(duration|lock|row.count|verify|invariant)" }
+      ],
+      "notes": "Must cover forward, rollback, and pre-flight. Must mention lock impact for large table."
+    },
+    {
+      "id": 3,
+      "prompt": "Our daily ETL brings 50,000 new rows per day normally. Yesterday it brought 8,000. Is this a data quality issue?",
+      "input_files": [],
+      "expected_shape": "analysis",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(distribution|drift|cardinality|row.count|freshness|tolerance|baseline)" },
+        { "kind": "matches-regex", "pattern": "(?i)(investigate|upstream|pipeline|source|alert|threshold)" }
+      ],
+      "notes": "Must flag as a distribution drift / row-count anomaly and recommend upstream investigation."
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "agent": "fuzz-property-engineer",
+  "subagent_type": "wicked-testing:fuzz-property-engineer",
+  "description": "Tier-2 specialist — property-based tests via Hypothesis (Python) / fast-check (TS); round-trip and no-exception invariants; CI as nightly not per-PR.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "I have a Python JSON serializer/deserializer: `serialize(obj) -> str` and `deserialize(s) -> obj`. Write property-based tests that prove round-trip correctness and that deserialize never raises on any string output of serialize.",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.py" },
+        { "kind": "matches-regex",     "pattern": "(?i)(hypothesis|@given|@settings|strategies|st\\.)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(round.?trip|decode.*encode|serialize.*deserialize|f\\(f\\(x\\)\\))" }
+      ],
+      "notes": "Must use hypothesis. Must assert round-trip invariant."
+    },
+    {
+      "id": 2,
+      "prompt": "Write property-based tests in TypeScript for a `sortAndDeduplicate(arr: number[]): number[]` function. Assert: output is sorted, output has no duplicates, every element of output appeared in input.",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.test.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(fast-check|fc\\.property|fc\\.array|fc\\.integer|fc\\.nat)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(sorted|dedup|duplicate|subset|contain)" }
+      ],
+      "notes": "Must use fast-check. Must assert all 3 invariants."
+    },
+    {
+      "id": 3,
+      "prompt": "Should we run property-based and fuzz tests on every pull request?",
+      "input_files": [],
+      "expected_shape": "recommendation",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(nightly|weekly|schedule|slow|not.per.pr|per-pr.too.slow|ci.nightly)" },
+        { "kind": "matches-regex", "pattern": "(?i)(critical|targeted|parser|crypto|auth|selected)" }
+      ],
+      "notes": "Must recommend nightly/scheduled not per-PR, scoped to critical code (parsers, crypto, etc.)."
+    }
+  ]
+}

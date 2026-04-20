@@ -1,0 +1,43 @@
+{
+  "agent": "test-data-manager",
+  "subagent_type": "wicked-testing:test-data-manager",
+  "description": "Tier-2 specialist — composable factories (factory_boy/fishery), referential consistency, PII scrubbing of production snapshots.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Create factory_boy factories for a Python Django app with User (id, email, role: admin/user) and Order (id, user_id FK, total, status: pending/complete). Orders must always reference a valid User. Tests should be able to do: UserFactory(role='admin'), OrderFactory(status='complete').",
+      "input_files": [],
+      "expected_shape": "factory-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.py" },
+        { "kind": "matches-regex",     "pattern": "(?i)(factory_boy|factory\\.django|DjangoModelFactory|class.*Factory)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(SubFactory|user.*=.*SubFactory|user_id)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(role|status|trait|Params|LazyAttribute)" }
+      ],
+      "notes": "Must use factory_boy. SubFactory for FK. Role/status variants via traits or params."
+    },
+    {
+      "id": 2,
+      "prompt": "We want to use a production database snapshot for integration tests. The snapshot contains real user emails, phone numbers, and full names. How do we use it safely?",
+      "input_files": [],
+      "expected_shape": "scrubbing-plan",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(scrub|anonymize|anonymise|faker|replace|mask|PII)" },
+        { "kind": "matches-regex", "pattern": "(?i)(email|phone|name|SSN|identifier)" },
+        { "kind": "matches-regex", "pattern": "(?i)(referential|same.user|same-user|structure.preserve|consistent)" }
+      ],
+      "notes": "Must require scrubbing before use. Must preserve referential structure (same-user rows stay consistent)."
+    },
+    {
+      "id": 3,
+      "prompt": "Can I create one big MegaFactory that builds a User, their Organization, their Subscription, their Orders, and their Notifications all in one call?",
+      "input_files": [],
+      "expected_shape": "recommendation",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(one.factory.per|single.factory|avoid.mega|don.?t|not.recommended|separate)" },
+        { "kind": "matches-regex", "pattern": "(?i)(variation|declare.what.you.need|composition|trait|build.only)" }
+      ],
+      "notes": "Must recommend one factory per model and composition over a mega-factory."
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "agent": "localization-test-engineer",
+  "subagent_type": "wicked-testing:localization-test-engineer",
+  "description": "Tier-2 specialist — pseudolocalization to find hardcoded strings, RTL layout validation, CLDR pluralization, string-length overflow checks.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "We have a React app with English and German locales. German strings are often 40% longer. Write tests that verify no text clips or wraps badly on the Dashboard page when the German locale is active.",
+      "input_files": [],
+      "expected_shape": "test-code+checklist",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(german|de|locale|lang)" },
+        { "kind": "matches-regex", "pattern": "(?i)(overflow|clip|wrap|truncat|width|length)" },
+        { "kind": "matches-regex", "pattern": "(?i)(screenshot|visual|render|layout)" }
+      ],
+      "notes": "Must address string length overflow. Must suggest screenshot/visual check or overflow assertion."
+    },
+    {
+      "id": 2,
+      "prompt": "How do I use pseudolocalization to find hardcoded strings in my React app?",
+      "input_files": [],
+      "expected_shape": "explanation+test-code",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(pseudolocal|accents|brackets|\\[\\[|bracket|wrap.with)" },
+        { "kind": "matches-regex", "pattern": "(?i)(hardcoded|not.translated|missing.key|visible)" }
+      ],
+      "notes": "Must explain pseudolocalization technique: wrap strings with accents/brackets to surface hardcoded text."
+    },
+    {
+      "id": 3,
+      "prompt": "Our app supports Arabic (RTL). The user's profile page has an avatar on the left and name on the right. In Arabic layout this should flip. Write a test that verifies the RTL mirror.",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.test.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(RTL|rtl|dir.*rtl|direction.*rtl|arabic|ar\\b)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(mirror|flip|right|left|layout|css.direction)" }
+      ],
+      "notes": "Must test RTL direction and assert mirrored layout."
+    }
+  ]
+}

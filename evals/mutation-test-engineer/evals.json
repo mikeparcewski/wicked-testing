@@ -1,0 +1,42 @@
+{
+  "agent": "mutation-test-engineer",
+  "subagent_type": "wicked-testing:mutation-test-engineer",
+  "description": "Tier-2 specialist — Stryker/Mutmut/Pitest kill-rate analysis; identify surviving mutants as assertion gaps; run on critical code only.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Set up Stryker mutation testing for a TypeScript project. We want to measure kill rate on our `src/auth/` and `src/pricing/` modules. Generate the stryker.config.json and explain what kill rate we should target.",
+      "input_files": [],
+      "expected_shape": "config+explanation",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/stryker.config.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(stryker|mutationScore|kill.?rate|threshold)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(75|80|60|percent|critical)" }
+      ],
+      "notes": "Must produce stryker config. Must mention ≥75% kill rate target for critical modules."
+    },
+    {
+      "id": 2,
+      "prompt": "Mutation test results: 120 total mutants, 54 killed, 10 timed out, 6 not covered. Kill rate is 45%. What does this mean and what should we do?",
+      "input_files": [],
+      "expected_shape": "analysis",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(below|insufficient|low|threshold|60|75)" },
+        { "kind": "matches-regex", "pattern": "(?i)(assertion|assert|missing.assertion|add.assert|surviving.mutant)" },
+        { "kind": "matches-regex", "pattern": "(?i)(not.just.add.test|add.assertion|more.test)" }
+      ],
+      "notes": "45% is below threshold. Must recommend adding assertions to existing tests, not just more test count."
+    },
+    {
+      "id": 3,
+      "prompt": "Should I run mutation testing on all 50,000 lines of our codebase every PR?",
+      "input_files": [],
+      "expected_shape": "recommendation",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(slow|too.slow|nightly|weekly|not.all|targeted|critical.only|selected)" },
+        { "kind": "matches-regex", "pattern": "(?i)(auth|pricing|payment|state.machine|critical|risk)" }
+      ],
+      "notes": "Must recommend scoped (critical code only) + nightly/weekly cadence, not full-repo per-PR."
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "agent": "exploratory-tester",
+  "subagent_type": "wicked-testing:exploratory-tester",
+  "description": "Tier-2 specialist — charter-driven session with SFDIPOT/heuristics, time-boxed, produces ranked findings and follow-up charters.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run a 90-minute exploratory testing session for a new checkout flow. The flow: add-to-cart → shipping address → payment → confirmation. I'm especially worried about edge cases around address validation and payment errors. Produce a charter, session notes, and a findings report.",
+      "input_files": [],
+      "expected_shape": "session-report",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(charter|explore.*with.*in.mind|session)" },
+        { "kind": "matches-regex", "pattern": "(?i)(finding|bug|risk|question|kudo|observation)" },
+        { "kind": "matches-regex", "pattern": "(?i)(severity|critical|high|medium|low|minor)" },
+        { "kind": "matches-regex", "pattern": "(?i)(follow.up.charter|next.charter|explore.next|further.investigation)" }
+      ],
+      "notes": "Must include charter, findings with severity, and follow-up charters."
+    },
+    {
+      "id": 2,
+      "prompt": "Apply the SFDIPOT heuristic to a user settings page to identify what to test.",
+      "input_files": [],
+      "expected_shape": "test-ideas",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(SFDIPOT|structure|function|data|interface|platform|operation|time)" },
+        { "kind": "matches-regex", "pattern": "(?i)(heuristic|explore|consider|test.idea|what.to.test)" }
+      ],
+      "notes": "Must apply SFDIPOT and generate concrete test ideas for each dimension."
+    },
+    {
+      "id": 3,
+      "prompt": "The exploratory session ended and we found 12 issues. How do I report them?",
+      "input_files": [],
+      "expected_shape": "report-structure",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(rank|severity|priorit|critical.first|debrief)" },
+        { "kind": "matches-regex", "pattern": "(?i)(bug|question|risk|finding.type|classification)" },
+        { "kind": "matches-regex", "pattern": "(?i)(follow.up|next.session|charter)" }
+      ],
+      "notes": "Report must classify findings by type (bug/question/risk), rank by severity, include follow-up charters."
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "agent": "flaky-test-hunter",
+  "subagent_type": "wicked-testing:flaky-test-hunter",
+  "description": "Tier-2 specialist — reproduce + root-cause flaky tests; reject 'add retry' as a fix; propose quarantine when fix is non-trivial.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Our test `it('sends welcome email after registration')` fails about 30% of the time. The test calls `registerUser()` then immediately checks the email queue, which is processed by a background worker. How do I diagnose and fix this?",
+      "input_files": [],
+      "expected_shape": "diagnosis+fix",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(timing|race|async|background.worker|queue|waitFor|poll|deadline)" },
+        { "kind": "matches-regex", "pattern": "(?i)(sleep|fixed.wait)" },
+        { "kind": "matches-regex", "pattern": "(?i)(poll.*deadline|waitFor|retry.*condition|assert.*until|wait.*event)" }
+      ],
+      "notes": "Root cause: timing/async. Must recommend polling with deadline, not sleep."
+    },
+    {
+      "id": 2,
+      "prompt": "The team wants to just add a retry wrapper around the flaky test so it passes in CI. Is that a good fix?",
+      "input_files": [],
+      "expected_shape": "refusal",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(not.a.fix|masks.the.bug|retry.hides|don.?t.add.retry|avoid.retry|bad.idea)" },
+        { "kind": "matches-regex", "pattern": "(?i)(root.cause|underlying|fix.the.cause|investigate)" }
+      ],
+      "notes": "Must reject retry as a band-aid and insist on root cause investigation."
+    },
+    {
+      "id": 3,
+      "prompt": "Test `it('calculates cart total correctly')` sometimes fails when run after `it('applies discount codes')`. When run in isolation it always passes. What's happening and how do I fix it?",
+      "input_files": [],
+      "expected_shape": "diagnosis+fix",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(ordering|order.depend|shared.state|global|isolation|cleanup|before|after)" },
+        { "kind": "matches-regex", "pattern": "(?i)(reset|clear|cleanup|isolate|teardown|afterEach|beforeEach)" }
+      ],
+      "notes": "Ordering dependency via shared state. Must recommend test isolation (reset state in beforeEach/afterEach)."
+    }
+  ]
+}

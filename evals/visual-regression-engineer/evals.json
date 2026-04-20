@@ -1,0 +1,42 @@
+{
+  "agent": "visual-regression-engineer",
+  "subagent_type": "wicked-testing:visual-regression-engineer",
+  "description": "Tier-2 specialist — Playwright+pixelmatch snapshots, baseline management (repo-stored, reviewer sign-off), dynamic region masking.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "We're about to land a CSS refactor that changes font sizes globally. Set up visual regression tests for our main Dashboard, Settings, and Profile pages using Playwright screenshots and pixelmatch. Include baseline capture and comparison workflow.",
+      "input_files": [],
+      "expected_shape": "test-code+workflow",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.spec.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(playwright|screenshot|page\\.screenshot)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(pixelmatch|odiff|baseline|snapshot)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(baseline|tests/visual|baselines)" }
+      ],
+      "notes": "Must use Playwright screenshots + pixelmatch/odiff. Must store baselines under tests/visual/baselines."
+    },
+    {
+      "id": 2,
+      "prompt": "Our dashboard shows live timestamps ('Updated 3 minutes ago') and a progress bar that changes every second. Our visual regression tests fail constantly because of these dynamic regions. How do I fix this?",
+      "input_files": [],
+      "expected_shape": "solution",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(mask|clip|ignore|region|dynamic)" },
+        { "kind": "matches-regex", "pattern": "(?i)(timestamp|progress|selector|locator|boundingBox)" }
+      ],
+      "notes": "Must recommend masking dynamic regions (timestamps, progress bars) to suppress noise."
+    },
+    {
+      "id": 3,
+      "prompt": "The visual regression test found a diff. The designer says the change is intentional — the button color changed from blue to teal. Can you auto-approve the new baseline?",
+      "input_files": [],
+      "expected_shape": "refusal",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(reviewer|sign.?off|review|approve|manual|cannot.auto|not.auto)" },
+        { "kind": "matches-regex", "pattern": "(?i)(update.*baseline|baseline.*update|commit|tracked)" }
+      ],
+      "notes": "Must NOT auto-approve. Must require reviewer sign-off and explain the baseline update process."
+    }
+  ]
+}

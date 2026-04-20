@@ -1,0 +1,43 @@
+{
+  "agent": "load-performance-engineer",
+  "subagent_type": "wicked-testing:load-performance-engineer",
+  "description": "Tier-2 specialist — k6/locust load tests with P95/P99 assertions, named bottleneck identification, SLO-referenced pass/fail.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Write a k6 load test for a POST /api/orders endpoint. SLO: P95 latency < 300ms, error rate < 0.1%, sustain 200 RPS for 5 minutes. Include ramp-up and ramp-down phases.",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.js" },
+        { "kind": "matches-regex",     "pattern": "(?i)(k6|http\\.post|http\\.get|VU|vus)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(p\\(95\\)|p95|percentile.*95|'p\\(95\\)')" },
+        { "kind": "matches-regex",     "pattern": "(?i)(ramp|stages|duration|target)" }
+      ],
+      "notes": "Must use k6. Must assert P95. Must have ramp stages."
+    },
+    {
+      "id": 2,
+      "prompt": "Our load test ran and passed — P95 is 150ms at 200 RPS. Write the performance report.",
+      "input_files": [],
+      "expected_shape": "report",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(P50|P95|P99|percentile|latency)" },
+        { "kind": "matches-regex", "pattern": "(?i)(error.rate|throughput|RPS|requests.per.second)" },
+        { "kind": "matches-regex", "pattern": "(?i)(bottleneck|resource|connection|CPU|memory|pool|next.action|recommendation)" }
+      ],
+      "notes": "Report must include P50/P95/P99, error rate, throughput, identified bottleneck or clean bill, and next action."
+    },
+    {
+      "id": 3,
+      "prompt": "Load test results show P95 spikes to 2s when we hit 150 RPS, but the app CPU stays at 30% and memory is fine. What's the bottleneck?",
+      "input_files": [],
+      "expected_shape": "diagnosis",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(connection.pool|database|db.pool|pool.size|pool.saturat|max.connection)" },
+        { "kind": "matches-regex", "pattern": "(?i)(downstream|dependency|queue|wait|blocked|saturate)" }
+      ],
+      "notes": "Low CPU + high latency at moderate RPS → connection pool or downstream dep saturation. Agent must identify this pattern."
+    }
+  ]
+}

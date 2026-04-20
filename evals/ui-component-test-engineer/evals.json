@@ -1,0 +1,44 @@
+{
+  "agent": "ui-component-test-engineer",
+  "subagent_type": "wicked-testing:ui-component-test-engineer",
+  "description": "Tier-2 specialist — component tests via React Testing Library; query by role/label, test state variants, reject brittle test-id queries where semantics exist.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "A React <UserCard> component renders a user's name, an 'Edit' button (visible only to admins), and a 'Suspended' badge (visible when user.suspended is true). Write component tests covering: (1) default render with name, (2) admin sees Edit button, (3) non-admin doesn't, (4) suspended badge shown/hidden.",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.test.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(getByRole|getByText|getByLabel|queryByRole|findByRole)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(render\\(|screen\\.)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(admin|suspended|badge|button)" }
+      ],
+      "notes": "Must use RTL queries. Must cover all 4 variants."
+    },
+    {
+      "id": 2,
+      "prompt": "Write component tests for a React <SearchForm> with a text input, a 'Search' submit button, and inline validation: empty submit shows 'Query is required', and input under 3 chars shows 'Query too short'. Use @testing-library/user-event for interactions.",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.test.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(userEvent|user\\.type|user\\.click)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(validation|required|too short|error)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(getByRole.*button|getByRole.*textbox|getByLabelText)" }
+      ],
+      "notes": "Must use user-event (not fireEvent). Must test both error messages."
+    },
+    {
+      "id": 3,
+      "prompt": "Should I add data-testid attributes to every element in my component to make testing easier?",
+      "input_files": [],
+      "expected_shape": "recommendation",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(avoid|last.resort|prefer.role|getByRole|semantic|label|aria)" },
+        { "kind": "matches-regex", "pattern": "(?i)(brittle|implementation.detail|refactor.break|fragile)" }
+      ],
+      "notes": "Agent must recommend semantic queries (role/label) over test-ids and explain why."
+    }
+  ]
+}

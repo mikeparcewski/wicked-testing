@@ -1,0 +1,43 @@
+{
+  "agent": "observability-test-engineer",
+  "subagent_type": "wicked-testing:observability-test-engineer",
+  "description": "Tier-2 specialist — structured log field assertions, OTel span coverage, cardinality hazard detection, PII-in-signals check.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Write tests that assert our Node.js API emits a structured log line with fields { trace_id, request_id, user_id, level: 'error', message } whenever a 5xx error occurs. Use a real OTel collector in test (not just SDK in-process sink).",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.test.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(trace.?id|request.?id|user.?id|structured.?log)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(collector|otel|opentelemetry|jaeger|stdout|exporter)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(field|key|presence|assert.*field|field.*present)" }
+      ],
+      "notes": "Must assert field presence. Must use real collector, not in-process sink."
+    },
+    {
+      "id": 2,
+      "prompt": "Our metrics dashboard is exploding in cardinality. We have a counter metric `http_requests_total` with labels: method, status_code, and user_id. What's wrong and how do we fix it?",
+      "input_files": [],
+      "expected_shape": "diagnosis+fix",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(cardinality|high.cardinality|unbounded|user.?id.*label|label.*user.?id)" },
+        { "kind": "matches-regex", "pattern": "(?i)(remove.*user.?id|drop.label|don.?t.use.*id|avoid.*id.*label|unique.per.user)" }
+      ],
+      "notes": "user_id as a metric label is a cardinality bomb. Must identify it and recommend removal."
+    },
+    {
+      "id": 3,
+      "prompt": "How do I test that user PII (email addresses, names) does NOT appear in our logs or traces?",
+      "input_files": [],
+      "expected_shape": "test-code+approach",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.test.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(PII|email|scrub|mask|redact|sensitive)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(regex|scan|assert.*not.*contain|not.*include|search.*log|grep.*log)" }
+      ],
+      "notes": "Must produce test that scans log/trace output for PII patterns and asserts absence."
+    }
+  ]
+}

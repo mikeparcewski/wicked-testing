@@ -1,0 +1,41 @@
+{
+  "agent": "coverage-archaeologist",
+  "subagent_type": "wicked-testing:coverage-archaeologist",
+  "description": "Tier-2 specialist — ingests lcov/cobertura + git blame age + call-graph, ranks untested code by impact×exposure, delivers top-N not noise.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "I have an lcov coverage report and git blame output for a legacy Node.js codebase. The payment processing module (src/payments/) is uncovered, was last touched 3 years ago, and is called by 12 other modules. The logging utility (src/logger/) is also uncovered. Which should I test first and why?",
+      "input_files": [],
+      "expected_shape": "prioritized-recommendation",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(payment|src/payment)" },
+        { "kind": "matches-regex", "pattern": "(?i)(fan.?in|12.caller|depend|call.graph|impact)" },
+        { "kind": "matches-regex", "pattern": "(?i)(prioriti|rank|payments.first|higher.risk)" }
+      ],
+      "notes": "Payments > logger because of higher fan-in + revenue impact. Must explain impact × exposure reasoning."
+    },
+    {
+      "id": 2,
+      "prompt": "Audit our `src/` directory for untested error paths — specifically try/catch blocks whose catch clause is never exercised by any test.",
+      "input_files": [],
+      "expected_shape": "findings-list",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(try|catch|error.path|exception|uncovered.catch|never.exercised)" },
+        { "kind": "matches-regex", "pattern": "(?i)(file.*line|location|src/)" }
+      ],
+      "notes": "Must produce a list of uncovered catch blocks with file:line locations."
+    },
+    {
+      "id": 3,
+      "prompt": "The coverage report shows 847 uncovered lines. Can you report all 847 as findings?",
+      "input_files": [],
+      "expected_shape": "redirect",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(top.?[0-9]+|prioriti|rank|signal.not.noise|noise|impact|risk)" },
+        { "kind": "matches-regex", "pattern": "(?i)(not.all|skip|ignore|filter|100.findings|too.many)" }
+      ],
+      "notes": "Must refuse a 847-item dump. Must propose prioritized top-N ranked by impact × exposure."
+    }
+  ]
+}
