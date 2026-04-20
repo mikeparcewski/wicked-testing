@@ -1,0 +1,30 @@
+{
+  "agent": "code-analyzer",
+  "subagent_type": "wicked-testing:code-analyzer",
+  "description": "code-analyzer surfaces quality + testability signals and emits a ship/fix/refactor verdict.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Analyze this function for quality and testability:\n\n```ts\nexport function processOrder(order: any): any {\n  if (!order) return null;\n  if (!order.items || order.items.length === 0) return { error: 'no items' };\n  let total = 0;\n  for (let i = 0; i < order.items.length; i++) {\n    total += order.items[i].price * order.items[i].qty;\n  }\n  if (order.user && order.user.isVip) total = total * 0.9;\n  if (order.coupon === 'SUMMER') total = total - 5;\n  if (order.shippingCountry === 'US') total = total + 10;\n  else if (order.shippingCountry === 'CA') total = total + 15;\n  else total = total + 25;\n  console.log('Processed order:', total);\n  return { total: total };\n}\n```",
+      "input_files": [],
+      "expected_shape": "findings-with-verdict",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(type|any|typing)" },
+        { "kind": "matches-regex", "pattern": "(?i)(console\\.log|logging|side effect)" },
+        { "kind": "matches-regex", "pattern": "(?i)(complexity|branches|cyclomatic)" },
+        { "kind": "matches-regex", "pattern": "(?i)(ship|fix|refactor)" }
+      ],
+      "notes": "Code has multiple issues: any types, console.log, branchy logic, no tests. Verdict should be fix or refactor."
+    },
+    {
+      "id": 2,
+      "prompt": "Analyze this function:\n\n```ts\nexport function add(a: number, b: number): number {\n  return a + b;\n}\n```",
+      "input_files": [],
+      "expected_shape": "findings-with-verdict",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(ship|clean|simple|no issues|no concern)" }
+      ],
+      "notes": "Trivially good code — agent should approve, not invent issues."
+    }
+  ]
+}

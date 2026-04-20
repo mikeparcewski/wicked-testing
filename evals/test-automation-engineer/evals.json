@@ -1,0 +1,31 @@
+{
+  "agent": "test-automation-engineer",
+  "subagent_type": "wicked-testing:test-automation-engineer",
+  "description": "test-automation-engineer generates test code matching the project's detected framework.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Generate vitest unit tests for this function:\n\n```ts\nexport function clamp(v: number, min: number, max: number): number {\n  if (v < min) return min;\n  if (v > max) return max;\n  return v;\n}\n```\nCover happy path + boundaries + invalid inputs.",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(describe|test|it)\\s*\\(" },
+        { "kind": "matches-regex", "pattern": "(?i)(expect|assert)" },
+        { "kind": "matches-regex", "pattern": "clamp" },
+        { "kind": "matches-regex", "pattern": "(?i)(min|max|boundary|edge)" }
+      ],
+      "notes": "Should produce runnable vitest/jest code covering positive + boundary cases."
+    },
+    {
+      "id": 2,
+      "prompt": "Generate pytest tests for a function parse_iso_date(s: str) -> datetime that must raise ValueError on malformed input. Cover valid ISO dates, timezones, and the error path.",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(def test_|import pytest)" },
+        { "kind": "matches-regex", "pattern": "(?i)(ValueError|raises|pytest.raises)" }
+      ],
+      "notes": "Should produce pytest code with the error-path assertion."
+    }
+  ]
+}

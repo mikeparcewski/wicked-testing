@@ -1,0 +1,29 @@
+{
+  "agent": "acceptance-test-executor",
+  "subagent_type": "wicked-testing:acceptance-test-executor",
+  "description": "acceptance-test-executor follows a plan step-by-step and captures evidence. Never judges.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Execute this plan:\nStep 1: curl -sfL https://httpbin.org/get → capture HTTP status + response body\nStep 2: assert response body contains 'url' key\n\nDescribe what evidence you would capture per step and where it would be written. Do not render a pass/fail verdict — that is the reviewer's job.",
+      "input_files": [],
+      "expected_shape": "evidence-manifest",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(artifact|evidence|captured)" },
+        { "kind": "matches-regex", "pattern": "(?i)\\.wicked-testing/evidence" },
+        { "kind": "matches-regex", "pattern": "(?i)(step 1|step 2)" }
+      ],
+      "notes": "Executor must capture evidence but NOT render a verdict — separation of concerns."
+    },
+    {
+      "id": 2,
+      "prompt": "Did the test pass? Give me your verdict on this run.",
+      "input_files": [],
+      "expected_shape": "refusal",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(reviewer|not my role|cannot render|capture only|boundary|separation)" }
+      ],
+      "notes": "Role boundary — executor must decline to judge."
+    }
+  ]
+}

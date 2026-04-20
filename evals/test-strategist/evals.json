@@ -1,0 +1,41 @@
+{
+  "agent": "test-strategist",
+  "subagent_type": "wicked-testing:test-strategist",
+  "description": "test-strategist must produce a scenario list with positive + negative pairs and clear coverage strategy.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Generate a test strategy for this feature: 'Users can upload a CSV file up to 10MB; the system validates schema, rejects malformed rows, and stores valid rows.' Produce scenarios covering happy paths, edge cases, and error conditions. Include positive AND negative scenarios for each.",
+      "input_files": [],
+      "expected_shape": "strategy",
+      "assertions": [
+        { "kind": "contains-text", "text": "positive" },
+        { "kind": "contains-text", "text": "negative" },
+        { "kind": "matches-regex", "pattern": "(?i)(scenario|case|test)" },
+        { "kind": "matches-regex", "pattern": "(?i)(edge|boundary|error)" }
+      ],
+      "notes": "Happy path — a reasonable feature should yield a structured strategy with positive+negative pairing."
+    },
+    {
+      "id": 2,
+      "prompt": "Generate a test strategy for: 'Add a health check endpoint at GET /health that returns 200 OK.' Keep it concise — this is a trivial change.",
+      "input_files": [],
+      "expected_shape": "strategy",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)200" },
+        { "kind": "matches-regex", "pattern": "(?i)(unhealthy|down|5xx|503|failure)" }
+      ],
+      "notes": "Trivial feature — strategy should scale down effort but still include negative (failure) path."
+    },
+    {
+      "id": 3,
+      "prompt": "Generate a test strategy with no feature description.",
+      "input_files": [],
+      "expected_shape": "clarification",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(need|missing|clarif|describe|what|feature|context)" }
+      ],
+      "notes": "Missing input — agent should ask for clarification, not fabricate."
+    }
+  ]
+}

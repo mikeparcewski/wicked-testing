@@ -1,0 +1,41 @@
+{
+  "agent": "acceptance-test-reviewer",
+  "subagent_type": "wicked-testing:acceptance-test-reviewer",
+  "description": "acceptance-test-reviewer renders PASS/FAIL/N-A/SKIP from evidence against assertions. Isolated — reads only.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Evidence: HTTP response captured in output.json = {\"status\": 200, \"body\": {\"url\": \"https://httpbin.org/get\"}}\nAssertion: response has HTTP status 200 AND body contains 'url' key.\nRender a verdict.",
+      "input_files": [],
+      "expected_shape": "verdict",
+      "assertions": [
+        { "kind": "verdict-in", "values": ["PASS", "FAIL", "N-A", "SKIP"] },
+        { "kind": "matches-regex", "pattern": "PASS" }
+      ],
+      "notes": "Evidence satisfies assertions — should return PASS."
+    },
+    {
+      "id": 2,
+      "prompt": "Evidence: HTTP response captured in output.json = {\"status\": 500, \"body\": {\"error\": \"internal\"}}\nAssertion: response has HTTP status 200.\nRender a verdict.",
+      "input_files": [],
+      "expected_shape": "verdict",
+      "assertions": [
+        { "kind": "verdict-in", "values": ["PASS", "FAIL", "N-A", "SKIP"] },
+        { "kind": "matches-regex", "pattern": "FAIL" },
+        { "kind": "matches-regex", "pattern": "(?i)(500|expected|actual)" }
+      ],
+      "notes": "Evidence contradicts assertion — should return FAIL with reason citing the mismatch."
+    },
+    {
+      "id": 3,
+      "prompt": "Evidence: none provided.\nAssertion: response has HTTP status 200.\nRender a verdict.",
+      "input_files": [],
+      "expected_shape": "verdict",
+      "assertions": [
+        { "kind": "verdict-in", "values": ["PASS", "FAIL", "N-A", "SKIP"] },
+        { "kind": "matches-regex", "pattern": "(?i)(N.?A|SKIP|insufficient|no evidence|missing)" }
+      ],
+      "notes": "No evidence — reviewer should NOT render PASS; either N-A or SKIP with justification."
+    }
+  ]
+}

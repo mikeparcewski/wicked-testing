@@ -1,0 +1,29 @@
+{
+  "agent": "continuous-quality-monitor",
+  "subagent_type": "wicked-testing:continuous-quality-monitor",
+  "description": "continuous-quality-monitor reports quality signals during build and coaches, never blocks.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Report quality signals for this commit:\n- Lint: 0 new issues (baseline 3)\n- Typecheck: 1 new error (baseline 0)\n- Coverage: 82.3% (baseline 83.1%)\n- Tests: 417 → 421 (+4)\n- Complexity: 2 functions above 15 (unchanged)",
+      "input_files": [],
+      "expected_shape": "signals-report",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(type|typecheck)" },
+        { "kind": "matches-regex", "pattern": "(?i)(coverage)" },
+        { "kind": "matches-regex", "pattern": "(?i)(keep going|coach|next|fix|address)" }
+      ],
+      "notes": "Typecheck regression + coverage slip. Coach, don't block."
+    },
+    {
+      "id": 2,
+      "prompt": "All signals are green: 0 lint errors, 0 type errors, coverage 89%, tests passing. Report.",
+      "input_files": [],
+      "expected_shape": "signals-report",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(keep going|all good|green|healthy|clean)" }
+      ],
+      "notes": "Happy path — short, positive signal report."
+    }
+  ]
+}

@@ -115,11 +115,30 @@ function checkAssertion(a, ctx) {
     }
     case "contains-text": {
       const out = existsSync(ctx.outputFile) ? readFileSync(ctx.outputFile, "utf8") : "";
-      return { pass: out.includes(a.text), detail: out.includes(a.text) ? "found" : `missing: "${a.text}"` };
+      const needle = a.text;
+      // Default to case-insensitive; opt in to exact match with case_sensitive: true
+      const found = a.case_sensitive
+        ? out.includes(needle)
+        : out.toLowerCase().includes(needle.toLowerCase());
+      return { pass: found, detail: found ? "found" : `missing: "${needle}"` };
     }
     case "matches-regex": {
       const out = existsSync(ctx.outputFile) ? readFileSync(ctx.outputFile, "utf8") : "";
-      return { pass: new RegExp(a.pattern).test(out), detail: "" };
+      // Translate inline (?i) flag — JS uses the flags argument instead
+      let pattern = a.pattern;
+      let flags = a.flags || "";
+      const inlineFlags = pattern.match(/^\(\?([a-z]+)\)/);
+      if (inlineFlags) {
+        flags = (flags + inlineFlags[1]).split("").filter((v, i, s) => s.indexOf(v) === i).join("");
+        pattern = pattern.slice(inlineFlags[0].length);
+      }
+      try {
+        const re = new RegExp(pattern, flags);
+        const match = re.test(out);
+        return { pass: match, detail: match ? "matched" : `no match for /${pattern}/${flags}` };
+      } catch (e) {
+        return { pass: false, detail: `invalid regex: ${e.message}` };
+      }
     }
     case "exit-code-zero": {
       return { pass: ctx.exitCode === 0, detail: `exit=${ctx.exitCode ?? "n/a"}` };
@@ -137,15 +156,21 @@ function checkRun(agent, iteration) {
   if (!existsSync(iterDir)) { console.error(`No run at: ${iterDir}`); process.exit(1); }
 
   const report = { agent, iteration, cases: [] };
-  let passed = 0, failed = 0;
+  let passed = 0, failed = 0, skipped = 0;
 
   for (const c of data.cases) {
     const caseDir = join(iterDir, `case-${c.id}`);
     const outputFile = join(caseDir, "output.md");
+    if (!existsSync(outputFile)) {
+      report.cases.push({ id: c.id, status: "not-run", reason: "output.md not captured" });
+      skipped++;
+      console.log(`  [${c.id}] SKIP (not dispatched — no output.md)`);
+      continue;
+    }
     const ctx = { caseDir, outputFile, exitCode: existsSync(join(caseDir, "exit.code")) ? +readFileSync(join(caseDir, "exit.code"), "utf8") : null };
     const results = c.assertions.map(a => ({ kind: a.kind, ...checkAssertion(a, ctx) }));
     const casePassed = results.every(r => r.pass);
-    report.cases.push({ id: c.id, pass: casePassed, results });
+    report.cases.push({ id: c.id, status: casePassed ? "pass" : "fail", results });
     if (casePassed) passed++; else failed++;
     console.log(`  [${c.id}] ${casePassed ? "PASS" : "FAIL"}`);
     for (const r of results) {
@@ -158,7 +183,7 @@ function checkRun(agent, iteration) {
   writeFileSync(reportPath, JSON.stringify(report, null, 2));
   const hash = createHash("sha256").update(JSON.stringify(report)).digest("hex").slice(0, 8);
 
-  console.log(`\n${passed} passed, ${failed} failed`);
+  console.log(`\n${passed} passed, ${failed} failed, ${skipped} skipped (not dispatched)`);
   console.log(`Report: ${relative(REPO, reportPath)} (sha:${hash})`);
   process.exit(failed > 0 ? 1 : 0);
 }

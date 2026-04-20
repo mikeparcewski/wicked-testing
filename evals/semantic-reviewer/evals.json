@@ -1,0 +1,31 @@
+{
+  "agent": "semantic-reviewer",
+  "subagent_type": "wicked-testing:semantic-reviewer",
+  "description": "semantic-reviewer emits a Gap Report marking each AC aligned / divergent / missing.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Acceptance criteria:\nAC-1: POST /logout returns HTTP 204.\nAC-2: Session is invalidated server-side after logout.\nAC-3: Subsequent calls with the old session token return 401.\n\nImplementation summary: the logout handler deletes the session from Redis and returns 204. The token-validation middleware checks Redis on every request; missing sessions → 401.\n\nProduce a Gap Report per AC.",
+      "input_files": [],
+      "expected_shape": "gap-report",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)AC-?1" },
+        { "kind": "matches-regex", "pattern": "(?i)AC-?2" },
+        { "kind": "matches-regex", "pattern": "(?i)AC-?3" },
+        { "kind": "matches-regex", "pattern": "(?i)(aligned|divergent|missing)" }
+      ],
+      "notes": "All three ACs are implemented — should be aligned."
+    },
+    {
+      "id": 2,
+      "prompt": "Acceptance criteria:\nAC-1: Rate limit is 100 requests per minute per user.\nAC-2: Over-limit requests return HTTP 429 with a Retry-After header.\n\nImplementation summary: the middleware blocks over-limit requests with a 429 status. No Retry-After header is set.\n\nProduce a Gap Report.",
+      "input_files": [],
+      "expected_shape": "gap-report",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)divergent|missing" },
+        { "kind": "matches-regex", "pattern": "(?i)Retry-After" }
+      ],
+      "notes": "AC-2 is partially implemented (429 yes, Retry-After no) — should be divergent."
+    }
+  ]
+}

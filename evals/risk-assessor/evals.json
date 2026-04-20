@@ -1,0 +1,30 @@
+{
+  "agent": "risk-assessor",
+  "subagent_type": "wicked-testing:risk-assessor",
+  "description": "risk-assessor produces a risk matrix with likelihood × impact scoring and mitigations.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Assess risks for this change: 'Migrating our user auth from session cookies to JWTs, storing refresh tokens in localStorage, and rolling out to 100% of traffic on Friday.'",
+      "input_files": [],
+      "expected_shape": "risk-matrix",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(XSS|cross-site scripting|localStorage|token|security)" },
+        { "kind": "matches-regex", "pattern": "(?i)(rollback|canary|gradual|feature flag|phased)" },
+        { "kind": "matches-regex", "pattern": "(?i)(likelihood|impact|score|severity)" },
+        { "kind": "matches-regex", "pattern": "(?i)(mitigation|mitigate)" }
+      ],
+      "notes": "Change has real security + rollout risks. Agent should flag both and propose mitigations."
+    },
+    {
+      "id": 2,
+      "prompt": "Assess risks for this change: 'Updating the README to fix a typo.'",
+      "input_files": [],
+      "expected_shape": "risk-matrix",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(low|minimal|negligible|no.?significant|docs.only)" }
+      ],
+      "notes": "Trivial change. Agent must not invent risks."
+    }
+  ]
+}

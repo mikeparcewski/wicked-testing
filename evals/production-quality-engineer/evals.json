@@ -1,0 +1,28 @@
+{
+  "agent": "production-quality-engineer",
+  "subagent_type": "wicked-testing:production-quality-engineer",
+  "description": "production-quality-engineer judges live deploy health and returns healthy/degraded/unhealthy with a next action.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Post-deploy signals (canary at 5% traffic):\n- Error rate: 0.4% (baseline 0.1%)\n- P95 latency: 320ms (baseline 180ms)\n- New exception class 'TimeoutError' appearing on 12% of requests\n- SLO target: error rate <= 1%, P95 <= 500ms\nRender a judgment + next action.",
+      "input_files": [],
+      "expected_shape": "post-deploy-judgment",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(degraded|unhealthy|rollback|hold)" },
+        { "kind": "matches-regex", "pattern": "(?i)(timeout|exception|error)" }
+      ],
+      "notes": "Signals are mixed — SLO not breached but new exception + latency spike. Should recommend hold or rollback, not promote."
+    },
+    {
+      "id": 2,
+      "prompt": "Post-deploy signals (canary at 5%):\n- Error rate: 0.08% (baseline 0.1%)\n- P95: 175ms (baseline 180ms)\n- No new exception classes\nRender a judgment + next action.",
+      "input_files": [],
+      "expected_shape": "post-deploy-judgment",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(healthy|promote|proceed|expand)" }
+      ],
+      "notes": "Signals are clean — should recommend promoting the canary."
+    }
+  ]
+}

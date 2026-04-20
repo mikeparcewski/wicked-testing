@@ -1,0 +1,29 @@
+{
+  "agent": "contract-testing-engineer",
+  "subagent_type": "wicked-testing:contract-testing-engineer",
+  "description": "contract-testing-engineer flags breaking API changes and proposes mitigation.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "OpenAPI diff: endpoint GET /v1/users changed the response field 'email' from type 'string' (required) to an enum with values ['verified', 'pending']. Also removed the field 'phone'. Is this a breaking change? Which consumers are affected, and what's the mitigation?",
+      "input_files": [],
+      "expected_shape": "contract-diff-report",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(breaking)" },
+        { "kind": "matches-regex", "pattern": "(?i)(remove|removed|deleted|phone)" },
+        { "kind": "matches-regex", "pattern": "(?i)(version|sunset|deprecat|additive|coordinated)" }
+      ],
+      "notes": "Both changes are breaking. Agent should flag and propose versioning/deprecation."
+    },
+    {
+      "id": 2,
+      "prompt": "OpenAPI diff: added a new optional field 'middle_name' to POST /users request body. Is this breaking?",
+      "input_files": [],
+      "expected_shape": "contract-diff-report",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(not breaking|non-breaking|safe|additive|backward.compatible)" }
+      ],
+      "notes": "Optional additive field — should be classified as non-breaking."
+    }
+  ]
+}

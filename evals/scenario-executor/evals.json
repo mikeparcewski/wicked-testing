@@ -1,0 +1,19 @@
+{
+  "agent": "scenario-executor",
+  "subagent_type": "wicked-testing:scenario-executor",
+  "description": "scenario-executor reads scenario markdown, runs steps, captures evidence, writes a run record.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Execute scenarios/examples/api-health-check.md. Do not actually make network calls — simulate by describing what you would run, what evidence you would capture, and what the expected manifest would contain.",
+      "input_files": ["scenarios/examples/api-health-check.md"],
+      "expected_shape": "run-record",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(curl|step)" },
+        { "kind": "matches-regex", "pattern": "(?i)(manifest|evidence|artifact)" },
+        { "kind": "matches-regex", "pattern": "(?i)(passed|failed|status|verdict)" }
+      ],
+      "notes": "Dry-run mode — agent should describe execution + evidence structure without hitting real services."
+    }
+  ]
+}

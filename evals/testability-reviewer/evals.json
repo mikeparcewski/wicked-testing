@@ -1,0 +1,29 @@
+{
+  "agent": "testability-reviewer",
+  "subagent_type": "wicked-testing:testability-reviewer",
+  "description": "testability-reviewer produces a block/warn/nit list with location + fix and an overall verdict.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Review this design for testability: 'A PaymentProcessor class instantiates Stripe directly in its constructor, reads config from environment variables, logs via a global Logger singleton, and uses Date.now() for timestamps on every charge.'",
+      "input_files": [],
+      "expected_shape": "findings-with-verdict",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(dependency injection|seam|inject|mock)" },
+        { "kind": "matches-regex", "pattern": "(?i)(clock|time|Date|injection)" },
+        { "kind": "matches-regex", "pattern": "(?i)(block|warn|nit|severity|verdict)" }
+      ],
+      "notes": "Design has multiple testability anti-patterns — findings should cover isolation, seams, and clock."
+    },
+    {
+      "id": 2,
+      "prompt": "Review this design for testability: 'A pure function sum(a: number, b: number): number that returns a + b.'",
+      "input_files": [],
+      "expected_shape": "verdict",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(testable|easy|trivial|no issues|clean|fine)" }
+      ],
+      "notes": "Trivially testable — agent should not invent problems."
+    }
+  ]
+}

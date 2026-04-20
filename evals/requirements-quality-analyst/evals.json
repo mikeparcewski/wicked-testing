@@ -1,0 +1,29 @@
+{
+  "agent": "requirements-quality-analyst",
+  "subagent_type": "wicked-testing:requirements-quality-analyst",
+  "description": "requirements-quality-analyst applies SMART+T to each AC and emits a ready-for-design / needs-iteration / unready verdict.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Review these acceptance criteria:\nAC-1: The login page should be fast and easy to use.\nAC-2: Users can log in with an email and password.\nAC-3: When credentials are wrong, the system returns HTTP 401 within 500ms and logs the attempt.",
+      "input_files": [],
+      "expected_shape": "per-ac-table-with-verdict",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)AC-?1" },
+        { "kind": "matches-regex", "pattern": "(?i)(measurable|specific|subjective|vague|fast|easy)" },
+        { "kind": "matches-regex", "pattern": "(?i)(ready-for-design|needs-iteration|unready)" }
+      ],
+      "notes": "AC-1 is vague (fast/easy); AC-2 is under-specified (happy path only); AC-3 is solid. Verdict should reflect the worst item."
+    },
+    {
+      "id": 2,
+      "prompt": "Review these acceptance criteria:\nAC-1: POST /users returns 201 with a user object containing id (uuid), email, and created_at (ISO 8601) within 200ms at P95.\nAC-2: Duplicate email returns 409 with body {\"error\": \"email-exists\"}.\nAC-3: Invalid email returns 422 with body {\"error\": \"invalid-email\"}.",
+      "input_files": [],
+      "expected_shape": "per-ac-table-with-verdict",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(ready-for-design|ready|approve)" }
+      ],
+      "notes": "All three ACs are SMART+T. Agent should approve."
+    }
+  ]
+}

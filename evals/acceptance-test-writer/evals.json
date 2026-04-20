@@ -1,0 +1,20 @@
+{
+  "agent": "acceptance-test-writer",
+  "subagent_type": "wicked-testing:acceptance-test-writer",
+  "description": "acceptance-test-writer produces evidence-gated plans: every step has Intent, Action, Expected evidence, and Assertion.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Write an evidence-gated acceptance test plan for this scenario: 'A user can sign up with email + password, receives a 201 with their user_id, and a welcome email arrives within 60 seconds.' Target is a REST API; use curl for HTTP calls.",
+      "input_files": [],
+      "expected_shape": "evidence-gated-plan",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(intent|purpose|goal)" },
+        { "kind": "matches-regex", "pattern": "(?i)(expected evidence|artifact|evidence)" },
+        { "kind": "matches-regex", "pattern": "(?i)(assertion|expect|must)" },
+        { "kind": "matches-regex", "pattern": "curl" }
+      ],
+      "notes": "Each step must declare Intent, Action, Expected evidence, and Assertion."
+    }
+  ]
+}
