@@ -169,6 +169,29 @@ Removes skills/agents/commands from every detected CLI. Your project-local
 
 ---
 
+## Offline / Air-Gapped Environments
+
+After the first successful install, subsequent runs can skip the network:
+
+```bash
+npx --prefer-offline wicked-testing update
+```
+
+For fully air-gapped machines, install globally once with internet access and
+then use the installed binary directly:
+
+```bash
+npm install -g wicked-testing
+wicked-testing install
+wicked-testing doctor
+```
+
+wicked-testing has a single runtime dependency (`better-sqlite3`) which ships
+with pre-built binaries for macOS, Linux, and Windows, so no compiler toolchain
+is needed offline.
+
+---
+
 ## Troubleshooting
 
 - **"No AI CLIs detected"** — wicked-testing looks for `~/.claude`, `~/.gemini`,
