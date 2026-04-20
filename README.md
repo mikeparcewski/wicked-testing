@@ -105,12 +105,16 @@ The 16 Tier-1 agents form the stable integration surface. wicked-garden and othe
 The `/wicked-testing:acceptance` command eliminates the self-grading problem with enforced role separation:
 
 ```
-Writer ──→ Test Plan ──→ Executor ──→ Evidence ──→ Reviewer ──→ Verdict
+Writer ──→ Test Plan ──→ Executor ──→ Evidence ──→ [context.md] ──→ Reviewer ──→ Verdict
+                                                    (cold brain
+                                                     knowledge)
 ```
 
-- **Writer** (`allowed-tools: Read, Grep, Glob`) — reads scenario + code, produces an evidence-gated plan where every step declares expected evidence and an assertion. Cannot execute or write state.
-- **Executor** (`allowed-tools: Read, Write, Bash`) — follows the plan mechanically. Captures stdout, stderr, exit codes, and file artifacts. Makes **no judgment** about results.
+- **Writer** (`allowed-tools: Read, Grep, Glob, Skill`) — reads scenario + code, optionally queries wicked-brain for prior flaky patterns and tool quirks, produces an evidence-gated plan where every step declares expected evidence and an assertion. Cannot execute or write state.
+- **Executor** (`allowed-tools: Read, Write, Bash`) — follows the plan mechanically. Captures stdout, stderr, exit codes, and file artifacts. Optionally emits `wicked.testrun.*` events via wicked-bus. Makes **no judgment** about results.
 - **Reviewer** (`allowed-tools: Read`) — reads cold evidence files only. **Never sees the executor's context, reasoning, or stdout.** Evaluates assertions against artifacts. Cannot execute.
+
+**Cold context injection**: before dispatching Reviewer, the orchestrator may materialize a `context.md` in the evidence directory with non-prejudicial domain knowledge from wicked-brain (WCAG thresholds, tool quirks). Prior verdicts, pass/fail rates, and anything run-specific are strictly excluded — if Reviewer sees prejudicial content it returns `INCONCLUSIVE` with `CONTEXT_CONTAMINATION`.
 
 Reviewer isolation is hard-enforced on Claude Code via `allowed-tools` frontmatter, advisory on other CLIs. The separation is what makes the verdict trustworthy.
 

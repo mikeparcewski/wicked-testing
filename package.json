@@ -1,6 +1,6 @@
 {
   "name": "wicked-testing",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "type": "module",
   "description": "Standalone QE library for AI coding CLIs — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, 3-agent acceptance pipeline, bus+brain optional integration.",
   "keywords": [

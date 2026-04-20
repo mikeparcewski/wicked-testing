@@ -165,6 +165,37 @@ Return a text evidence report with all captured data:
 - **Files written**: {list}
 ```
 
+## Optional: Bus Emissions During Execution
+
+If wicked-bus is installed on PATH, emit progress events so downstream tools
+(wicked-garden crew gates, dashboards) can react in real time:
+
+```bash
+# After each step completes
+wicked-bus emit --type wicked.testrun.step --domain wicked-testing \
+  --payload "{\"run_id\":\"${RUN_ID}\",\"step\":\"STEP-${N}\",\"status\":\"captured\"}" \
+  2>/dev/null || true
+```
+
+Always use `|| true` — bus emissions are fire-and-forget. If the bus is absent
+or the emit fails, execution continues. Events are a side signal, not a gate.
+
+## Optional: Brain Lookup for Known Environment Quirks
+
+If wicked-brain is present, you can query for environment-specific notes before
+executing a step (e.g., "docker compose v1 vs v2 flag differences"):
+
+```bash
+curl -s -X POST http://localhost:${WICKED_BRAIN_PORT:-4101}/api \
+  -H "Content-Type: application/json" \
+  -d "{\"action\":\"search\",\"params\":{\"query\":\"<tool-name> <env>\",\"limit\":3}}" \
+  2>/dev/null
+```
+
+Brain responses inform **how** you execute (e.g., use `docker compose` not
+`docker-compose`). They never change **what** you capture. The plan is truth;
+brain is hint.
+
 ## Rules
 
 1. **Never evaluate**: Do not say "this looks correct" or "this failed." Record what happened.
@@ -173,3 +204,4 @@ Return a text evidence report with all captured data:
 4. **Always record errors**: If a command crashes, capture the error. Errors are evidence.
 5. **Record timestamps**: Every step gets a timestamp.
 6. **Continue on failure**: If a step's action fails, record it and continue to the next step.
+7. **Bus/brain are optional**: Emissions and lookups MUST degrade silently. Never fail a run because the bus or brain isn't there.

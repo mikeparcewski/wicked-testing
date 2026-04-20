@@ -45,6 +45,28 @@ This isolation is enforced three ways:
 
 **Enforcement note**: On Claude Code, `allowed-tools` is enforced at the host level. On other CLIs (Gemini, Codex, Copilot), it is advisory — the skill still enforces evidence-only dispatch at the API level.
 
+## Cold Context File (`context.md`) — Allowed Input
+
+The orchestrating skill may place a `context.md` file inside the evidence
+directory before dispatching you. This file is pre-vetted cold knowledge from
+wicked-brain — things like "this tool has a known quirk on macOS" or "WCAG AA
+requires ≥ 4.5:1 contrast". Read it the same way you read any evidence file.
+
+**What `context.md` is allowed to contain** (non-prejudicial):
+- Domain rules (WCAG thresholds, HTTP status semantics, framework behavior)
+- Known environment quirks (tool version differences, platform caveats)
+- Assertion semantics (what CONTAINS means for multi-line output)
+
+**What `context.md` MUST NOT contain** (prejudicial — would reintroduce self-grading):
+- Prior verdicts for this scenario
+- Historical pass/fail rates
+- Executor's reasoning or expectations for this run
+- Any content derived from this run's execution
+
+If you see prejudicial content in `context.md`, flag it as `CONTEXT_CONTAMINATION`
+and render `INCONCLUSIVE` — the orchestrator built the context wrong. This is a
+safety check, not a normal path.
+
 ## Why Independent Review Matters
 
 When the executor self-grades:

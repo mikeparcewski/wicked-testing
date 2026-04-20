@@ -170,7 +170,34 @@ Update run status in DomainStore after execution.
 
 If `--phase execute`, stop here.
 
-### 4. Phase: Review (Evidence Evaluation — ISOLATION CRITICAL)
+### 4. Phase: Pre-Review Cold Context (Optional)
+
+If wicked-brain is present, gather NON-PREJUDICIAL cold knowledge and write it
+to `${EVIDENCE_DIR}/context.md` before dispatching the reviewer. This gives the
+reviewer access to domain rules and environment caveats without breaking the
+cold-evidence isolation.
+
+**Allowed** in `context.md`:
+- Domain rules (WCAG AA thresholds, HTTP semantics, framework behavior)
+- Tool/env quirks ("docker compose v1 vs v2", "hurl on macOS requires flag X")
+- Assertion semantics explanations
+
+**MUST NOT** be written to `context.md` (would reintroduce self-grading):
+- Prior verdicts for this scenario (never query `verdicts` by scenario_id)
+- Historical pass/fail rates
+- Executor reasoning, expectations, or stdout/stderr
+- Any content derived from this run
+
+Example safe query:
+
+```
+wicked-brain:search query="<scenario-category> test rules" limit=5
+```
+
+If wicked-brain is absent, skip this phase — no `context.md` is written and
+the reviewer still has everything it needs (scenario + plan + evidence).
+
+### 5. Phase: Review (Evidence Evaluation — ISOLATION CRITICAL)
 
 **CRITICAL ISOLATION**: The reviewer receives ONLY evidence file paths and the test plan.
 It does NOT receive the executor's conversation, reasoning, or stdout/stderr directly.
@@ -189,11 +216,14 @@ Task(
 
 ## Evidence Directory
 {EVIDENCE_DIR}
+(May contain an optional context.md with pre-vetted cold domain knowledge —
+treat it as evidence. If it contains prior verdicts or historical outcomes,
+flag as CONTEXT_CONTAMINATION and return INCONCLUSIVE.)
 
 ## Instructions
 1. Read the scenario file at the path above
 2. Read the test plan file at the path above
-3. Read evidence files from the evidence directory
+3. Read evidence files from the evidence directory (including context.md if present)
 4. Evaluate each assertion against evidence
 5. Return verdict: PASS | FAIL | INCONCLUSIVE
 
@@ -205,7 +235,7 @@ DO NOT reference any execution context beyond the files above.
 **Note**: The reviewer prompt intentionally omits all executor conversation context.
 This is the evidence-only dispatch — the third isolation layer.
 
-### 5. Write Verdict to DomainStore
+### 6. Write Verdict to DomainStore
 
 ```javascript
 store.create('verdicts', {
@@ -222,7 +252,7 @@ store.update('runs', run.id, {
 });
 ```
 
-### 6. Output
+### 7. Output
 
 **Without `--json`** — Present the full verdict:
 
