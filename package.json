@@ -42,7 +42,7 @@
     "agents/",
     "commands/",
     "lib/",
-    "scripts/",
+    "scripts/_python.sh",
     "scenarios/",
     "schemas/",
     "docs/",
@@ -58,6 +58,7 @@
     "status": "node install.mjs status",
     "doctor": "node install.mjs doctor",
     "test": "node scripts/dev/validate.mjs",
+    "prepublishOnly": "node scripts/dev/validate.mjs",
     "evals:list": "node scripts/dev/evals.mjs list",
     "evals:plan": "node scripts/dev/evals.mjs plan",
     "evals:summary": "node scripts/dev/evals-summary.mjs"
