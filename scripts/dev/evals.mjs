@@ -65,8 +65,17 @@ function planAgent(agent) {
 }
 
 function globMatch(pattern, files) {
-  const re = new RegExp("^" + pattern.replace(/[.+^$()|[\]]/g, "\\$&").replace(/\*\*/g, ".__DS__").replace(/\*/g, "[^/]*").replace(/__DS__/g, "*") + "$");
-  return files.filter(f => re.test(f));
+  // Translate glob → regex:
+  //   **/ → optional path prefix (zero or more dirs)
+  //   **  → any chars across slashes
+  //   *   → any chars except /
+  let re = pattern.replace(/[.+^$()|[\]]/g, "\\$&");
+  re = re.replace(/\*\*\//g, "__DSS__");   // **/ placeholder
+  re = re.replace(/\*\*/g, ".*");          // ** → .*
+  re = re.replace(/\*/g, "[^/]*");         // * → [^/]*
+  re = re.replace(/__DSS__/g, "(?:.+/)?"); // **/ → optional path
+  const regex = new RegExp("^" + re + "$");
+  return files.filter(f => regex.test(f));
 }
 
 function walk(dir) {
@@ -109,8 +118,10 @@ function checkAssertion(a, ctx) {
       }
       try {
         const m = JSON.parse(readFileSync(manifests[0], "utf8"));
-        const v = m?.verdict?.value;
-        return { pass: a.values.includes(v), detail: `verdict: ${v}` };
+        // Schema-strict form: verdict is an object with .value
+        // Tolerant form: verdict is the string itself
+        const v = typeof m?.verdict === "string" ? m.verdict : m?.verdict?.value;
+        return { pass: a.values.includes(v), detail: `verdict: ${v ?? "(none)"}` };
       } catch (e) { return { pass: false, detail: e.message }; }
     }
     case "contains-text": {

@@ -9,11 +9,11 @@
       "input_files": ["scenarios/examples/api-health-check.md"],
       "expected_shape": "manifest",
       "assertions": [
-        { "kind": "produces-artifact", "path": ".wicked-testing/evidence/*/manifest.json" },
+        { "kind": "produces-artifact", "path": "**/manifest.json" },
         { "kind": "manifest-valid",    "schema": "schemas/evidence.json" },
         { "kind": "verdict-in",        "values": ["PASS", "FAIL", "N-A", "SKIP"] }
       ],
-      "notes": "Happy path — a well-formed scenario should produce a well-formed manifest."
+      "notes": "Happy path — a well-formed scenario should produce a well-formed manifest. Path is **/manifest.json to tolerate eval-environment vs real-run (.wicked-testing/evidence/<run-id>/) location differences."
     },
     {
       "id": 2,

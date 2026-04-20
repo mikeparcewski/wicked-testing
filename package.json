@@ -59,7 +59,8 @@
     "doctor": "node install.mjs doctor",
     "test": "node scripts/dev/validate.mjs",
     "evals:list": "node scripts/dev/evals.mjs list",
-    "evals:plan": "node scripts/dev/evals.mjs plan"
+    "evals:plan": "node scripts/dev/evals.mjs plan",
+    "evals:summary": "node scripts/dev/evals-summary.mjs"
   },
   "engines": {
     "node": ">=18.0.0"
