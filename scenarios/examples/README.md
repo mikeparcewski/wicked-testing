@@ -5,6 +5,7 @@ Each file demonstrates one test category with working, runnable commands.
 
 | File                                | Category  | Demonstrates                                         |
 |-------------------------------------|-----------|------------------------------------------------------|
+| `smoke-test-execution.md`           | api       | **Run first** — proves execution pipeline fires real commands (curl+python3 only) |
 | `api-health-check.md`               | api       | HTTP 200, JSON shape, hurl assertions                |
 | `login-with-bad-credentials.md`     | api       | Negative test — invalid creds → 401                  |
 | `browser-page-audit.md`             | browser   | Page load, interaction, JS errors                    |

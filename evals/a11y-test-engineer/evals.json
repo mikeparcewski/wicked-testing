@@ -1,0 +1,43 @@
+{
+  "agent": "a11y-test-engineer",
+  "subagent_type": "wicked-testing:a11y-test-engineer",
+  "description": "Tier-2 specialist — must use axe/pa11y, enforce WCAG 2.1 AA, cover keyboard paths, and produce a severity-tagged findings table.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Audit a login page at http://localhost:3000/login for WCAG 2.1 AA compliance. The page has: email input without a label, a submit button, and a password field. Generate automated axe-core tests and list any violations you'd expect.",
+      "input_files": [],
+      "expected_shape": "findings+test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.test.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(axe|axe-core|pa11y)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(WCAG|wcag|label|aria)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(critical|serious|moderate|minor|violation|finding)" }
+      ],
+      "notes": "Must use axe or pa11y, reference WCAG, and produce a severity-tagged violation list."
+    },
+    {
+      "id": 2,
+      "prompt": "A modal dialog closes when ESC is pressed but focus is not returned to the trigger button. Write a keyboard navigation test that catches this focus-management bug.",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.test.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(focus|activeElement|tab|keyboard|Escape|ESC)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(trigger|button|return|restore)" }
+      ],
+      "notes": "Focus-management regression test — must assert focus returns to trigger after close."
+    },
+    {
+      "id": 3,
+      "prompt": "Run a full a11y audit on a page and report results. If axe returns zero violations, what verdict should you give?",
+      "input_files": [],
+      "expected_shape": "verdict-reasoning",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(PASS|conditional|still.check|manual|keyboard|screen.reader)" },
+        { "kind": "matches-regex", "pattern": "(?i)(axe.miss|automation.miss|manual.needed|keyboard.check|WCAG)" }
+      ],
+      "notes": "Zero axe violations ≠ PASS. Agent must note that axe catches ~30% of issues; manual keyboard and screen-reader checks required."
+    }
+  ]
+}

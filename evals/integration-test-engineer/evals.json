@@ -1,0 +1,44 @@
+{
+  "agent": "integration-test-engineer",
+  "subagent_type": "wicked-testing:integration-test-engineer",
+  "description": "Tier-2 specialist — must produce real-dependency test code, reject mocks for the SUT, and cover error paths.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "I have a Node.js REST API that reads from a PostgreSQL database. The API has a GET /users endpoint. Generate integration tests that prove the endpoint returns real data from a real database. Use testcontainers or docker compose — no mocks.",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.test.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(testcontainer|docker.compose|docker-compose|startedcontainer|GenericContainer)" },
+        { "kind": "contains-text",     "text": "PostgreSQL",   "case_sensitive": false },
+        { "kind": "matches-regex",     "pattern": "(?i)(teardown|after(All|Each)|cleanup|stop\\()" }
+      ],
+      "notes": "Must use real deps, not mocks. Must include teardown."
+    },
+    {
+      "id": 2,
+      "prompt": "Our Node.js service publishes events to a Redis stream (XADD) and a separate consumer reads from it (XREAD). Write integration tests that prove the producer and consumer work together against a real Redis instance. The tests must start Redis via docker or testcontainers.",
+      "input_files": [],
+      "expected_shape": "test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.test.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(redis|XADD|XREAD|stream)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(testcontainer|docker|container)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(error|timeout|down|fail)" }
+      ],
+      "notes": "Producer+consumer wiring test. Must cover failure path (Redis down / timeout)."
+    },
+    {
+      "id": 3,
+      "prompt": "I want integration tests for my auth service but can we just use in-memory mocks for the database to keep things fast?",
+      "input_files": [],
+      "expected_shape": "refusal-or-redirect",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(unit.test|not.integration|mock.won'?t|in-memory.miss|real.depend|no.mock|avoid.mock|sqlite.in-memory.differ)" },
+        { "kind": "matches-regex", "pattern": "(?i)(testcontainer|docker|real.database|ephemeral)" }
+      ],
+      "notes": "Agent should explain why mocks undermine integration tests, then offer a real-dependency alternative."
+    }
+  ]
+}

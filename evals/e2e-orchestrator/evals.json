@@ -1,0 +1,43 @@
+{
+  "agent": "e2e-orchestrator",
+  "subagent_type": "wicked-testing:e2e-orchestrator",
+  "description": "Tier-2 specialist — must produce Playwright tests for full journeys, emit a journey diagram, seed via API not UI, and wire teardown.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Generate E2E tests for a checkout journey: (1) user searches for a product, (2) adds to cart, (3) fills shipping form, (4) places order, (5) order confirmation email sent. The journey spans a React frontend, a Node.js API, and a background email worker. Use Playwright.",
+      "input_files": [],
+      "expected_shape": "e2e-test-code+diagram",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.spec.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(playwright|page\\.goto|page\\.click|page\\.fill|test\\()" },
+        { "kind": "matches-regex",     "pattern": "(?i)(mermaid|journey|sequenceDiagram|-->|graph|flowchart|ASCII)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(teardown|after(All|Each)|cleanup|delete|reset)" }
+      ],
+      "notes": "Must use Playwright, include a journey diagram (ASCII or mermaid), and have teardown."
+    },
+    {
+      "id": 2,
+      "prompt": "Write a multi-user E2E test where User A sends a message and User B receives it in real-time (WebSocket chat). The test must open two browser contexts (two users) and coordinate between them.",
+      "input_files": [],
+      "expected_shape": "e2e-test-code",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/*.spec.*" },
+        { "kind": "matches-regex",     "pattern": "(?i)(browser.?context|newContext|newPage|two.page|page1|page2|userA|userB)" },
+        { "kind": "matches-regex",     "pattern": "(?i)(websocket|real.?time|receive|waitFor)" }
+      ],
+      "notes": "Multi-context test — must show two browser contexts coordinating."
+    },
+    {
+      "id": 3,
+      "prompt": "I need E2E tests for user registration. Should I seed the database via UI flows (navigating to admin panel and creating records) or via API calls?",
+      "input_files": [],
+      "expected_shape": "recommendation",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(API|api.call|seed.via.api|not.ui|avoid.ui.seed|brittle|fragile|slower)" },
+        { "kind": "matches-regex", "pattern": "(?i)(faster|reliable|deterministic|direct|bypass)" }
+      ],
+      "notes": "Agent must recommend API seeding over UI seeding and explain why."
+    }
+  ]
+}
