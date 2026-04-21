@@ -16,10 +16,10 @@ Verifies that a web page loads successfully, renders expected content, and respo
 ## Setup
 
 ```bash
-mkdir -p "${TMPDIR:-/tmp}/wicked-scenario-pw"
+mkdir -p "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw"
 
 # Create a local HTML fixture for deterministic testing
-cat > "${TMPDIR:-/tmp}/wicked-scenario-pw/index.html" << 'HTML_EOF'
+cat > "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw/index.html" << 'HTML_EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head><meta charset="utf-8"><title>Wicked Test Page</title></head>
@@ -34,12 +34,12 @@ HTML_EOF
 
 # Pick a free port (fall back to 8765 if python one-liner fails)
 SCEN_PORT=$(python3 -c "import socket; s=socket.socket(); s.bind(('',0)); print(s.getsockname()[1]); s.close()" 2>/dev/null || echo 8765)
-echo "$SCEN_PORT" > "${TMPDIR:-/tmp}/wicked-scenario-pw/port"
+echo "$SCEN_PORT" > "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw/port"
 
 # Start a local server in the background
-python3 -m http.server "$SCEN_PORT" --directory "${TMPDIR:-/tmp}/wicked-scenario-pw" &
+python3 -m http.server "$SCEN_PORT" --directory "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw" &
 SERVER_PID=$!
-echo "$SERVER_PID" > "${TMPDIR:-/tmp}/wicked-scenario-pw/server.pid"
+echo "$SERVER_PID" > "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw/server.pid"
 
 # Wait for the server to be ready (up to 5 seconds)
 for i in 1 2 3 4 5; do
@@ -57,7 +57,7 @@ if ! command -v agent-browser &>/dev/null; then
   echo "SKIP: agent-browser not installed — skipping step 1"
   exit 0
 fi
-SCEN_PORT=$(cat "${TMPDIR:-/tmp}/wicked-scenario-pw/port")
+SCEN_PORT=$(cat "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw/port")
 agent-browser open "http://localhost:${SCEN_PORT}/" --headless
 SNAPSHOT=$(agent-browser snapshot)
 echo "$SNAPSHOT"
@@ -86,14 +86,14 @@ echo "PASS: all expected content present in DOM"
 ### Step 3: Screenshot capture
 
 ```bash
-SCEN_PORT=$(cat "${TMPDIR:-/tmp}/wicked-scenario-pw/port")
+SCEN_PORT=$(cat "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw/port")
 if command -v playwright &>/dev/null; then
-  playwright screenshot "http://localhost:${SCEN_PORT}/" "${TMPDIR:-/tmp}/wicked-scenario-pw/screenshot.png" 2>&1
-  [ -f "${TMPDIR:-/tmp}/wicked-scenario-pw/screenshot.png" ] || { echo "FAIL: screenshot not created"; exit 1; }
+  playwright screenshot "http://localhost:${SCEN_PORT}/" "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw/screenshot.png" 2>&1
+  [ -f "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw/screenshot.png" ] || { echo "FAIL: screenshot not created"; exit 1; }
   echo "PASS: screenshot captured via playwright CLI"
 elif command -v agent-browser &>/dev/null; then
-  agent-browser screenshot "${TMPDIR:-/tmp}/wicked-scenario-pw/screenshot.png" 2>&1
-  [ -f "${TMPDIR:-/tmp}/wicked-scenario-pw/screenshot.png" ] || { echo "FAIL: screenshot not created"; exit 1; }
+  agent-browser screenshot "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw/screenshot.png" 2>&1
+  [ -f "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw/screenshot.png" ] || { echo "FAIL: screenshot not created"; exit 1; }
   echo "PASS: screenshot captured via agent-browser"
 else
   echo "SKIP: neither playwright nor agent-browser installed — skipping step 3"
@@ -122,8 +122,8 @@ echo "PASS: link click navigated to about section"
 
 ```bash
 # Stop the local server
-if [ -f "${TMPDIR:-/tmp}/wicked-scenario-pw/server.pid" ]; then
-  kill "$(cat "${TMPDIR:-/tmp}/wicked-scenario-pw/server.pid")" 2>/dev/null || true
+if [ -f "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw/server.pid" ]; then
+  kill "$(cat "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw/server.pid")" 2>/dev/null || true
 fi
-rm -rf "${TMPDIR:-/tmp}/wicked-scenario-pw"
+rm -rf "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-pw"
 ```

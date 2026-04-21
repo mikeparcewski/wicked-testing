@@ -68,10 +68,28 @@ Parse each `### Step N: description (cli-name)` section in order:
 1. Extract the fenced code block
 2. Identify the CLI from the step header parenthetical or code fence
 3. If CLI not available → record SKIPPED, continue
-4. Execute via Bash with timeout:
+4. Execute via Bash with timeout. Use a cross-platform tmp dir and a timeout
+   chain that degrades gracefully when neither `timeout` nor `gtimeout` is
+   on PATH (bare macOS, Windows Git Bash). A richer Node-based wrapper is
+   available in `lib/exec-with-timeout.mjs` when the caller can invoke Node
+   directly — prefer it over the shell chain when possible.
 
 ```bash
-timeout ${TIMEOUT:-120} bash -c '{step_command}' > /tmp/wt-step-${N}.stdout 2> /tmp/wt-step-${N}.stderr
+# Cross-platform tmp dir: TMPDIR (Unix), TEMP (Windows Git Bash), fallback /tmp
+WT_TMP="${TMPDIR:-${TEMP:-/tmp}}"
+
+# timeout → gtimeout (macOS coreutils) → bare (last resort; warn)
+if command -v timeout >/dev/null 2>&1; then
+  timeout "${TIMEOUT:-120}" bash -c '{step_command}' \
+    > "${WT_TMP}/wt-step-${N}.stdout" 2> "${WT_TMP}/wt-step-${N}.stderr"
+elif command -v gtimeout >/dev/null 2>&1; then
+  gtimeout "${TIMEOUT:-120}" bash -c '{step_command}' \
+    > "${WT_TMP}/wt-step-${N}.stdout" 2> "${WT_TMP}/wt-step-${N}.stderr"
+else
+  echo "warn: no timeout/gtimeout on PATH; running step without enforced timeout" >&2
+  bash -c '{step_command}' \
+    > "${WT_TMP}/wt-step-${N}.stdout" 2> "${WT_TMP}/wt-step-${N}.stderr"
+fi
 EXIT_CODE=$?
 ```
 
@@ -152,5 +170,5 @@ Evidence written to: {EVIDENCE_DIR}/evidence.json
 - **Sequential execution**: Run steps in order, don't parallelize
 - **Continue on failure**: Record FAIL but keep going to next step
 - **Setup/Cleanup always run**: Cleanup runs even if steps fail
-- **Respect timeouts**: Use `timeout` command for bash execution
+- **Respect timeouts**: Use the portable `timeout` / `gtimeout` / bare-fallback chain for bash execution, or `lib/exec-with-timeout.mjs` for Node-based callers
 - **Be honest**: Don't mark PASS if output indicates an error, even if exit code is 0

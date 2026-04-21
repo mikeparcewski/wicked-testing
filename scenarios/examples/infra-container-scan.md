@@ -28,7 +28,7 @@ if ! command -v trivy &>/dev/null; then
   echo "SKIP: trivy not installed. Run /wicked-testing:setup to install."
   exit 0
 fi
-trivy image --severity HIGH,CRITICAL --exit-code 0 --format json --output "${TMPDIR:-/tmp}/trivy-results.json" "${IMAGE}" && echo "Scan complete"
+trivy image --severity HIGH,CRITICAL --exit-code 0 --format json --output "${TMPDIR:-${TEMP:-/tmp}}/trivy-results.json" "${IMAGE}" && echo "Scan complete"
 ```
 
 **Expect**: Exit code 0, scan completes with JSON results
@@ -48,5 +48,5 @@ trivy image --severity CRITICAL --exit-code 1 "${IMAGE}"
 ## Cleanup
 
 ```bash
-rm -f "${TMPDIR:-/tmp}/trivy-results.json"
+rm -f "${TMPDIR:-${TEMP:-/tmp}}/trivy-results.json"
 ```

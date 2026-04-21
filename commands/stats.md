@@ -42,12 +42,18 @@ sqlite3 -json ".wicked-testing/wicked-testing.db" "
 "
 ```
 
-**JSON-only mode** — count files in each directory:
+**JSON-only mode** — count files in each directory via Python so the glob,
+stderr suppression, and line-count are all cross-platform (Windows Git Bash
+does not ship `wc`, and `ls ... 2>/dev/null` leaks on some shells):
+
 ```bash
-for dir in projects strategies scenarios runs verdicts tasks; do
-  count=$(ls .wicked-testing/$dir/*.json 2>/dev/null | wc -l)
-  echo "$dir: $count"
-done
+python3 -c "import pathlib; \
+  [print(f'{d}: {len(list(pathlib.Path(\".wicked-testing\",d).glob(\"*.json\")))}') \
+    for d in ['projects','strategies','scenarios','runs','verdicts','tasks']]" \
+  2>/dev/null \
+  || python -c "import pathlib; \
+  [print(f'{d}: {len(list(pathlib.Path(\".wicked-testing\",d).glob(\"*.json\")))}') \
+    for d in ['projects','strategies','scenarios','runs','verdicts','tasks']]"
 ```
 
 Annotate as `"mode": "json-only"` in the output.

@@ -89,8 +89,18 @@ For each `### Step N:` section in order:
 6. Determine result: exit code 0 → PASS, non-zero → FAIL, CLI missing → SKIPPED
 
 ```bash
-# Example step execution
-timeout ${TIMEOUT} bash -c '{step_command}' > step-${N}.stdout 2> step-${N}.stderr
+# Example step execution — portable timeout chain
+# Prefer `lib/exec-with-timeout.mjs` (Node wrapper) when available;
+# otherwise use the shell fallback below. GNU `timeout` is absent from stock
+# macOS and Windows Git Bash, so chain `timeout → gtimeout → bare`.
+if command -v timeout >/dev/null 2>&1; then
+  timeout "${TIMEOUT:-120}" bash -c '{step_command}' > "step-${N}.stdout" 2> "step-${N}.stderr"
+elif command -v gtimeout >/dev/null 2>&1; then
+  gtimeout "${TIMEOUT:-120}" bash -c '{step_command}' > "step-${N}.stdout" 2> "step-${N}.stderr"
+else
+  echo "warn: no timeout/gtimeout on PATH; running without enforced timeout" >&2
+  bash -c '{step_command}' > "step-${N}.stdout" 2> "step-${N}.stderr"
+fi
 EXIT_CODE=$?
 ```
 

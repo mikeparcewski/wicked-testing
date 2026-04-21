@@ -171,14 +171,18 @@ If wicked-bus is installed on PATH, emit progress events so downstream tools
 (wicked-garden crew gates, dashboards) can react in real time:
 
 ```bash
-# After each step completes
-wicked-bus emit --type wicked.testrun.step --domain wicked-testing \
-  --payload "{\"run_id\":\"${RUN_ID}\",\"step\":\"STEP-${N}\",\"status\":\"captured\"}" \
-  2>/dev/null || true
+# After each step completes — fire-and-forget via Python wrapper so the
+# stderr silence works on both POSIX shells and Windows Git Bash. A plain
+# `2>/dev/null || true` is Unix-only; native PowerShell drops the redirect
+# and the emit's stderr would leak into the transcript.
+python3 -c "import subprocess,sys; subprocess.run(['wicked-bus','emit','--type','wicked.testrun.step','--domain','wicked-testing','--payload','{\"run_id\":\"'+sys.argv[1]+'\",\"step\":\"STEP-'+sys.argv[2]+'\",\"status\":\"captured\"}'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)" "${RUN_ID}" "${N}" \
+  2>/dev/null \
+  || python -c "import subprocess,sys; subprocess.run(['wicked-bus','emit','--type','wicked.testrun.step','--domain','wicked-testing','--payload','{\"run_id\":\"'+sys.argv[1]+'\",\"step\":\"STEP-'+sys.argv[2]+'\",\"status\":\"captured\"}'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)" "${RUN_ID}" "${N}" \
+  || true
 ```
 
-Always use `|| true` — bus emissions are fire-and-forget. If the bus is absent
-or the emit fails, execution continues. Events are a side signal, not a gate.
+Bus emissions are fire-and-forget. If the bus is absent or the emit fails,
+execution continues. Events are a side signal, not a gate.
 
 ## Optional: Brain Lookup for Known Environment Quirks
 
@@ -186,10 +190,20 @@ If wicked-brain is present, you can query for environment-specific notes before
 executing a step (e.g., "docker compose v1 vs v2 flag differences"):
 
 ```bash
-curl -s -X POST http://localhost:${WICKED_BRAIN_PORT:-4101}/api \
-  -H "Content-Type: application/json" \
-  -d "{\"action\":\"search\",\"params\":{\"query\":\"<tool-name> <env>\",\"limit\":3}}" \
-  2>/dev/null
+# Use Python's urllib so the HTTP call is cross-platform and stderr silencing
+# works even where `2>/dev/null` does not (native PowerShell).
+python3 -c "import json,urllib.request,os; \
+  req=urllib.request.Request('http://localhost:'+os.environ.get('WICKED_BRAIN_PORT','4101')+'/api', \
+    data=json.dumps({'action':'search','params':{'query':'<tool-name> <env>','limit':3}}).encode(), \
+    headers={'Content-Type':'application/json'}); \
+  print(urllib.request.urlopen(req,timeout=2).read().decode())" \
+  2>/dev/null \
+  || python -c "import json,urllib.request,os; \
+  req=urllib.request.Request('http://localhost:'+os.environ.get('WICKED_BRAIN_PORT','4101')+'/api', \
+    data=json.dumps({'action':'search','params':{'query':'<tool-name> <env>','limit':3}}).encode(), \
+    headers={'Content-Type':'application/json'}); \
+  print(urllib.request.urlopen(req,timeout=2).read().decode())" \
+  || true
 ```
 
 Brain responses inform **how** you execute (e.g., use `docker compose` not
