@@ -6,7 +6,14 @@ description: |
   code structure, identifies test-coverage gaps, and flags risky areas.
 
   Use when: static analysis, code-quality metrics, testability assessment,
-  maintainability review, coverage-gap identification.
+  maintainability review, coverage-gap identification. Runs on arbitrary
+  source code, anytime — does not require a spec or an active build phase.
+
+  NOT THIS WHEN:
+  - Reviewing acceptance criteria for SMART+T (pre-code, no implementation yet) — use `requirements-quality-analyst`
+  - Judging whether the implementation matches a spec (post-code divergence detection) — use `semantic-reviewer`
+  - Live coaching during an active build phase (non-blocking, advisory-only) — use `continuous-quality-monitor`
+  - Rendering a full acceptance verdict (writer + reviewer + executor pipeline) — use `/wicked-testing:acceptance`
 model: sonnet
 effort: medium
 max-turns: 10
