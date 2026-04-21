@@ -1,11 +1,15 @@
 ---
-description: Generate a test strategy for a feature or codebase — dispatches test-strategist agent
+description: Generate a test strategy — dispatches the plan skill's 4-way router (strategist / risk / testability / AC-quality)
 argument-hint: "[target] [--project <name>] [--json]"
 ---
 
 # /wicked-testing:plan
 
-Generate a shift-left test strategy. Analyzes your code or feature description and produces comprehensive scenario pairs (positive + negative) with coverage analysis.
+Generate a shift-left test strategy. Routes through the `wicked-testing:plan`
+skill's 4-way dispatch (strategist / risk-assessor / testability-reviewer /
+requirements-quality-analyst) based on what the target looks like — so ACs
+get AC-quality review, designs get testability review, features get strategy,
+etc.
 
 ## Usage
 
@@ -22,54 +26,43 @@ Generate a shift-left test strategy. Analyzes your code or feature description a
 ### 1. Check Config
 
 Verify `.wicked-testing/config.json` exists. If not:
+
 ```
 Config not found. Run /wicked-testing:setup first.
 Code: ERR_NO_CONFIG
 ```
 
-### 2. Dispatch test-strategist
+### 2. Invoke the `wicked-testing:plan` skill
 
-Invoke the `test-strategist` agent with the target context:
+The skill reads the target and routes to the correct planning agent (see
+[`skills/plan/SKILL.md`](../skills/plan/SKILL.md)):
 
-```
-Task(
-  subagent_type="wicked-testing:test-strategist",
-  prompt="""Generate a comprehensive test strategy.
+- Acceptance criteria / clarify doc → `requirements-quality-analyst`
+- Design doc / architecture sketch → `testability-reviewer`
+- Feature description / user story → `test-strategist`
+- Known-risky change (security, data, perf) → `risk-assessor`
+- "Test everything" / broad review → all four in parallel
 
-## Target
-{target or current directory}
+Invoking the skill lets its dispatch logic run. Calling `test-strategist`
+directly would bypass the 4-way router (wave-6 audit fix #63).
 
-## Instructions
-1. Classify the change type (UI, API, both, data, config)
-2. Analyze the surface area (all public APIs, functions, endpoints)
-3. Generate positive + negative scenario pairs for every feature
-4. Identify risk areas and confidence level
-5. Return findings in the standard test-strategist format.
+### 3. Strategy record
 
-**MANDATORY**: Every scenario must have BOTH positive AND negative counterpart.
-"""
-)
-```
-
-### 3. Write Strategy to DomainStore
-
-After the agent returns findings, write the strategy record:
-
-```javascript
-// Agent writes via DomainStore — all writes go through the store
-store.create('strategies', {
-  project_id: projectId,
-  name: strategyName,
-  body: strategyMarkdown
-});
-```
+The strategy is written to DomainStore by the dispatched agent via
+`store.create('strategies', {...})`, which also fires
+`wicked.teststrategy.authored` on the bus when present.
 
 ### 4. Output
 
-Without `--json` — Return the strategy document from the agent.
+Without `--json` — return the strategy document from the dispatched agent.
 
-With `--json` — Emit the JSON envelope:
+With `--json` — emit the JSON envelope:
 
 ```bash
-python3 -c "import json,sys; sys.stdout.write(json.dumps({'ok': True, 'data': {'strategy_id': '...', 'scenario_count': N, 'project': '...'}, 'meta': {'command': 'wicked-testing:plan', 'duration_ms': 0, 'schema_version': 1, 'store_mode': '...'}}))" 2>/dev/null || python -c "..."
+python3 -c "import json,sys; sys.stdout.write(json.dumps({'ok': True, 'data': {'strategy_id': '...', 'scenario_count': N, 'project': '...'}, 'meta': {'command': 'wicked-testing:plan', 'duration_ms': 0, 'schema_version': 1, 'store_mode': '...'}}))" 2>/dev/null || python -c "import json,sys; sys.stdout.write(json.dumps({'ok': True, 'data': {'strategy_id': '...', 'scenario_count': N, 'project': '...'}, 'meta': {'command': 'wicked-testing:plan', 'duration_ms': 0, 'schema_version': 1, 'store_mode': '...'}}))"
 ```
+
+## References
+
+- [Plan skill](../skills/plan/SKILL.md) — dispatch logic + Tier-2 routing
+- [Integration contract](../docs/INTEGRATION.md)

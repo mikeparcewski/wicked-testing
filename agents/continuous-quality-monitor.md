@@ -7,7 +7,13 @@ description: |
   without blocking flow.
 
   Use when: active build phase, quality signals, lint/static analysis,
-  coverage gaps, TDD coaching.
+  coverage gaps, TDD coaching. Runs alongside active work — never blocks,
+  never gates, advisory-only.
+
+  NOT THIS WHEN:
+  - One-shot static review of existing code (not during an active build) — use `code-analyzer`
+  - Post-implementation spec-vs-code divergence check — use `semantic-reviewer`
+  - Rendering a full acceptance verdict or gating a phase — use `/wicked-testing:acceptance` (this agent explicitly does not gate)
 model: sonnet
 effort: low
 max-turns: 8

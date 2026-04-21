@@ -8,6 +8,12 @@ description: |
 
   Use when: clarify-phase AC review, requirements-quality gate, SMART checks.
   Runs at the clarify gate — after ACs are drafted, before design begins.
+  Pre-code only; no implementation is expected to exist yet.
+
+  NOT THIS WHEN:
+  - Post-implementation: checking whether code actually satisfies the ACs (spec-vs-code divergence) — use `semantic-reviewer`
+  - Reviewing code structure, complexity, or testability signals — use `code-analyzer`
+  - Rendering a full acceptance verdict against a running implementation — use `/wicked-testing:acceptance`
 model: sonnet
 effort: low
 max-turns: 8

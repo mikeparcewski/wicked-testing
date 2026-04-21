@@ -7,7 +7,14 @@ description: |
   coverage, and fixtures.
 
   Use when: test generation, automated tests, test code, test infrastructure,
-  CI testing, coverage configuration.
+  CI testing, coverage configuration. Generalist — detects framework and
+  writes tests at any layer.
+
+  NOT THIS WHEN:
+  - Authoring UI / component-level tests (React/Vue/Svelte component rendering, props, events) — use `specialists/ui-component-test-engineer`
+  - Authoring cross-module integration tests (DB, message bus, service-to-service contracts) — use `specialists/integration-test-engineer`
+  - Orchestrating browser-driven end-to-end flows (Playwright/Cypress user journeys, multi-page scenarios) — use `specialists/e2e-orchestrator`
+  - Producing the scenarios themselves (not the code) — use `test-strategist` or `test-designer`
 model: sonnet
 effort: medium
 max-turns: 12
