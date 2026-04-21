@@ -1,0 +1,41 @@
+{
+  "agent": "test-impact-analyzer",
+  "subagent_type": "wicked-testing:test-impact-analyzer",
+  "description": "Tier-2 specialist — ranks scenarios by probability of catching a regression in a given diff. Advisory (never renders a verdict); emits a tasks row with the ranked list.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "A PR modified lib/domain-store.mjs and lib/oracle-queries.mjs. The ledger has 12 active scenarios; 4 of them have coverage history touching those two files. Rank the scenarios by impact × exposure. Return the top 40 (or fewer if the scenario count is smaller) with explicit reasons per rank.",
+      "input_files": [],
+      "expected_shape": "ranking",
+      "assertions": [
+        { "kind": "contains-text", "text": "impact-ranking.json" },
+        { "kind": "matches-regex", "pattern": "(?i)(direct[_-]overlap|call[_-]graph|path[_-]prefix)" },
+        { "kind": "not-contains-text", "values": ["PASS", "FAIL"], "case_sensitive": true }
+      ],
+      "notes": "Happy path — ranking emitted with reason field; no verdict rendered (TIA is advisory). #48."
+    },
+    {
+      "id": 2,
+      "prompt": "No scenarios exist in the ledger yet. The diff touches 3 files. Compute test impact.",
+      "input_files": [],
+      "expected_shape": "refusal",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(ERR_NO_SCENARIOS|no.*active.*scenario|author.*scenario)" },
+        { "kind": "not-contains-text", "values": ["ranking", "top 40"], "case_sensitive": false }
+      ],
+      "notes": "Edge case — empty ledger. Agent must refuse with remediation, not fabricate a ranking."
+    },
+    {
+      "id": 3,
+      "prompt": "Compute test impact for the diff against main. None of the active scenarios have coverage history — they were all authored yesterday and have never run. 5 files changed in the diff.",
+      "input_files": [],
+      "expected_shape": "degraded-ranking",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(path[_-]prefix|confidence:\\s*low|degraded|stale coverage)" },
+        { "kind": "contains-text", "text": "impact-ranking.json" }
+      ],
+      "notes": "Degraded mode — coverage history missing but path-prefix similarity still produces a usable ranking with confidence:low."
+    }
+  ]
+}

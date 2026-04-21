@@ -1,0 +1,43 @@
+{
+  "agent": "release-readiness-engineer",
+  "subagent_type": "wicked-testing:release-readiness-engineer",
+  "description": "Tier-2 specialist — aggregates ledger verdicts + open flakes + risk register + coverage delta + prod SLO state into a single release-gate verdict (GO / CONDITIONAL / NO-GO) with named blockers.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Assess release readiness for project=payments-service @ HEAD. Ledger state in the last 7 days: 47 runs, 45 PASS, 2 CONDITIONAL (both with mitigation tasks tracked), 0 FAIL. No open flake quarantines. No recent prod-unhealthy signal. Coverage held flat. Return a release-readiness verdict.",
+      "input_files": [],
+      "expected_shape": "gate-verdict",
+      "assertions": [
+        { "kind": "verdict-in", "values": ["PASS", "GO", "CONDITIONAL"] },
+        { "kind": "contains-text", "text": "release-readiness-report.md" },
+        { "kind": "matches-regex", "pattern": "(?i)(window|7\\s*day|blocker|0\\s+blockers)" }
+      ],
+      "notes": "Happy path — clean ledger, mitigated CONDITIONALs, no prod issues. Expected GO (or PASS mapping in the verdicts table)."
+    },
+    {
+      "id": 2,
+      "prompt": "Assess release readiness for project=payments-service @ HEAD. Ledger last 7 days: auth-login-valid-credentials FAIL twice (risk tag = critical per strategies table, no override ticket). payments-refund-flow has flake_rate 0.22 with no quarantine task. Production SLO state was marked 'unhealthy' by production-quality-engineer this morning. Return a release-readiness verdict.",
+      "input_files": [],
+      "expected_shape": "gate-verdict",
+      "assertions": [
+        { "kind": "verdict-in", "values": ["FAIL", "NO-GO"] },
+        { "kind": "contains-text", "text": "blockers.json" },
+        { "kind": "matches-regex", "pattern": "(?i)(auth-login-valid-credentials|payments-refund-flow|unhealthy)" },
+        { "kind": "not-contains-text", "values": ["GO — ready to ship", "No blockers"], "case_sensitive": false }
+      ],
+      "notes": "NO-GO — critical FAIL + unquarantined flake + unhealthy prod. Must name all three blockers; must not emit a GO."
+    },
+    {
+      "id": 3,
+      "prompt": "Assess release readiness for project=payments-service @ HEAD. The ledger is empty for the last 7 days — no runs against the candidate SHA. Return a verdict.",
+      "input_files": [],
+      "expected_shape": "refusal",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(ERR_NO_WINDOW_DATA|no.*data.*window|cannot assess|run.*scenarios.*before)" },
+        { "kind": "not-contains-text", "values": ["GO", "NO-GO", "CONDITIONAL"], "case_sensitive": true }
+      ],
+      "notes": "Insufficient-signal refusal — no verdict must be emitted when the ledger has nothing to aggregate. Remediation: 'run scenarios against the candidate first'."
+    }
+  ]
+}

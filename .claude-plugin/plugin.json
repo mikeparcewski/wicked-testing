@@ -177,8 +177,16 @@
       "path": "agents/specialists/observability-test-engineer.md"
     },
     {
+      "name": "release-readiness-engineer",
+      "path": "agents/specialists/release-readiness-engineer.md"
+    },
+    {
       "name": "test-data-manager",
       "path": "agents/specialists/test-data-manager.md"
+    },
+    {
+      "name": "test-impact-analyzer",
+      "path": "agents/specialists/test-impact-analyzer.md"
     },
     {
       "name": "ui-component-test-engineer",
