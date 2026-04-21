@@ -84,8 +84,13 @@ summary:
 | Component run (RTL + user-event)                       | `wicked-testing:ui-component-test-engineer` |
 | Integration run (real services via testcontainers)    | `wicked-testing:integration-test-engineer`  |
 | Fuzz / property run (Hypothesis / fast-check / AFL++)  | `wicked-testing:fuzz-property-engineer`     |
+| Security run (SAST scan / DAST scan / secrets check)   | `wicked-testing:security-test-engineer`     |
+| AI-feature test (prompt-injection / eval harness)      | `wicked-testing:ai-feature-test-engineer`   |
+| IaC validation run (terraform validate / opa / checkov)| `wicked-testing:iac-test-engineer`          |
+| Compliance evidence collection (SOC2 / HIPAA controls) | `wicked-testing:compliance-test-engineer`   |
+| Selective-execution — "which tests for this diff"      | `wicked-testing:test-impact-analyzer`       |
 
-Chaos / load specialists MUST respect the scenario's `trust_level` frontmatter
+Chaos / load / security-DAST specialists MUST respect the scenario's `trust_level` frontmatter
 field. Production-impacting runs require `trust_level: production-authorized`
 AND a `change-ticket:` reference; otherwise the specialist refuses and records
 SKIP with reason `trust-level-insufficient`.

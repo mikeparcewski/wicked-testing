@@ -7,7 +7,7 @@
                                                                  |___/ 
 ```
 
-**32 specialist agents. 5 coordinating skills. A 3-agent acceptance pipeline that eliminates self-grading.**
+**41 specialist agents. 5 coordinating skills. A 3-agent acceptance pipeline that eliminates self-grading.**
 
 ```bash
 npx wicked-testing install
@@ -77,7 +77,7 @@ The 16 Tier-1 agents form the stable integration surface. wicked-garden and othe
 
 ### Tier-2 Specialist Agents — Internal
 
-16 domain specialists routed by the Tier-1 skills. Never break downstream consumers because they are not part of the public contract.
+25 domain specialists routed by the Tier-1 skills. Never break downstream consumers because they are not part of the public contract.
 
 | Specialist | Domain |
 |-----------|--------|
@@ -97,6 +97,15 @@ The 16 Tier-1 agents form the stable integration surface. wicked-garden and othe
 | `test-data-manager` | factory_boy / fishery factories, referential consistency, PII-scrubbed snapshots |
 | `exploratory-tester` | Charter-driven sessions, SFDIPOT heuristics, ranked findings, follow-up charters |
 | `coverage-archaeologist` | lcov + git-blame-age + call-graph ranked by impact × exposure — top-N not 500 |
+| `security-test-engineer` | SAST/DAST/secrets + authz/authn (JWT, IDOR, CSRF) — OWASP ASVS traceability |
+| `ai-feature-test-engineer` | Prompt-injection library, hallucination drift, output-drift, judge ≠ SUT isolation |
+| `test-impact-analyzer` | `git diff` + call-graph + ledger coverage → ranked "which tests for this diff" |
+| `release-readiness-engineer` | Aggregates verdicts / flakes / risk / coverage / prod-SLO → GO/CONDITIONAL/NO-GO |
+| `iac-test-engineer` | terraform/checkov/tflint/opa/kyverno/helm — plan-not-clean as verdict signal |
+| `compliance-test-engineer` | SOC2/HIPAA/GDPR/PCI control mapping → auditor-ready control-evidence + coverage CSV |
+| `snapshot-hygiene-auditor` | Rot / over-broad / rubber-stamp / dead detection across .snap/.golden/cassettes |
+| `test-code-quality-auditor` | Test-code smells (assertion-free, tautological, hardcoded sleeps, shared-state) |
+| `incident-to-scenario-synthesizer` | Stack trace → new scenario with incident-linkage + pending-review task |
 
 ---
 

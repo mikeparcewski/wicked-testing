@@ -83,6 +83,13 @@ risk+scenario coverage where the generalist agents would miss signal:
 | Service with logs / metrics / traces / PII-in-signals    | `wicked-testing:observability-test-engineer` |
 | Test-suite effectiveness evaluation (kill rate)          | `wicked-testing:mutation-test-engineer`     |
 | Failure-mode / resilience planning                       | `wicked-testing:chaos-test-engineer`        |
+| Application-security scope (SAST/DAST/authz)             | `wicked-testing:security-test-engineer`     |
+| LLM / AI feature in the codebase                         | `wicked-testing:ai-feature-test-engineer`   |
+| Terraform / helm / k8s / IaC / policy-as-code            | `wicked-testing:iac-test-engineer`          |
+| Regulated industry (SOC2 / HIPAA / GDPR / PCI)           | `wicked-testing:compliance-test-engineer`   |
+| Test suite with snapshots (jest / syrupy / cassettes)    | `wicked-testing:snapshot-hygiene-auditor`   |
+| Test-suite quality itself (smells, dead tests)           | `wicked-testing:test-code-quality-auditor`  |
+| Prod incident -> regression scenario synthesis           | `wicked-testing:incident-to-scenario-synthesizer` |
 
 Tier-2 names are internal — see [docs/NAMESPACE.md](../../docs/NAMESPACE.md).
 Consumers (wicked-garden) depend only on Tier-1 names.

@@ -80,6 +80,9 @@ questions have a specialist answer:
 | Post-deploy quality, canary read                         | `wicked-testing:production-quality-engineer` |
 | Observability assertion audit (trace/log/metric coverage)| `wicked-testing:observability-test-engineer` |
 | Contract drift report (historical / consumer-side)       | `wicked-testing:contract-testing-engineer`  |
+| "Most impactful tests for HEAD" / TIA lookup             | `wicked-testing:test-impact-analyzer`       |
+| "Should we ship v2.4.0?" / release readiness             | `wicked-testing:release-readiness-engineer` |
+| "Any incident without a regression scenario yet?"        | `wicked-testing:incident-to-scenario-synthesizer` |
 
 ## Oracle safety
 

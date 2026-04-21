@@ -129,8 +129,16 @@
       "path": "agents/specialists/a11y-test-engineer.md"
     },
     {
+      "name": "ai-feature-test-engineer",
+      "path": "agents/specialists/ai-feature-test-engineer.md"
+    },
+    {
       "name": "chaos-test-engineer",
       "path": "agents/specialists/chaos-test-engineer.md"
+    },
+    {
+      "name": "compliance-test-engineer",
+      "path": "agents/specialists/compliance-test-engineer.md"
     },
     {
       "name": "coverage-archaeologist",
@@ -157,6 +165,14 @@
       "path": "agents/specialists/fuzz-property-engineer.md"
     },
     {
+      "name": "iac-test-engineer",
+      "path": "agents/specialists/iac-test-engineer.md"
+    },
+    {
+      "name": "incident-to-scenario-synthesizer",
+      "path": "agents/specialists/incident-to-scenario-synthesizer.md"
+    },
+    {
       "name": "integration-test-engineer",
       "path": "agents/specialists/integration-test-engineer.md"
     },
@@ -179,6 +195,18 @@
     {
       "name": "release-readiness-engineer",
       "path": "agents/specialists/release-readiness-engineer.md"
+    },
+    {
+      "name": "security-test-engineer",
+      "path": "agents/specialists/security-test-engineer.md"
+    },
+    {
+      "name": "snapshot-hygiene-auditor",
+      "path": "agents/specialists/snapshot-hygiene-auditor.md"
+    },
+    {
+      "name": "test-code-quality-auditor",
+      "path": "agents/specialists/test-code-quality-auditor.md"
     },
     {
       "name": "test-data-manager",
@@ -212,6 +240,11 @@
       "name": "automate",
       "path": "commands/automate.md",
       "slash": "/wicked-testing:automate"
+    },
+    {
+      "name": "ci-bootstrap",
+      "path": "commands/ci-bootstrap.md",
+      "slash": "/wicked-testing:ci-bootstrap"
     },
     {
       "name": "execution",

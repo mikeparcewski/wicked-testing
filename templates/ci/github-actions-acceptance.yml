@@ -1,0 +1,114 @@
+# wicked-testing acceptance pipeline on every PR.
+#
+# Emitted by /wicked-testing:ci-bootstrap. Idempotent marker below —
+# re-running the bootstrap overwrites this file only if the marker is
+# present. See docs/CI.md for the full integration guide (exit codes,
+# secrets, artifact retention, PR-comment generator).
+#
+# wicked-testing:ci-bootstrap:managed
+# -----------------------------------
+# Do not remove the marker line above. Remove it if you want to fork
+# this workflow and prevent the bootstrap command from overwriting it.
+
+name: wicked-testing acceptance
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  acceptance:
+    name: acceptance (${{ matrix.os }} / node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        node: [18, 20]
+    env:
+      # ANTHROPIC_API_KEY is required for the Claude invocation that
+      # powers the 3-agent pipeline (Writer / Executor / Reviewer).
+      # Configure under repo Settings → Secrets and variables → Actions.
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # Headless / non-interactive mode for every wicked-testing command.
+      WICKED_TESTING_CI: '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Guard — ANTHROPIC_API_KEY must be set
+        run: |
+          if [ -z "${ANTHROPIC_API_KEY}" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not configured. See docs/CI.md."
+            exit 3
+          fi
+
+      # The published package exposes a `wicked-testing` bin that
+      # copies skills / agents / commands into the project's
+      # `.claude/` directory. `npx` is the supported install path.
+      - name: Install wicked-testing
+        run: npx --yes wicked-testing install
+
+      - name: Run npm test (structural validator)
+        run: npm test
+
+      - name: Run /wicked-testing:acceptance (headless JSON)
+        id: acceptance
+        # Dispatches the 3-agent pipeline — equivalent of the slash
+        # command. `--json` suppresses interactive prompts and emits
+        # the canonical envelope. Output is teed to a per-step log
+        # so the PR-comment generator can read it.
+        run: |
+          set -o pipefail
+          mkdir -p .wicked-testing/logs
+          node install.mjs status --json > .wicked-testing/logs/status.json
+          # Replace with your scenario-of-record or the default fixture.
+          SCENARIO="${WICKED_TESTING_SCENARIO:-scenarios/examples/smoke.md}"
+          if [ ! -f "${SCENARIO}" ]; then
+            echo "::warning::Scenario ${SCENARIO} not found — skipping acceptance run."
+            echo "verdict=SKIP" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          npx --yes wicked-testing acceptance "${SCENARIO}" --json \
+            | tee .wicked-testing/logs/acceptance.json
+          # Parse verdict for the step output.
+          python3 -c "
+          import json, sys, pathlib
+          doc = json.loads(pathlib.Path('.wicked-testing/logs/acceptance.json').read_text())
+          sys.stdout.write('verdict=' + doc.get('data', {}).get('verdict', 'INCONCLUSIVE') + '\n')
+          " >> "$GITHUB_OUTPUT"
+
+      - name: Upload evidence manifest
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wicked-testing-evidence-${{ matrix.os }}-node${{ matrix.node }}
+          path: |
+            .wicked-testing/evidence/**/manifest.json
+            .wicked-testing/evidence/**/artifacts/**
+            .wicked-testing/logs/**
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Post PR comment summary
+        if: github.event_name == 'pull_request' && always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # See docs/CI.md → "PR-comment summary" for the generator source.
+          # It reads the manifest.json + acceptance log and prints markdown
+          # to stdout; we redirect to a file and pipe it through `gh`.
+          python3 scripts/ci/manifest-to-comment.py \
+            --manifest-glob '.wicked-testing/evidence/*/manifest.json' \
+            --log .wicked-testing/logs/acceptance.json \
+            > .wicked-testing/logs/pr-comment.md 2>/dev/null \
+            || echo '_(wicked-testing: no manifest produced for this run)_' > .wicked-testing/logs/pr-comment.md
+          gh pr comment "${{ github.event.pull_request.number }}" \
+            --body-file .wicked-testing/logs/pr-comment.md \
+            || echo "::warning::Could not post PR comment (permissions?)"
