@@ -1,0 +1,25 @@
+{
+  "agent": "wicked-testing:test-runner",
+  "subagent_type": "skill:wicked-testing:test-runner",
+  "description": "Skill-level: /wicked-testing:run executes scenario files via scenario-executor. For suite-level runs with --suite, the skill falls back to the project's native runner (pytest / jest / etc.) rather than a wicked-testing subagent.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run /wicked-testing:run scenarios/examples/api-health-check.md. The skill must dispatch scenario-executor to read the scenario, execute its steps, and capture evidence under .wicked-testing/evidence/<run-id>/.",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:scenario-executor" }
+      ],
+      "notes": "Confirms scenario file + 'run' → scenario-executor dispatch."
+    },
+    {
+      "id": 2,
+      "prompt": "Run /wicked-testing:run --suite against a repo that has a jest.config.js or pyproject.toml. The skill detects the project's native runner and shells out to it (pytest / jest / vitest / etc.). Output must name the detected framework.",
+      "expected_shape": "native-runner",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(pytest|jest|vitest|go test|mocha|playwright)" }
+      ],
+      "notes": "Suite-level run: project's native runner, not a wicked-testing subagent dispatch. The skill detects the framework and invokes it directly."
+    }
+  ]
+}
