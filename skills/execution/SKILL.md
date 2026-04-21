@@ -23,13 +23,19 @@ writes the ledger entry. Evidence lives under
 
 ## How it dispatches
 
-| Input                                            | Dispatch                                    |
-|--------------------------------------------------|---------------------------------------------|
-| A scenario file                                  | `wicked-testing:scenario-executor`          |
-| Scenario + "give me a verdict"                   | `wicked-testing:test-designer` (full loop)  |
-| Pre-written plan, "just execute"                 | `wicked-testing:acceptance-test-executor`   |
-| "run the suite" (no scenario)                    | Project's native runner; record result      |
-| Contract verification                            | `wicked-testing:contract-testing-engineer`  |
+| Input                                                    | Dispatch                                                                                                 |
+|----------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
+| A scenario file                                          | `wicked-testing:scenario-executor`                                                                       |
+| Scenario + "give me a verdict" (acceptance-grade)        | Route to `/wicked-testing:acceptance` — the 3-agent isolated pipeline (writer → executor → reviewer).    |
+| Scenario + "give me a verdict" (dev-loop, explicit)      | `wicked-testing:test-designer` ONLY if the caller explicitly asks for the fast-path / self-graded loop.  |
+| Pre-written plan, "just execute"                         | `wicked-testing:acceptance-test-executor`                                                                |
+| "run the suite" (no scenario)                            | Project's native runner; record result                                                                   |
+| Contract verification                                    | `wicked-testing:contract-testing-engineer`                                                               |
+
+**Default posture:** verdict requests go to the 3-agent pipeline. `test-designer`
+is the dev-loop fast path with known self-grading risk; it is never the default
+and never used for audit / CI / crew-phase sign-off evidence. See the warning
+in `agents/test-designer.md`.
 
 Tier-2 specialists by category (browser, load, a11y, visual) are invoked by
 the scenario-executor based on scenario `category`.
