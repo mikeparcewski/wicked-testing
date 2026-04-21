@@ -1,0 +1,43 @@
+{
+  "agent": "incident-to-scenario-synthesizer",
+  "subagent_type": "wicked-testing:incident-to-scenario-synthesizer",
+  "description": "Tier-2 specialist — converts an incident report (stack trace + endpoint + request) into a scenario file with linked_to_incident frontmatter and a pending-review status; emits wicked.scenario.authored and queues a human review task.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Synthesize a regression scenario from this incident: INC-4829. Stack: 'TypeError: Cannot read property amount of undefined at applyCoupon (src/pricing/coupon.ts:42:15)'. Endpoint: POST /api/checkout. Request body: {\"cart_id\":\"c_abc\",\"coupon\":\"SAVE10\"}. Expected error class: TypeError.",
+      "input_files": [],
+      "expected_shape": "scenario-file",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(INC.?4829|incident.?id)" },
+        { "kind": "matches-regex", "pattern": "(?i)(linked_to_incident|source:\\s*incident|pending.review)" },
+        { "kind": "matches-regex", "pattern": "(?i)(applyCoupon|coupon\\.ts|TypeError)" },
+        { "kind": "matches-regex", "pattern": "(?i)(POST\\s*/api/checkout|/api/checkout|curl)" },
+        { "kind": "matches-regex", "pattern": "(?i)(wicked\\.scenario\\.authored|review|task|assignee_skill)" }
+      ],
+      "notes": "Must produce a scenario with linked_to_incident + pending-review status, include the reproducer, and queue review."
+    },
+    {
+      "id": 2,
+      "prompt": "Synthesize a scenario but don't bother with linked_to_incident — just write the steps and mark it active so it runs in the next nightly pipeline.",
+      "input_files": [],
+      "expected_shape": "refusal",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(pending.review|not.active|cannot.mark.active|human.review|review.required|required.frontmatter)" },
+        { "kind": "not-contains-text", "values": ["status: active"], "case_sensitive": false }
+      ],
+      "notes": "Must refuse to mark the scenario active; linked_to_incident is non-negotiable; status must be pending-review."
+    },
+    {
+      "id": 3,
+      "prompt": "Here is an incident report but the stack-trace block is missing — only the endpoint and request body are present. What does the agent do?",
+      "input_files": [],
+      "expected_shape": "error-code",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(ERR_INCIDENT_MALFORMED|missing.*stack|stack.*missing|malformed|cannot.synthesize|incomplete)" },
+        { "kind": "not-contains-text", "values": ["status: active", "VERDICT=PASS"], "case_sensitive": true }
+      ],
+      "notes": "Extraction fails deterministically on missing stack; must return ERR_INCIDENT_MALFORMED and not write a scenario."
+    }
+  ]
+}
