@@ -98,6 +98,20 @@ function walk(dir) {
   return out;
 }
 
+// Shared regex parser — honors an inline `(?flags)` prefix the way the old
+// matches-regex branch did, so contains_regex (produces-artifact) and
+// matches-regex stay consistent. Returns a compiled RegExp or throws.
+function compileRegex(pattern, explicitFlags = "") {
+  let src = pattern;
+  let flags = explicitFlags;
+  const inline = src.match(/^\(\?([a-z]+)\)/);
+  if (inline) {
+    flags = (flags + inline[1]).split("").filter((v, i, s) => s.indexOf(v) === i).join("");
+    src = src.slice(inline[0].length);
+  }
+  return new RegExp(src, flags);
+}
+
 function checkAssertion(a, ctx) {
   switch (a.kind) {
     case "produces-artifact": {
@@ -117,16 +131,14 @@ function checkAssertion(a, ctx) {
         }
       }
       if (a.contains_regex) {
-        try {
-          const re = new RegExp(a.contains_regex, a.contains_flags || "");
-          const missing = matched.filter(f => {
-            try { return !re.test(readFileSync(f, "utf8")); } catch { return true; }
-          });
-          if (missing.length > 0) {
-            return { pass: false, detail: `${missing.length}/${matched.length} file(s) missing /${a.contains_regex}/` };
-          }
-        } catch (e) {
-          return { pass: false, detail: `invalid contains_regex: ${e.message}` };
+        let re;
+        try { re = compileRegex(a.contains_regex, a.contains_flags || ""); }
+        catch (e) { return { pass: false, detail: `invalid contains_regex: ${e.message}` }; }
+        const missing = matched.filter(f => {
+          try { return !re.test(readFileSync(f, "utf8")); } catch { return true; }
+        });
+        if (missing.length > 0) {
+          return { pass: false, detail: `${missing.length}/${matched.length} file(s) missing /${a.contains_regex}/` };
         }
       }
       return { pass: true, detail: `matched ${matched.length} file(s)` };
@@ -169,21 +181,11 @@ function checkAssertion(a, ctx) {
     }
     case "matches-regex": {
       const out = existsSync(ctx.outputFile) ? readFileSync(ctx.outputFile, "utf8") : "";
-      // Translate inline (?i) flag — JS uses the flags argument instead
-      let pattern = a.pattern;
-      let flags = a.flags || "";
-      const inlineFlags = pattern.match(/^\(\?([a-z]+)\)/);
-      if (inlineFlags) {
-        flags = (flags + inlineFlags[1]).split("").filter((v, i, s) => s.indexOf(v) === i).join("");
-        pattern = pattern.slice(inlineFlags[0].length);
-      }
-      try {
-        const re = new RegExp(pattern, flags);
-        const match = re.test(out);
-        return { pass: match, detail: match ? "matched" : `no match for /${pattern}/${flags}` };
-      } catch (e) {
-        return { pass: false, detail: `invalid regex: ${e.message}` };
-      }
+      let re;
+      try { re = compileRegex(a.pattern, a.flags || ""); }
+      catch (e) { return { pass: false, detail: `invalid regex: ${e.message}` }; }
+      const match = re.test(out);
+      return { pass: match, detail: match ? "matched" : `no match for ${re}` };
     }
     case "exit-code-zero": {
       return { pass: ctx.exitCode === 0, detail: `exit=${ctx.exitCode ?? "n/a"}` };
@@ -196,10 +198,12 @@ function checkAssertion(a, ctx) {
       const out = existsSync(ctx.outputFile) ? readFileSync(ctx.outputFile, "utf8") : "";
       const values = Array.isArray(a.values) ? a.values : (a.value != null ? [a.value] : []);
       if (values.length === 0) return { pass: false, detail: "not-contains-text needs `values` array or `value`" };
-      const leaked = values.filter(v => a.case_sensitive
-        ? out.includes(v)
-        : out.toLowerCase().includes(String(v).toLowerCase())
-      );
+      // Lowercase the haystack once, not once per value. Coerce every
+      // needle to a string up front so a caller passing an integer ("42")
+      // doesn't crash on `.includes()`.
+      const haystack = a.case_sensitive ? out : out.toLowerCase();
+      const needles = values.map(v => a.case_sensitive ? String(v) : String(v).toLowerCase());
+      const leaked = needles.filter(n => haystack.includes(n));
       return { pass: leaked.length === 0, detail: leaked.length ? `leaked: ${leaked.map(s => JSON.stringify(s)).join(", ")}` : "clean" };
     }
     case "ledger-matches-manifest": {
