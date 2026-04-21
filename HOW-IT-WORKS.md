@@ -52,6 +52,9 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
         |
         v
 [5] DomainStore writes (dual-write: JSON + SQLite)
+        // Order matters: update runs FIRST so `wicked.testrun.finished`
+        // fires with a terminal status, THEN write the verdict row so the
+        // verdict row's evidence_path references an already-finalized run.
         store.update('runs', run.id, {
           finished_at, status: 'passed' | 'failed',
           evidence_path: '.wicked-testing/evidence/{run-id}'
@@ -59,9 +62,12 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
         store.create('verdicts', {
           run_id, verdict: 'PASS',
           reviewer: 'acceptance-test-reviewer',
+          evidence_path: '.wicked-testing/evidence/{run-id}',
           reason: '...'
         });
-        -- JSON written first (fsync), then SQLite row inside transaction --
+        -- JSON written first (fdatasync best-effort), then SQLite row --
+        -- (fdatasync is wrapped in try/catch; not available on every
+        --  platform, so durability is best-effort, not guaranteed) --
         |
         v
 [6] User sees verdict

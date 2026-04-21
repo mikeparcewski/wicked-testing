@@ -74,19 +74,44 @@ Slash commands mirror the Tier-1 skills, plus operational commands:
 |-------------------------------|------------------------------------------------|
 | `/wicked-testing:plan`        | Plan / strategy / risk / testability           |
 | `/wicked-testing:authoring`   | Author scenarios + test code                   |
+| `/wicked-testing:scenarios`   | Manage scenario files (list, show, archive)    |
+| `/wicked-testing:automate`    | Generate runnable test code from a scenario    |
 | `/wicked-testing:execution`   | Run scenarios, collect evidence                |
+| `/wicked-testing:run`         | Execute a scenario (fast path via scenario-executor) |
+| `/wicked-testing:acceptance`  | Full 3-agent pipeline (writer → executor → reviewer) |
 | `/wicked-testing:review`      | Produce an independent verdict                 |
 | `/wicked-testing:insight`     | Stats, reports, flaky / coverage signals       |
 | `/wicked-testing:setup`       | First-run installation nudge / health check    |
 | `/wicked-testing:oracle`      | Fixed-SQL questions over the ledger            |
-| `/wicked-testing:tasks`       | Internal task tracking                         |
+| `/wicked-testing:tasks`       | Task tracking (quarantines, follow-ups)        |
 | `/wicked-testing:stats`       | Quick summary stats                            |
 | `/wicked-testing:report`      | Human-readable run report                      |
+| `/wicked-testing:ci-bootstrap`| Detect CI provider + emit workflow template    |
 
-The old command names (`/wicked-testing:scenarios`, `/wicked-testing:automate`,
-`/wicked-testing:run`, `/wicked-testing:acceptance`) are retired in favor of
-the Tier-1 names. Existing users see them aliased to the new names for one
-minor version, with a one-line deprecation notice.
+All 14 commands are supported. The earlier plan to alias
+`/wicked-testing:scenarios`, `/wicked-testing:automate`, `/wicked-testing:run`,
+and `/wicked-testing:acceptance` under a "retired" notice was **reversed** —
+those commands are first-class and documented in the README command table.
+
+---
+
+## Private agent-frontmatter fields
+
+wicked-testing agents use four frontmatter keys that are **not** part of
+the standard Claude Code agent schema. They are consumed by the plugin's
+own dispatcher and documentation tooling. They are safe to leave on
+non-Claude CLIs (unrecognized keys silently no-op):
+
+| Field           | Type    | Purpose                                                               |
+|-----------------|---------|-----------------------------------------------------------------------|
+| `subagent_type` | string  | Canonical `wicked-testing:<name>` dispatch id. Used by skills to route Task() calls. |
+| `effort`        | string  | Planner hint — `low` / `medium` / `high`. Advisory only; the dispatcher uses it for cost estimates. |
+| `max-turns`     | integer | Upper bound on dispatcher iterations for this agent. Advisory; hosts that don't honor it ignore the field. |
+| `color`         | string  | UI hint for hosts that colorize agent output. Standard Claude Code field. |
+
+The wicked-testing `subagent_type` namespace is part of the public
+contract for Tier-1 agents (see the table above). For Tier-2 specialists
+it is internal and subject to change.
 
 ---
 

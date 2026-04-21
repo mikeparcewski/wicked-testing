@@ -17,11 +17,13 @@ wicked-testing stores all domain data in two places simultaneously:
 1. **JSON files** (canonical) — human-readable, editable by hand, in `.wicked-testing/{source}/{id}.json`
 2. **SQLite index** (queryable) — `.wicked-testing/wicked-testing.db` via `better-sqlite3`
 
-JSON is always written first, fsync'd, then the SQLite row is inserted inside a transaction. **On conflict, JSON wins.** If SQLite fails, the store degrades to JSON-only mode with a warning.
+JSON is always written first (best-effort fdatasync — the call is wrapped in try/catch and silently continues on platforms that don't expose it), then the SQLite row is inserted. **On conflict, JSON wins.** If SQLite fails, the store degrades to JSON-only mode with a warning. On JSON-write failure the caller sees `ERR_JSON_WRITE_FAILED` (distinct from SQLite failure) so canonical-store-unavailable is distinguishable from index-unavailable.
 
 ---
 
 ## 7-Table Schema
+
+The "7 tables" count **includes** the bookkeeping `schema_migrations` table alongside the six domain tables. If you see the constant `TABLES` in `lib/domain-store.mjs` with 6 entries, that's correct — it's the domain-table list (used for rebuild-index / allowlist); `schema_migrations` is managed by `lib/migrate.mjs` and not part of that list.
 
 | Table | Purpose | Key Columns |
 |-------|---------|-------------|
@@ -35,7 +37,7 @@ JSON is always written first, fsync'd, then the SQLite row is inserted inside a 
 
 All tables include: `created_at`, `updated_at`, `deleted` (soft-delete), `deleted_at`.
 
-Full DDL: `lib/schema.sql` | First migration: `lib/migrations/001_initial.sql`
+Full DDL: `lib/migrations/001_initial.sql` (previously duplicated as `lib/schema.sql`; the duplicate was removed in Wave 4 in favor of a real migration runner at `lib/migrate.mjs`). Future migrations: `lib/migrations/NNN_description.sql`, applied in numeric order on DomainStore init.
 
 ---
 
