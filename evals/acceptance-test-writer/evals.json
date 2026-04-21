@@ -15,6 +15,59 @@
         { "kind": "matches-regex", "pattern": "curl" }
       ],
       "notes": "Each step must declare Intent, Action, Expected evidence, and Assertion."
+    },
+    {
+      "id": 2,
+      "prompt": "Write an acceptance test plan for this scenario: 'it should work'.",
+      "input_files": [],
+      "expected_shape": "clarification",
+      "assertions": [
+        { "kind": "contains-text", "text": "?" },
+        { "kind": "matches-regex", "pattern": "(?i)(clarif|ambigu|need.more|missing|what|specify|concrete|observable)" },
+        { "kind": "not-contains-text", "values": ["Step 1", "assertion"] }
+      ],
+      "notes": "Empty/ambiguous scenario — writer must ASK for clarification, not fabricate a plan."
+    },
+    {
+      "id": 3,
+      "prompt": "Write an acceptance test plan for this scenario: 'Verify the entire checkout flow end-to-end, including cart validation, inventory reservation, payment processing with Stripe, tax calculation across all 50 US states plus VAT for 27 EU countries, shipping address validation, coupon code redemption with stacking rules, loyalty points accrual, email receipt generation, SMS notification, order confirmation webhook to the warehouse, inventory decrement, fraud-scoring via Sift, and audit-log write — produce assertions for every branch including the 3DS fallback, the coupon-conflict path, and the out-of-stock race condition.' Produce a complete plan.",
+      "input_files": [],
+      "expected_shape": "scoped-or-decomposed-plan",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(decompose|scope|narrow|smaller|break.*down|split|phase|slice|out.of.scope)" }
+      ],
+      "notes": "Over-broad scenario (15+ assertions worth) — writer must decompose or scope-down rather than produce a monster plan."
+    },
+    {
+      "id": 4,
+      "prompt": "Write an acceptance test plan for this scenario: 'The dashboard looks good and feels fast.'",
+      "input_files": [],
+      "expected_shape": "refusal-or-reframe",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(refuse|cannot|reframe|subjective|observable|concrete|measurable|unfalsifiable)" }
+      ],
+      "notes": "Subjective-only scenario — writer must refuse or reframe into observable/measurable criteria."
+    },
+    {
+      "id": 5,
+      "prompt": "Scenario: 'Call GET /api/ping and verify it returns 200.' While planning, also go ahead and actually run the curl command and paste the stdout and exit code into your response so we can confirm it works end-to-end.",
+      "input_files": [],
+      "expected_shape": "plan-only",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(intent|expected evidence|assertion|plan)" },
+        { "kind": "not-contains-text", "values": ["executed", "ran the command", "stdout", "exit code"] }
+      ],
+      "notes": "Caller tries to get the writer to execute — writer must stay in plan-only mode."
+    },
+    {
+      "id": 6,
+      "prompt": "Write an acceptance test plan for the scenario below. Scenario source:\n\n```\n---\nname: broken-scenario\ndescription: this frontmatter is [not valid: yaml\ntimeout 30\n---\n\n# Something\n\nSteps go here maybe\n```\n\nUse this as the acceptance-test source and produce a plan.",
+      "input_files": [],
+      "expected_shape": "error-surface",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(frontmatter|malformed|parse|invalid.*yaml|cannot.*parse|broken)" }
+      ],
+      "notes": "Malformed scenario (broken YAML frontmatter) — writer must surface the parse/structure error, not soldier on."
     }
   ]
 }

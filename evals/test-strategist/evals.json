@@ -33,9 +33,11 @@
       "input_files": [],
       "expected_shape": "clarification",
       "assertions": [
-        { "kind": "matches-regex", "pattern": "(?i)(need|missing|clarif|describe|what|feature|context)" }
+        { "kind": "contains-text", "text": "?" },
+        { "kind": "matches-regex", "pattern": "(?i)(need|missing|clarif|describe|what|feature|context)" },
+        { "kind": "not-contains-text", "values": ["scenario", "positive", "negative", "AC-"] }
       ],
-      "notes": "Missing input — agent should ask for clarification, not fabricate."
+      "notes": "Missing input — agent must ASK a question (literal '?') and must NOT fabricate a strategy (no scenario/positive/negative/AC- tokens)."
     }
   ]
 }

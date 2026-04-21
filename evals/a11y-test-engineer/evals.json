@@ -34,10 +34,11 @@
       "input_files": [],
       "expected_shape": "verdict-reasoning",
       "assertions": [
-        { "kind": "matches-regex", "pattern": "(?i)(PASS|conditional|still.check|manual|keyboard|screen.reader)" },
-        { "kind": "matches-regex", "pattern": "(?i)(axe.miss|automation.miss|manual.needed|keyboard.check|WCAG)" }
+        { "kind": "matches-regex", "pattern": "(?i)(conditional|manual.*required|incomplete|not.sufficient|axe.only.catches)" },
+        { "kind": "matches-regex", "pattern": "(?i)(axe.miss|automation.miss|manual.needed|keyboard.check|WCAG)" },
+        { "kind": "not-contains-text", "values": ["PASS"], "case_sensitive": true }
       ],
-      "notes": "Zero axe violations ≠ PASS. Agent must note that axe catches ~30% of issues; manual keyboard and screen-reader checks required."
+      "notes": "Zero axe violations != PASS. Agent must note that axe catches ~30% of issues; manual keyboard and screen-reader checks required. Bare PASS verdict token is rejected."
     }
   ]
 }
