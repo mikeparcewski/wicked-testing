@@ -56,8 +56,8 @@
   "scripts": {
     "status": "node install.mjs status",
     "doctor": "node install.mjs doctor",
-    "test": "node scripts/dev/validate.mjs",
-    "prepublishOnly": "node scripts/dev/validate.mjs",
+    "test": "node scripts/dev/validate.mjs && node scripts/dev/sync-plugin-version.mjs --check --quiet",
+    "prepublishOnly": "node scripts/dev/sync-plugin-version.mjs && node scripts/dev/validate.mjs",
     "evals:list": "node scripts/dev/evals.mjs list",
     "evals:plan": "node scripts/dev/evals.mjs plan",
     "evals:summary": "node scripts/dev/evals-summary.mjs"

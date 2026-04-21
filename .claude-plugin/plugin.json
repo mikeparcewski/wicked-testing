@@ -1,6 +1,6 @@
 {
   "name": "wicked-testing",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Standalone QE library — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, optional wicked-bus + wicked-brain integration.",
   "skills": [
     { "name": "wicked-testing:plan",      "path": "skills/plan/SKILL.md",      "command": "/wicked-testing:plan" },
