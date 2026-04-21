@@ -52,6 +52,25 @@ If the scenario target is `https://...` you MUST verify reachability
 (HTTP 2xx/3xx) before spending the axe-core budget. Unreachable target →
 `ERR_TARGET_UNREACHABLE`, fail fast.
 
+### Resolving the target
+
+The scenario frontmatter declares **either** `target:` (URL) **or**
+`target_file:` (local HTML path). Normalize to a single `TARGET` env
+variable before invoking tools — axe-core and pa11y both accept file
+URLs, but the path must be converted to a `file://` URL first:
+
+```bash
+if [ -n "${SCENARIO_TARGET_URL:-}" ]; then
+  TARGET="${SCENARIO_TARGET_URL}"
+elif [ -n "${SCENARIO_TARGET_FILE:-}" ]; then
+  # Absolute path required for file:// URL construction.
+  ABS_PATH="$(cd "$(dirname "${SCENARIO_TARGET_FILE}")" && pwd)/$(basename "${SCENARIO_TARGET_FILE}")"
+  TARGET="file://${ABS_PATH}"
+else
+  echo "ERR_SCENARIO_NO_TARGET: scenario must declare target: or target_file:"; exit 1
+fi
+```
+
 ## 2. Tool invocation
 
 Discover and invoke tools in this order. Do not hand-wave "run axe" —
@@ -69,7 +88,8 @@ command -v lighthouse >/dev/null 2>&1 && echo "lighthouse: ok" || echo "lighthou
 
 ```bash
 # WCAG 2.1 AA + 2.2 AA + best practices; JSON for structured parsing.
-npx --yes @axe-core/cli "${TARGET_URL}" \
+# ${TARGET} accepts https:// URLs and file:// paths (see resolution above).
+npx --yes @axe-core/cli "${TARGET}" \
   --exit \
   --tags wcag2aa,wcag21aa,wcag22aa,best-practice \
   --save "${EVIDENCE_DIR}/axe-report.json"
@@ -79,7 +99,7 @@ npx --yes @axe-core/cli "${TARGET_URL}" \
 
 ```bash
 # pa11y uses Htmlcs / Axe under the hood; run it to catch what axe misses.
-npx --yes pa11y "${TARGET_URL}" \
+npx --yes pa11y "${TARGET}" \
   --standard WCAG2AA \
   --reporter json \
   --timeout 30000 \
@@ -142,9 +162,14 @@ Through `lib/domain-store.mjs` (which dual-writes JSON + SQLite and emits
 // Append a verdict row linked to the current run.
 store.create("verdicts", {
   run_id: RUN_ID,
-  verdict: totalCriticalAndSerious === 0 ? "N-A" : "FAIL",
-  // "N-A" is correct here: zero automated violations DOES NOT mean PASS.
-  // Only a human review ticks the N-A into PASS.
+  // Zero automated violations DOES NOT mean WCAG PASS — axe covers ~30%
+  // of WCAG. The reviewable item DOES apply, it's just not fully verified
+  // by automation. Per skills/review/SKILL.md verdict semantics:
+  //   N-A         → "reviewable item doesn't apply" (wrong — a11y always applies here)
+  //   CONDITIONAL → "approve with listed fixes before ship" — best match when
+  //                 zero violations but manual checks remain
+  //   FAIL        → any critical/serious violation
+  verdict: totalCriticalAndSerious === 0 ? "CONDITIONAL" : "FAIL",
   reviewer: "wicked-testing:a11y-test-engineer",
   reason: `axe: ${axeViolationCount} violations (${criticalCount} critical, ${seriousCount} serious); pa11y: ${pa11yErrorCount} errors. Manual WCAG review still required — see a11y-manual-checklist.md.`,
   evidence_path: `evidence/${RUN_ID}/`,

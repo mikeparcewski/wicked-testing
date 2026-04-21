@@ -53,22 +53,24 @@ Retry masks the bug; you name the bug.
 
 ```bash
 # 14-day verdict history for this scenario — mirrors the oracle's
-# last_verdict_for_scenario pattern but windowed. Parameterized via
-# sqlite3's .parameter mechanism to stay injection-safe.
-sqlite3 -json ".wicked-testing/wicked-testing.db" "
-  SELECT v.verdict, v.reason, v.created_at, r.status AS run_status
-  FROM verdicts v
-  JOIN runs r ON v.run_id = r.id
-  JOIN scenarios s ON r.scenario_id = s.id
-  WHERE s.id = '${SCENARIO_ID}'
-    AND v.created_at >= datetime('now', '-14 days')
-    AND v.deleted = 0
-  ORDER BY v.created_at DESC
-" > "${EVIDENCE_DIR}/verdict-history.json"
+# last_verdict_for_scenario pattern but windowed. Uses sqlite3's
+# .parameter mechanism so the scenario id is bound, not interpolated.
+sqlite3 -json ".wicked-testing/wicked-testing.db" <<EOF > "${EVIDENCE_DIR}/verdict-history.json"
+.parameter set :id "${SCENARIO_ID}"
+SELECT v.verdict, v.reason, v.created_at, r.status AS run_status
+FROM verdicts v
+JOIN runs r ON v.run_id = r.id
+JOIN scenarios s ON r.scenario_id = s.id
+WHERE s.id = :id
+  AND v.created_at >= datetime('now', '-14 days')
+  AND v.deleted = 0
+ORDER BY v.created_at DESC;
+EOF
 ```
 
-`SCENARIO_ID` must match `^[0-9a-f-]{36}$` — reject anything else with
-`ERR_FILTER_INVALID`. No free-form interpolation.
+Belt-and-braces: even with proper binding, reject `SCENARIO_ID` values that
+don't match `^[0-9a-f-]{36}$` before calling sqlite3. UUID-shape validation
+protects against both injection and malformed-input crashes.
 
 ### Flake-rate calculation
 

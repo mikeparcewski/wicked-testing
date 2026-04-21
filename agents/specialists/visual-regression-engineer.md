@@ -106,6 +106,18 @@ node -e "
   const [b, a, out] = process.argv.slice(2);
   const base = PNG.sync.read(fs.readFileSync(b));
   const act  = PNG.sync.read(fs.readFileSync(a));
+  // Dimension check FIRST — pixelmatch throws on mismatch, which happens
+  // when a page layout changes. Emit a structured verdict for the caller
+  // instead of an uncaught stack.
+  if (base.width !== act.width || base.height !== act.height) {
+    process.stdout.write(JSON.stringify({
+      verdict: 'FAIL',
+      reason: 'dimension-mismatch',
+      baseline: { w: base.width, h: base.height },
+      actual:   { w: act.width,  h: act.height  }
+    }));
+    process.exit(1);
+  }
   const diff = new PNG({ width: base.width, height: base.height });
   const mismatched = pixelmatch(base.data, act.data, diff.data,
     base.width, base.height, { threshold: 0.1, includeAA: false });

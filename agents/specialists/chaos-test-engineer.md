@@ -83,12 +83,23 @@ toxiproxy-cli list > "${EVIDENCE_DIR}/toxiproxy-timeline.json"
 ```bash
 # 5% packet loss + 300ms delay on egress to the payments VIP, scoped to
 # a single namespace via cgroup classid (set by the test harness).
-sudo tc qdisc add dev eth0 root handle 1: prio
-sudo tc qdisc add dev eth0 parent 1:3 handle 30: netem \
+#
+# SUDO handling — `tc` requires CAP_NET_ADMIN. In CI use a runner with
+# the capability granted (passwordless sudo NOT assumed); locally, override
+# SUDO="" when the agent already runs with net admin. Refuse to blind-run
+# with sudo if a password prompt would block the run.
+SUDO="${SUDO-sudo -n}"  # -n = non-interactive; fails loud if a prompt is needed
+${SUDO} tc qdisc add dev eth0 root handle 1: prio
+${SUDO} tc qdisc add dev eth0 parent 1:3 handle 30: netem \
   loss 5% delay 300ms 50ms distribution normal
-sudo tc filter add dev eth0 protocol ip parent 1:0 prio 3 \
+${SUDO} tc filter add dev eth0 protocol ip parent 1:0 prio 3 \
   u32 match ip dst 10.0.12.44/32 flowid 1:3
 ```
+
+If `${SUDO} tc ...` fails with `sudo: a password is required`, the agent
+must SKIP the experiment with reason `insufficient-privilege` — never prompt
+a human mid-run. Prefer Chaos Mesh or Toxiproxy (no elevation needed) for
+environments without `CAP_NET_ADMIN`.
 
 ### Chaos Mesh (Kubernetes)
 
