@@ -46,11 +46,11 @@ Then:
 /wicked-testing:oracle "what was the last verdict for the login scenario?"
 ```
 
-Under the hood: a project-local SQLite ledger, 32 specialist agents grouped into 5 skills, and a public event contract for wicked-garden integration.
+Under the hood: a project-local SQLite ledger, 41 specialist agents grouped into 5 Tier-1 skills (plus 6 auxiliary skills), and a public event contract for wicked-garden integration.
 
 ---
 
-## 32 Agents, 5 Skills
+## 41 Agents, 5 Tier-1 Skills
 
 ### Tier-1 Agents — Public Contract
 
@@ -136,15 +136,20 @@ Reviewer isolation is hard-enforced on Claude Code via `allowed-tools` frontmatt
 | `/wicked-testing:setup` | Initialize for this project — detect CLI tools, create config |
 | `/wicked-testing:plan` | Shift-left test strategy from code or feature description |
 | `/wicked-testing:authoring` | Author scenario files and test code |
+| `/wicked-testing:scenarios` | Manage scenario files (list, show, archive) |
+| `/wicked-testing:automate` | Generate runnable test code from an authored scenario |
 | `/wicked-testing:execution` | Run a scenario and capture evidence |
+| `/wicked-testing:run` | Run a scenario via the scenario-executor (fast path) |
 | `/wicked-testing:acceptance` | Full 3-agent pipeline: Writer → Executor → Reviewer |
 | `/wicked-testing:review` | Evaluate captured evidence |
 | `/wicked-testing:insight` | Domain health, run history, oracle queries |
 | `/wicked-testing:oracle` | Plain-language questions about your test history |
+| `/wicked-testing:tasks` | List / create / update DomainStore tasks (flake quarantines, follow-ups) |
 | `/wicked-testing:stats` | SQLite ledger health — row counts, schema version, store mode |
 | `/wicked-testing:report` | Markdown summary of run history and verdicts |
+| `/wicked-testing:ci-bootstrap` | Detect CI provider and emit the matching workflow template |
 
-All commands support `--json` for machine-readable output.
+Most commands support `--json` for machine-readable output. Exceptions are `/wicked-testing:review` and `/wicked-testing:authoring`, which are narrative-heavy and route through their skill orchestrators instead of emitting a single envelope.
 
 ---
 
@@ -208,11 +213,23 @@ npx wicked-testing install --cli=claude
 # Install to a custom path
 npx wicked-testing install --path=~/.claude
 
+# Skip the SQLite bootstrap self-test (faster; skips integrity check)
+npx wicked-testing install --skip-self-test
+
+# Force reinstall even if the installed version matches
+npx wicked-testing install --force
+
+# Override CLI detection (useful when identity markers don't match)
+npx wicked-testing install --assume-cli=gemini
+
 # Check what's installed
 npx wicked-testing status
 
 # Verify the installation is healthy
 npx wicked-testing doctor
+
+# Check installed version satisfies a semver spec (exit 0/1/2)
+npx wicked-testing check --require=^0.2.0
 
 # Update to the latest version
 npx wicked-testing update
@@ -271,8 +288,8 @@ See [SCENARIO-FORMAT.md](SCENARIO-FORMAT.md) for the full spec. Working examples
 ## Requirements
 
 - Node.js ≥ 18
-- One of: Claude Code, Gemini CLI, Codex, Cursor, Kiro, Copilot
-- `better-sqlite3` — installed via `npm install`, pre-built binaries for macOS/Linux/Windows x64
+- One of: Claude Code, Gemini CLI, Codex, Cursor, Kiro (Copilot support removed — no verified integration point; see [#59](https://github.com/mikeparcewski/wicked-testing/issues/59))
+- `better-sqlite3` — installed via `npm install`, pre-built binaries for macOS x64/arm64, Linux x64/arm64, Windows x64. On unsupported platforms, `npm install` falls back to `node-gyp rebuild` which requires a C++ toolchain.
 
 Windows (Git Bash / WSL) is fully supported. Native PowerShell hook support is planned for v2.
 
