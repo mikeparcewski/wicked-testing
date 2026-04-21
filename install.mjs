@@ -115,6 +115,13 @@ function cmdVersion() {
 // tilde `~1.2.3`, and comparison operators `>=`, `>`, `<=`, `<`, `=`.
 // Pre-release tags (`-alpha.1`) are not supported — all installed versions
 // are treated as release builds. Throws on malformed specs.
+//
+// Caret (`^`) follows the strict SemVer rule for pre-1.0 versions: any
+// change in the leftmost non-zero segment is breaking. So `^0.2.0` matches
+// `0.2.x` but NOT `0.3.0` (minor bump on a 0.x is breaking); `^0.0.5`
+// matches ONLY `0.0.5` (patch bump on 0.0.x is breaking); `^1.2.3` matches
+// `1.x.y` with `x.y >= 2.3` (standard semver). This project is currently
+// at 0.2.0, so the 0.x behavior matters for consumers using `check`.
 function versionSatisfies(installed, spec) {
   const parse = (s) => {
     const m = /^(\d+)\.(\d+)\.(\d+)$/.exec(s);
@@ -130,7 +137,10 @@ function versionSatisfies(installed, spec) {
   const c = cmp(iv, sv);
   switch (op) {
     case "=":  return c === 0;
-    case "^":  return iv[0] === sv[0] && c >= 0;
+    case "^":
+      if (sv[0] !== 0) return iv[0] === sv[0] && c >= 0;
+      if (sv[1] !== 0) return iv[0] === 0 && iv[1] === sv[1] && iv[2] >= sv[2];
+      return iv[0] === 0 && iv[1] === 0 && iv[2] === sv[2];
     case "~":  return iv[0] === sv[0] && iv[1] === sv[1] && iv[2] >= sv[2];
     case ">=": return c >= 0;
     case ">":  return c > 0;
@@ -360,6 +370,7 @@ function cmdUninstall() {
 
 async function selfTest() {
   let bootstrapDir = null;
+  let store = null;
   try {
     const { DomainStore } = await import("./lib/domain-store.mjs");
     // Isolate the scratch dir under the OS tmp location, NOT cwd(). Running
@@ -367,7 +378,7 @@ async function selfTest() {
     // any existing `.wicked-testing-bootstrap/` sibling and could leak on
     // Windows if SQLite's WAL handle kept the dir locked past cleanup.
     bootstrapDir = mkdtempSync(join(tmpdir(), "wicked-testing-bootstrap-"));
-    const store = new DomainStore(bootstrapDir);
+    store = new DomainStore(bootstrapDir);
     const project = store.create("projects", {
       name: "wicked-testing-bootstrap",
       description: "Bootstrap self-test project",
@@ -382,12 +393,17 @@ async function selfTest() {
     const run = store.create("runs", { project_id: project.id, scenario_id: scenario.id, started_at: now, status: "running" });
     store.update("runs", run.id, { finished_at: new Date().toISOString(), status: "passed" });
     store.create("verdicts", { run_id: run.id, verdict: "PASS", reviewer: "bootstrap", reason: "self-test" });
-    store.close();
-    try { rmSync(bootstrapDir, { recursive: true, force: true }); } catch {}
     return true;
   } catch (e) {
     console.warn("  self-test: " + e.message);
     return false;
+  } finally {
+    // finally runs whether the self-test passed, threw, or returned early.
+    // Close the DB first so Windows WAL handles release before rmSync tries
+    // to remove the scratch dir. Both cleanup steps swallow errors: a failed
+    // cleanup is a resource leak at worst, not a reason to crash the install.
+    if (store) { try { store.close(); } catch {} }
+    if (bootstrapDir) { try { rmSync(bootstrapDir, { recursive: true, force: true }); } catch {} }
   }
 }
 
