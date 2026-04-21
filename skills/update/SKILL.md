@@ -168,8 +168,10 @@ stop. Warnings are OK to proceed past.
 For a one-line machine-readable summary:
 
 ```bash
-npx --yes wicked-testing doctor --json 2>&1 | python3 -c "import json,sys; d=json.load(sys.stdin); print(f\"healthy={d['healthy']} warnings={d['warnings']}\")" 2>/dev/null \
-  || npx --yes wicked-testing doctor --json 2>&1 | python -c "import json,sys; d=json.load(sys.stdin); print(f\"healthy={d['healthy']} warnings={d['warnings']}\")"
+# Keep stderr OFF the pipe — mixing warnings into the JSON stream
+# poisons the parser. We silence stderr at the outer level instead.
+npx --yes wicked-testing doctor --json 2>/dev/null | python3 -c "import json,sys; d=json.load(sys.stdin); print(f\"healthy={d['healthy']} warnings={d['warnings']}\")" 2>/dev/null \
+  || npx --yes wicked-testing doctor --json 2>/dev/null | python -c "import json,sys; d=json.load(sys.stdin); print(f\"healthy={d['healthy']} warnings={d['warnings']}\")"
 ```
 
 ### Step 6: Ledger schema auto-migrates on next use (no action needed)
