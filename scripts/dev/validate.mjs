@@ -279,7 +279,9 @@ function checkCrossPlatform() {
     const rel = relative(REPO, file);
     const content = readFileSync(file, "utf8");
     // Walk fenced bash/sh/shell blocks only
-    const fenceRe = /```(bash|sh|shell|zsh)\r?\n([\s\S]*?)\r?\n```/g;
+    // Allow trailing whitespace after the language identifier — CommonMark
+    // permits it and most editors emit it when auto-formatting.
+    const fenceRe = /```(bash|sh|shell|zsh)[ \t]*\r?\n([\s\S]*?)\r?\n```/g;
     let m;
     while ((m = fenceRe.exec(content)) !== null) {
       const block = m[2];

@@ -45,15 +45,11 @@ so probe git via a Python one-liner that does its own stderr suppression.
 # a valid ref, so the caller never sees a non-zero exit from an absent 'main'.
 python3 -c "import subprocess; \
   refs=['main','HEAD~1']; \
-  out=''; \
-  [ (lambda r: (globals().__setitem__('out', r.stdout)) if r.returncode==0 else None)(subprocess.run(['git','diff',ref,'--stat'],capture_output=True,text=True)) for ref in refs if not out ]; \
-  print(out or 'No git diff available')" \
+  print(next((r.stdout for r in (subprocess.run(['git','diff',ref,'--stat'],capture_output=True,text=True) for ref in refs) if r.returncode==0), 'No git diff available'))" \
   2>/dev/null \
   || python -c "import subprocess; \
   refs=['main','HEAD~1']; \
-  out=''; \
-  [ (lambda r: (globals().__setitem__('out', r.stdout)) if r.returncode==0 else None)(subprocess.run(['git','diff',ref,'--stat'],capture_output=True,text=True)) for ref in refs if not out ]; \
-  print(out or 'No git diff available')"
+  print(next((r.stdout for r in (subprocess.run(['git','diff',ref,'--stat'],capture_output=True,text=True) for ref in refs) if r.returncode==0), 'No git diff available'))"
 
 # Name-only list — same idea, returns empty string if the ref is absent.
 python3 -c "import subprocess; r=subprocess.run(['git','diff','main','--name-only'],capture_output=True,text=True); print(r.stdout)" \
