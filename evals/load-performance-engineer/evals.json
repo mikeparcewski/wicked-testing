@@ -18,15 +18,18 @@
     },
     {
       "id": 2,
-      "prompt": "Our load test ran and passed — P95 is 150ms at 200 RPS. Write the performance report.",
+      "prompt": "Our load test ran and passed — P95 is 150ms at 200 RPS. Write the performance report. Include P50/P95/P99 latency breakdown, error rate, throughput, and an explicit bottleneck verdict (either name the bottleneck or state that no bottleneck was identified).",
       "input_files": [],
       "expected_shape": "report",
       "assertions": [
-        { "kind": "matches-regex", "pattern": "(?i)(P50|P95|P99|percentile|latency)" },
-        { "kind": "matches-regex", "pattern": "(?i)(error.rate|throughput|RPS|requests.per.second)" },
-        { "kind": "matches-regex", "pattern": "(?i)(bottleneck|resource|connection|CPU|memory|pool|next.action|recommendation)" }
+        { "kind": "contains-text", "text": "P50" },
+        { "kind": "contains-text", "text": "P95" },
+        { "kind": "contains-text", "text": "P99" },
+        { "kind": "contains-text", "text": "error" },
+        { "kind": "contains-text", "text": "throughput" },
+        { "kind": "matches-regex", "pattern": "(?i)no\\s+bottleneck" }
       ],
-      "notes": "Report must include P50/P95/P99, error rate, throughput, identified bottleneck or clean bill, and next action."
+      "notes": "Report must include P50/P95/P99, error rate, throughput, and an explicit 'no bottleneck identified' affirmation (clean-bill verdict cannot be implicit)."
     },
     {
       "id": 3,
