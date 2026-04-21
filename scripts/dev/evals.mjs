@@ -32,15 +32,40 @@ const WORKSPACE = join(REPO, ".claude", "skills", "wicked-testing-evals", "works
 
 const [cmd = "list", ...rest] = process.argv.slice(2);
 
+// Enumerate every eval set under EVALS_DIR. An "eval set" is any directory
+// that contains an evals.json. Most live at evals/<agent>/evals.json
+// (Wave 1–7a layout), but Wave 7b introduced evals/skills/<skill>/evals.json
+// for skill-level dispatch routing. This helper finds both without caring
+// about nesting depth — container dirs with no evals.json are skipped.
+function enumerateEvalSets() {
+  const sets = [];
+  const seen = new Set();
+  function walkEvals(dir, rel) {
+    if (!existsSync(dir)) return;
+    const entries = readdirSync(dir)
+      .filter(d => { try { return statSync(join(dir, d)).isDirectory(); } catch { return false; } });
+    for (const name of entries) {
+      const full = join(dir, name);
+      const childRel = rel ? `${rel}/${name}` : name;
+      if (existsSync(join(full, "evals.json"))) {
+        if (!seen.has(childRel)) { seen.add(childRel); sets.push(childRel); }
+        continue;
+      }
+      // Container dir with no evals.json — recurse one more level.
+      walkEvals(full, childRel);
+    }
+  }
+  walkEvals(EVALS_DIR, "");
+  return sets;
+}
+
 function listAgents() {
   if (!existsSync(EVALS_DIR)) { console.log("No evals/ directory."); return; }
-  const entries = readdirSync(EVALS_DIR)
-    .filter(d => { try { return statSync(join(EVALS_DIR, d)).isDirectory(); } catch { return false; } });
+  const entries = enumerateEvalSets();
   if (entries.length === 0) { console.log("No eval sets found under evals/."); return; }
   console.log(`Eval sets under ${relative(REPO, EVALS_DIR)}:\n`);
   for (const d of entries) {
     const evalsJson = join(EVALS_DIR, d, "evals.json");
-    if (!existsSync(evalsJson)) { console.log(`  ${d}  (missing evals.json)`); continue; }
     try {
       const data = JSON.parse(readFileSync(evalsJson, "utf8"));
       console.log(`  ${d}  ${(data.cases || []).length} cases — ${data.description || ""}`);
@@ -325,8 +350,7 @@ function validateEvalSet(agentDir) {
 
 function checkAll() {
   if (!existsSync(EVALS_DIR)) { console.log("No evals/ directory."); return; }
-  const entries = readdirSync(EVALS_DIR)
-    .filter(d => { try { return statSync(join(EVALS_DIR, d)).isDirectory(); } catch { return false; } });
+  const entries = enumerateEvalSets();
   const allProblems = [];
   let scanned = 0;
   for (const d of entries) {

@@ -1,0 +1,28 @@
+{
+  "agent": "wicked-testing:acceptance-testing",
+  "subagent_type": "skill:wicked-testing:acceptance-testing",
+  "description": "Skill-level: /wicked-testing:acceptance orchestrates the 3-agent pipeline (writer → executor → reviewer) per skills/acceptance-testing/SKILL.md.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run /wicked-testing:acceptance scenarios/examples/api-health-check.md --phase all. The skill must dispatch all three pipeline agents in order: acceptance-test-writer (test plan), acceptance-test-executor (evidence collection), acceptance-test-reviewer (isolated verdict).",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:acceptance-test-writer" },
+        { "kind": "dispatches-agent", "value": "wicked-testing:acceptance-test-executor" },
+        { "kind": "dispatches-agent", "value": "wicked-testing:acceptance-test-reviewer" }
+      ],
+      "notes": "Confirms the full 3-agent pipeline fires in sequence — writer, executor, reviewer."
+    },
+    {
+      "id": 2,
+      "prompt": "Run /wicked-testing:acceptance with no scenario-file argument (or with a path that does not exist). The skill should refuse cleanly — no writer, executor, or reviewer dispatch — and emit ERR_SCENARIO_NOT_FOUND.",
+      "expected_shape": "error",
+      "assertions": [
+        { "kind": "contains-text", "text": "ERR_SCENARIO_NOT_FOUND" },
+        { "kind": "not-contains-text", "values": ["acceptance-test-writer", "acceptance-test-executor", "acceptance-test-reviewer"] }
+      ],
+      "notes": "Refusal case — missing scenario path must NOT dispatch any pipeline agent."
+    }
+  ]
+}

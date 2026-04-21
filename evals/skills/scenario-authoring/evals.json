@@ -1,0 +1,25 @@
+{
+  "agent": "wicked-testing:scenario-authoring",
+  "subagent_type": "skill:wicked-testing:scenario-authoring",
+  "description": "Skill-level: /wicked-testing:scenarios creates self-contained scenario markdown files in wicked-testing format and registers them in DomainStore. Second case falls through to the authoring pipeline for acceptance test plans.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run /wicked-testing:scenarios 'login flow with bad credentials' --project auth-service. The skill must write a scenario markdown file under scenarios/ that matches SCENARIO-FORMAT.md — YAML frontmatter (name, description, version, category, tools, assertions), a Steps section with at least one fenced code block, and a Cleanup or Setup section when state is involved.",
+      "expected_shape": "scenario-file",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "scenarios/**/*.md", "min_bytes": 200, "contains_regex": "(?s)---.*name:.*assertions:.*---" }
+      ],
+      "notes": "Confirms scenario authoring writes a well-formed scenario markdown file (>=200 bytes, frontmatter present)."
+    },
+    {
+      "id": 2,
+      "prompt": "Run /wicked-testing:scenarios but phrase the ask as 'author an acceptance test plan for scenario X' — the caller wants an evidence-gated test plan, not a scenario file. The scenario-authoring skill should hand off to acceptance-test-writer (the 3-agent pipeline's writer phase).",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:acceptance-test-writer" }
+      ],
+      "notes": "Cross-skill handoff: acceptance test plan ask → acceptance-test-writer, not scenario-file authoring."
+    }
+  ]
+}

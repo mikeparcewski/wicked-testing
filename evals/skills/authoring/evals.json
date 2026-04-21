@@ -1,0 +1,25 @@
+{
+  "agent": "wicked-testing:authoring",
+  "subagent_type": "skill:wicked-testing:authoring",
+  "description": "Skill-level: routes /wicked-testing:authoring inputs to the correct test-authoring agent per skills/authoring/SKILL.md dispatch table.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run /wicked-testing:authoring with the request 'generate jest tests for this function' pointing at a plain JS module. The authoring skill should route to test-automation-engineer (not acceptance-test-writer — the ask is framework test code, not a 3-agent pipeline test plan).",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:test-automation-engineer" }
+      ],
+      "notes": "Confirms 'generate jest tests' → test-automation-engineer routing."
+    },
+    {
+      "id": 2,
+      "prompt": "Run /wicked-testing:authoring with the request 'author an acceptance test plan for scenario X' given a scenario file path. The authoring skill should route to acceptance-test-writer (the 3-agent pipeline's writer phase), not test-automation-engineer.",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:acceptance-test-writer" }
+      ],
+      "notes": "Confirms 'acceptance test plan' → acceptance-test-writer routing."
+    }
+  ]
+}

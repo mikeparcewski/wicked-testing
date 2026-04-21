@@ -1,0 +1,26 @@
+{
+  "agent": "wicked-testing:test-oracle",
+  "subagent_type": "skill:wicked-testing:test-oracle",
+  "description": "Skill-level: /wicked-testing:oracle routes natural-language ledger questions to the fixed-SQL oracle agent. Unknown questions get a supported-pattern list, never a fabricated answer.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run /wicked-testing:oracle 'What was the last verdict for the login scenario?'. This is a natural-language ledger question — the skill must dispatch the test-oracle agent (fixed-SQL mapped to last_verdict_for_scenario).",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:test-oracle" }
+      ],
+      "notes": "Confirms natural-language question → test-oracle dispatch."
+    },
+    {
+      "id": 2,
+      "prompt": "Run /wicked-testing:oracle 'What color is the database?' — a question that matches none of the 12 named queries in lib/oracle-queries.mjs. The oracle must return a help response listing the supported patterns and must NOT fabricate an answer.",
+      "expected_shape": "help",
+      "assertions": [
+        { "kind": "contains-text", "text": "supported" },
+        { "kind": "not-contains-text", "values": ["PASS", "FAIL", "verdict: PASS", "verdict: FAIL"] }
+      ],
+      "notes": "Unknown question must return supported-pattern list, never a fabricated verdict."
+    }
+  ]
+}

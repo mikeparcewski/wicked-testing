@@ -1,0 +1,27 @@
+{
+  "agent": "wicked-testing:browser-automation",
+  "subagent_type": "skill:wicked-testing:browser-automation",
+  "description": "Skill-level: /wicked-testing:automate detects browser-automation tooling and scaffolds a harness. Unlike other skills, this one does not dispatch to a named subagent — it generates scaffold code directly. Assertions check the scaffold output, not a Task() trace. See skills/browser-automation/SKILL.md.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run /wicked-testing:automate on a scenario file with category 'a11y' and a URL target, asking the skill to 'check a11y on a URL'. Per skills/browser-automation/SKILL.md, a11y scenarios are handled with playwright + axe — the scaffold output must name playwright and axe.",
+      "expected_shape": "scaffold",
+      "assertions": [
+        { "kind": "contains-text", "text": "playwright" },
+        { "kind": "contains-text", "text": "axe" }
+      ],
+      "notes": "Category-to-tool mapping: a11y → playwright + axe. Skill does not dispatch a subagent; it generates scaffold code."
+    },
+    {
+      "id": 2,
+      "prompt": "Run /wicked-testing:automate on a scenario asking for a 'visual regression snapshot' of a web page. The skill detects a browser automation tool (Playwright preferred) and scaffolds a visual-regression harness; the scaffold or summary must mention playwright and a visual/snapshot assertion.",
+      "expected_shape": "scaffold",
+      "assertions": [
+        { "kind": "contains-text", "text": "playwright" },
+        { "kind": "matches-regex", "pattern": "(?i)(visual|snapshot|screenshot|pixelmatch)" }
+      ],
+      "notes": "Visual regression is not explicitly enumerated in skills/browser-automation/SKILL.md — scaffold-based check, not a dispatch trace. Flagged: the underlying visual-regression-engineer specialist is routed via skills/plan, skills/authoring, and skills/execution Tier-2 tables, NOT directly by browser-automation."
+    }
+  ]
+}

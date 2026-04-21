@@ -1,0 +1,25 @@
+{
+  "agent": "wicked-testing:review",
+  "subagent_type": "skill:wicked-testing:review",
+  "description": "Skill-level: routes /wicked-testing:review inputs to the correct reviewer per skills/review/SKILL.md dispatch table.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run /wicked-testing:review pointing at a run's evidence manifest at .wicked-testing/evidence/abc-123/manifest.json. The review skill should route to acceptance-test-reviewer — the dispatch target for an evidence manifest input.",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:acceptance-test-reviewer" }
+      ],
+      "notes": "Confirms evidence-manifest → acceptance-test-reviewer routing."
+    },
+    {
+      "id": 2,
+      "prompt": "Run /wicked-testing:review with both a spec file path and an implementation path, asking 'does the code match the spec'. The review skill should route to semantic-reviewer (post-code divergence review), NOT acceptance-test-reviewer.",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:semantic-reviewer" }
+      ],
+      "notes": "Confirms spec+impl → semantic-reviewer routing."
+    }
+  ]
+}

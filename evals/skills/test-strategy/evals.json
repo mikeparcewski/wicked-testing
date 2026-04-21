@@ -1,0 +1,26 @@
+{
+  "agent": "wicked-testing:test-strategy",
+  "subagent_type": "skill:wicked-testing:test-strategy",
+  "description": "Skill-level: /wicked-testing:plan (test-strategy) dispatches test-strategist to generate a shift-left strategy, writes a strategy record to DomainStore. Risk matrix asks route to risk-assessor.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run /wicked-testing:plan on a codebase path (e.g. src/checkout/). The test-strategy skill must dispatch test-strategist AND the strategy output must be persisted as a markdown file (strategy record / doc under .wicked-testing/ or similar).",
+      "expected_shape": "dispatch+artifact",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:test-strategist" },
+        { "kind": "produces-artifact", "path": "**/*.md", "min_bytes": 200, "contains_regex": "(?i)(strategy|scenario|coverage)" }
+      ],
+      "notes": "Confirms codebase-path ask → test-strategist dispatch + strategy doc written."
+    },
+    {
+      "id": 2,
+      "prompt": "Run /wicked-testing:plan with the request 'build a risk matrix for this payment change' (security-sensitive, data-touching). The skill must dispatch risk-assessor — risk-matrix asks are the explicit risk-assessor trigger in skills/plan/SKILL.md.",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:risk-assessor" }
+      ],
+      "notes": "Confirms 'risk matrix' → risk-assessor routing."
+    }
+  ]
+}
