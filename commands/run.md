@@ -1,11 +1,11 @@
 ---
-description: Execute a wicked-testing scenario file and write evidence JSON to .wicked-testing/runs/
+description: Execute a wicked-testing scenario file and write evidence JSON to .wicked-testing/evidence/
 argument-hint: "<scenario-file> [--json]"
 ---
 
 # /wicked-testing:run
 
-Execute a scenario file using the appropriate CLI tool. Writes a timestamped evidence JSON to `.wicked-testing/runs/{run-id}/` and records the run in the DomainStore.
+Execute a scenario file using the appropriate CLI tool. Writes a timestamped evidence JSON to `.wicked-testing/evidence/{run-id}/` and records the run in the DomainStore.
 
 ## Usage
 
@@ -48,7 +48,7 @@ Task(
 {scenario-file path}
 
 ## Evidence Directory
-.wicked-testing/runs/{run-id}/
+.wicked-testing/evidence/{run-id}/
 
 ## Instructions
 1. Read the scenario file
@@ -81,7 +81,7 @@ Without `--json` — Return the executor's result report.
 With `--json` — Emit the JSON envelope:
 
 ```bash
-python3 -c "import json,sys; sys.stdout.write(json.dumps({'ok': True, 'data': {'run_id': '...', 'status': 'passed', 'evidence_path': '.wicked-testing/runs/...', 'pass_count': N, 'fail_count': 0, 'skip_count': 0}, 'meta': {'command': 'wicked-testing:run', 'duration_ms': 0, 'schema_version': 1, 'store_mode': '...'}}))" 2>/dev/null || python -c "..."
+python3 -c "import json,sys; sys.stdout.write(json.dumps({'ok': True, 'data': {'run_id': '...', 'status': 'passed', 'evidence_path': '.wicked-testing/evidence/...', 'pass_count': N, 'fail_count': 0, 'skip_count': 0}, 'meta': {'command': 'wicked-testing:run', 'duration_ms': 0, 'schema_version': 1, 'store_mode': '...'}}))" 2>/dev/null || python -c "..."
 ```
 
 On FAIL, `ok` is `false` and `error` describes the failure.

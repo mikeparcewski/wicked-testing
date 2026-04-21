@@ -2,7 +2,7 @@
 name: test-runner
 description: |
   Execute wicked-testing scenario files via the appropriate CLI tool.
-  Writes run records and evidence JSON to .wicked-testing/runs/{run-id}/.
+  Writes run records and evidence JSON to .wicked-testing/evidence/{run-id}/.
   Records run in DomainStore.
 
   Use when: "run scenario", "execute test", "run tests", "test execution",
@@ -19,7 +19,7 @@ Execute wicked-testing scenario files using the appropriate CLI tool (playwright
 1. Parses the scenario file (frontmatter + steps)
 2. Discovers required CLI tools
 3. Executes each step, capturing stdout/stderr/exit codes
-4. Writes a timestamped evidence JSON to `.wicked-testing/runs/{run-id}/evidence.json`
+4. Writes a timestamped evidence JSON to `.wicked-testing/evidence/{run-id}/evidence.json`
 5. Creates a `runs` record in the DomainStore
 6. Returns PASS/FAIL/PARTIAL based on step results
 
@@ -70,7 +70,7 @@ const run = store.create('runs', {
   started_at: now(),
   status: 'running'
 });
-const evidenceDir = `.wicked-testing/runs/${run.id}`;
+const evidenceDir = `.wicked-testing/evidence/${run.id}`;
 ```
 
 ### 5. Execute Setup
@@ -158,7 +158,7 @@ store.update('runs', run.id, {
 | {name} | PASS | 0.5s | |
 | {name} | FAIL | 2.0s | Exit code 1: {stderr snippet} |
 
-Evidence: .wicked-testing/runs/{run-id}/evidence.json
+Evidence: .wicked-testing/evidence/{run-id}/evidence.json
 Run ID: {run-id} (query with /wicked-testing:oracle)
 ```
 

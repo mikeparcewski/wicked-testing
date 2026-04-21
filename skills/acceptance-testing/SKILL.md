@@ -49,7 +49,7 @@ The reviewer must NEVER receive executor conversation context. This is enforced 
 1. **Tool restriction**: `allowed-tools: [Read]` in `agents/acceptance-test-reviewer.md`. On Claude Code, this is enforced at the host level. On other CLIs, this is advisory.
 2. **Evidence-only dispatch**: The reviewer is dispatched with ONLY:
    - The original scenario file path
-   - The evidence directory path (`.wicked-testing/runs/{run-id}/`)
+   - The evidence directory path (`.wicked-testing/evidence/{run-id}/`)
    - The test plan (writer output)
    - It does NOT include: executor stdout, executor reasoning, or any executor conversational context
 3. **Subagent context boundary**: The reviewer runs as a separate subagent invocation, not sharing history with the executor.
@@ -82,15 +82,32 @@ Tests without that tag validate the skill's dispatch contract (valid everywhere)
 
 ## Instructions
 
-### 0. Resolve Paths
+### 0. Resolve Paths (UUID-based, collision-free)
 
-```bash
-WICKED_DIR=".wicked-testing"
-RUN_ID="$(date +%Y%m%dT%H%M%S)-$(basename ${SCENARIO_FILE%.md})"
-EVIDENCE_DIR="${WICKED_DIR}/runs/${RUN_ID}"
+Create the run record in DomainStore first, then derive the evidence dir from
+the run's canonical UUID. This serves three goals at once:
+
+- eliminates the 1-second-granularity collision when two pipelines start
+  within the same timestamp (formerly `RUN_ID="$(date +%Y%m%dT%H%M%S)-..."`);
+- matches the public contract path `.wicked-testing/evidence/<run-id>/manifest.json`
+  consumers read (see [schemas/evidence.json](../../schemas/evidence.json));
+- avoids any risk of collision with canonical `runs/<id>.json` records that
+  used to share the `runs/` parent directory.
+
+```javascript
+// Ensure project + scenario exist, then:
+const run = store.create('runs', {
+  project_id: project.id,
+  scenario_id: scenario.id,
+  started_at: new Date().toISOString(),
+  status: 'running',
+});
+const RUN_ID       = run.id;                               // canonical UUID
+const WICKED_DIR   = '.wicked-testing';
+const EVIDENCE_DIR = `${WICKED_DIR}/evidence/${RUN_ID}`;
+// mkdir -p EVIDENCE_DIR; write evidence_path back onto the run record
+store.update('runs', run.id, { evidence_path: EVIDENCE_DIR });
 ```
-
-Ensure project and scenario records exist in DomainStore before proceeding.
 
 ### 1. Parse Scenario
 
@@ -131,14 +148,8 @@ If `--phase write`, stop here.
 
 ### 3. Phase: Execute (Evidence Collection)
 
-Create run record in DomainStore before dispatching executor:
-
-```javascript
-const run = store.create('runs', {
-  project_id: ..., scenario_id: ...,
-  started_at: now(), status: 'running'
-});
-```
+The run record was already created in step 0 so the evidence dir could derive
+from its UUID. Here we dispatch the executor against that dir.
 
 Dispatch the `acceptance-test-executor` subagent:
 
@@ -235,20 +246,50 @@ DO NOT reference any execution context beyond the files above.
 **Note**: The reviewer prompt intentionally omits all executor conversation context.
 This is the evidence-only dispatch — the third isolation layer.
 
-### 6. Write Verdict to DomainStore
+### 6. Write Verdict + Build Public Manifest
+
+Two writes and one manifest build, in order:
 
 ```javascript
-store.create('verdicts', {
+// 1. Finalize run (triggers wicked.testrun.finished emit)
+store.update('runs', run.id, {
+  finished_at: new Date().toISOString(),
+  status: reviewerVerdict === 'PASS' ? 'passed' : 'failed',
+  evidence_path: EVIDENCE_DIR,
+});
+
+// 2. Record verdict (triggers wicked.verdict.recorded emit)
+const verdictRecord = store.create('verdicts', {
   run_id: run.id,
-  verdict: reviewerVerdict,   // 'PASS' | 'FAIL'
+  verdict: reviewerVerdict,            // 'PASS' | 'FAIL' | 'N-A' | 'SKIP'
   evidence_path: EVIDENCE_DIR,
   reviewer: 'acceptance-test-reviewer',
-  reason: reviewerSummary
+  reason: reviewerSummary,
 });
-store.update('runs', run.id, {
-  finished_at: now(),
-  status: reviewerVerdict === 'PASS' ? 'passed' : 'failed',
-  evidence_path: EVIDENCE_DIR
+
+// 3. Materialize the public manifest at the contract path
+import { buildManifest } from '../../lib/manifest.mjs';
+import { emitBusEvent } from '../../lib/bus-emit.mjs';
+import { readFileSync } from 'node:fs';
+const pkgVersion = JSON.parse(readFileSync('package.json','utf8')).version;
+const runAfter = store.get('runs', run.id);
+const { manifest } = buildManifest({
+  runRecord:      runAfter,
+  scenarioRecord: store.get('scenarios', scenario.id),
+  verdictRecord:  verdictRecord,
+  evidenceDir:    EVIDENCE_DIR,
+  wickedTestingVersion: pkgVersion,
+});
+
+// 4. Emit the skill-level evidence.captured event (DomainStore doesn't fire
+//    this one because evidence capture is a skill-orchestration concern, not
+//    a CRUD op).
+emitBusEvent('wicked.evidence.captured', {
+  project_id: runAfter.project_id,
+  run_id: run.id,
+  evidence_path: EVIDENCE_DIR,
+  artifact_count: manifest.artifacts.length,
+  wicked_testing_version: pkgVersion,
 });
 ```
 
@@ -278,6 +319,8 @@ store.update('runs', run.id, {
 ## Integration
 
 - Results queryable via `/wicked-testing:oracle "what was the last verdict for scenario X?"`
-- Evidence files at `.wicked-testing/runs/{run-id}/`
+- Evidence files at `.wicked-testing/evidence/<run-id>/` (see [schemas/evidence.json](../../schemas/evidence.json))
+- Public manifest: `.wicked-testing/evidence/<run-id>/manifest.json` — the only file downstream consumers should read
 - Verdict written to DomainStore `verdicts` table
 - Run written to DomainStore `runs` table
+- Bus events emitted per [docs/INTEGRATION.md §4](../../docs/INTEGRATION.md) when `wicked-bus` is on PATH
