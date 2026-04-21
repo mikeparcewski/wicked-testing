@@ -28,7 +28,7 @@ if ! command -v semgrep &>/dev/null; then
   echo "SKIP: semgrep not installed. Run /wicked-testing:setup to install."
   exit 0
 fi
-semgrep scan --config p/owasp-top-ten --json --quiet "${SCAN_TARGET}" > "${TMPDIR:-/tmp}/semgrep-results.json" 2>&1
+semgrep scan --config p/owasp-top-ten --json --quiet "${SCAN_TARGET}" > "${TMPDIR:-${TEMP:-/tmp}}/semgrep-results.json" 2>&1
 ```
 
 **Expect**: Exit code 0 = no findings, exit code 1 = findings found (treated as FAIL — security issues detected)
@@ -58,5 +58,5 @@ sys.exit(1 if len(high) > 10 else 0)
 ## Cleanup
 
 ```bash
-rm -f "${TMPDIR:-/tmp}/semgrep-results.json"
+rm -f "${TMPDIR:-${TEMP:-/tmp}}/semgrep-results.json"
 ```

@@ -64,8 +64,10 @@ The body is structured markdown with optional `## Setup`, required `## Steps`, a
 ```bash
 # Commands to run before the test steps
 # Exit code is non-fatal — warn on failure but continue
+# Use a portable tmp dir: TMPDIR (Unix), TEMP (Windows Git Bash), fallback /tmp.
 export TEST_ENV=integration
-mkdir -p /tmp/test-artifacts
+WT_TMP="${TMPDIR:-${TEMP:-/tmp}}"
+mkdir -p "${WT_TMP}/test-artifacts"
 ```
 ```
 
@@ -106,8 +108,10 @@ curl -sf https://example.com/api/health | grep '"status":"ok"'
 ## Cleanup
 
 ```bash
-# Always runs after steps, even on failure (like a finally block)
-rm -rf /tmp/test-artifacts
+# Always runs after steps, even on failure (like a finally block).
+# Use the same portable tmp resolution as Setup.
+WT_TMP="${TMPDIR:-${TEMP:-/tmp}}"
+rm -rf "${WT_TMP}/test-artifacts"
 ```
 ```
 

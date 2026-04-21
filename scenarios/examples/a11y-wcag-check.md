@@ -27,7 +27,7 @@ if ! command -v pa11y &>/dev/null; then
   echo "SKIP: pa11y not installed. Run /wicked-testing:setup to install."
   exit 0
 fi
-pa11y --standard WCAG2AA --reporter json "${PAGE_URL}" > "${TMPDIR:-/tmp}/pa11y-results.json" 2>&1
+pa11y --standard WCAG2AA --reporter json "${PAGE_URL}" > "${TMPDIR:-${TEMP:-/tmp}}/pa11y-results.json" 2>&1
 ```
 
 **Expect**: Exit code 0 if no accessibility issues, exit code 2 if issues found
@@ -47,5 +47,5 @@ pa11y --standard WCAG2AA "${PAGE_URL}" 2>&1 | head -20
 ## Cleanup
 
 ```bash
-rm -f "${TMPDIR:-/tmp}/pa11y-results.json"
+rm -f "${TMPDIR:-${TEMP:-/tmp}}/pa11y-results.json"
 ```

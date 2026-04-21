@@ -27,7 +27,7 @@ if ! command -v hey &>/dev/null; then
   echo "SKIP: hey not installed. Run /wicked-testing:setup to install."
   exit 0
 fi
-hey -n 100 -c 10 -t 10 "${TARGET_URL}" 2>&1 | tee "${TMPDIR:-/tmp}/hey-results.txt" && grep -q "Status code distribution" "${TMPDIR:-/tmp}/hey-results.txt"
+hey -n 100 -c 10 -t 10 "${TARGET_URL}" 2>&1 | tee "${TMPDIR:-${TEMP:-/tmp}}/hey-results.txt" && grep -q "Status code distribution" "${TMPDIR:-${TEMP:-/tmp}}/hey-results.txt"
 ```
 
 **Expect**: Exit code 0, 100 requests complete with status code distribution shown
@@ -39,7 +39,7 @@ if ! command -v k6 &>/dev/null; then
   echo "SKIP: k6 not installed. Run /wicked-testing:setup to install."
   exit 0
 fi
-cat > "${TMPDIR:-/tmp}/wicked-scenario-k6.js" << 'K6_EOF'
+cat > "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-k6.js" << 'K6_EOF'
 import http from 'k6/http';
 import { check } from 'k6';
 
@@ -57,7 +57,7 @@ export default function () {
   check(res, { 'status is 200': (r) => r.status === 200 });
 }
 K6_EOF
-k6 run "${TMPDIR:-/tmp}/wicked-scenario-k6.js"
+k6 run "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-k6.js"
 ```
 
 **Expect**: Exit code 0 if thresholds met, non-zero if p95 > 2s or error rate > 10%
@@ -65,5 +65,5 @@ k6 run "${TMPDIR:-/tmp}/wicked-scenario-k6.js"
 ## Cleanup
 
 ```bash
-rm -f "${TMPDIR:-/tmp}/hey-results.txt" "${TMPDIR:-/tmp}/wicked-scenario-k6.js"
+rm -f "${TMPDIR:-${TEMP:-/tmp}}/hey-results.txt" "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-k6.js"
 ```

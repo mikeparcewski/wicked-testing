@@ -4,7 +4,7 @@
 
 import {
   existsSync, mkdirSync, mkdtempSync, cpSync, readdirSync, rmSync,
-  readFileSync, writeFileSync,
+  readFileSync, writeFileSync, accessSync, statSync, constants as FS_CONST,
 } from "node:fs";
 import { join, resolve, basename } from "node:path";
 import { homedir, tmpdir } from "node:os";
@@ -18,14 +18,84 @@ const PKG = JSON.parse(readFileSync(join(__dirname, "package.json"), "utf8"));
 const VERSION = PKG.version;
 const INSTALLED_MARKER = ".wicked-testing-version";
 
+// Per-CLI target spec. `identityMarkers` is any of-list of filenames/dirs
+// that must exist inside the CLI's home-relative root before we'll install
+// — prevents us writing into an unrelated `~/.claude/` that a different
+// tool created. `isolationTier` tracks whether the host hard-enforces the
+// `allowed-tools` frontmatter on agents (Claude Code) or leaves it advisory
+// (everyone else); we surface that at install time so users of non-Claude
+// hosts know the reviewer isolation is backed by prompt discipline, not
+// tool-restriction.
+//
+// Copilot was formerly targeted at `~/.github/skills` — wrong and dangerous
+// (collides with common GitHub dotfiles, and `gh copilot` does not read
+// that path). Removed until a real integration point exists; tracked in
+// #59.
 const CLI_TARGETS = [
-  { name: "claude",  dir: join(home, ".claude",  "skills"), agentDir: join(home, ".claude",  "agents"), commandDir: join(home, ".claude",  "commands"), platform: "claude"  },
-  { name: "gemini",  dir: join(home, ".gemini",  "skills"), agentDir: join(home, ".gemini",  "agents"), commandDir: join(home, ".gemini",  "commands"), platform: "gemini"  },
-  { name: "copilot", dir: join(home, ".github",  "skills"), agentDir: join(home, ".github",  "agents"), commandDir: join(home, ".github",  "commands"), platform: "copilot" },
-  { name: "codex",   dir: join(home, ".codex",   "skills"), agentDir: join(home, ".codex",   "agents"), commandDir: join(home, ".codex",   "commands"), platform: "codex"   },
-  { name: "cursor",  dir: join(home, ".cursor",  "skills"), agentDir: join(home, ".cursor",  "agents"), commandDir: join(home, ".cursor",  "commands"), platform: "cursor"  },
-  { name: "kiro",    dir: join(home, ".kiro",    "skills"), agentDir: join(home, ".kiro",    "agents"), commandDir: join(home, ".kiro",    "commands"), platform: "kiro"    },
+  {
+    name: "claude",
+    rootDir: join(home, ".claude"),
+    dir: join(home, ".claude", "skills"),
+    agentDir: join(home, ".claude", "agents"),
+    commandDir: join(home, ".claude", "commands"),
+    platform: "claude",
+    identityMarkers: ["settings.json", "plugins", "projects"],
+    isolationTier: "hard", // allowed-tools is host-enforced
+  },
+  {
+    name: "gemini",
+    rootDir: join(home, ".gemini"),
+    dir: join(home, ".gemini", "skills"),
+    agentDir: join(home, ".gemini", "agents"),
+    commandDir: join(home, ".gemini", "commands"),
+    platform: "gemini",
+    identityMarkers: ["config.json", "auth", "settings.json"],
+    isolationTier: "advisory",
+  },
+  {
+    name: "codex",
+    rootDir: join(home, ".codex"),
+    dir: join(home, ".codex", "skills"),
+    agentDir: join(home, ".codex", "agents"),
+    commandDir: join(home, ".codex", "commands"),
+    platform: "codex",
+    // Codex stores config in TOML and maintains a plugins/ directory; check
+    // for either plus its auth blob.
+    identityMarkers: ["config.toml", "config.json", "auth.json", "plugins"],
+    isolationTier: "advisory",
+  },
+  {
+    name: "cursor",
+    rootDir: join(home, ".cursor"),
+    dir: join(home, ".cursor", "skills"),
+    agentDir: join(home, ".cursor", "agents"),
+    commandDir: join(home, ".cursor", "commands"),
+    platform: "cursor",
+    identityMarkers: ["User", "extensions", "settings.json"],
+    isolationTier: "advisory",
+  },
+  {
+    name: "kiro",
+    rootDir: join(home, ".kiro"),
+    dir: join(home, ".kiro", "skills"),
+    agentDir: join(home, ".kiro", "agents"),
+    commandDir: join(home, ".kiro", "commands"),
+    platform: "kiro",
+    identityMarkers: ["config.json", "settings.json"],
+    isolationTier: "advisory",
+  },
 ];
+
+// A directory that exists but has none of the identity markers is treated
+// as "not really this CLI" — we skip it. Override with --assume-cli=<name>
+// if a power user knows their setup stores markers elsewhere.
+function hasIdentityMarker(target) {
+  if (!existsSync(target.rootDir)) return false;
+  for (const m of target.identityMarkers || []) {
+    if (existsSync(join(target.rootDir, m))) return true;
+  }
+  return false;
+}
 
 // --- arg parsing -----------------------------------------------------------
 
@@ -57,6 +127,7 @@ const jsonOut       = !!flagValue("json");
 const cliArg        = flagValue("cli");
 const pathArg       = flagValue("path");
 const requireSpec   = flagValue("require");
+const assumeCli     = flagValue("assume-cli");  // override identity-marker check
 
 function resolveTargets() {
   if (pathArg && typeof pathArg === "string") {
@@ -65,13 +136,27 @@ function resolveTargets() {
     const known = CLI_TARGETS.find(t => t.name === dirName);
     return [{
       name: dirName,
+      rootDir: customPath,
       dir: join(customPath, "skills"),
       agentDir: join(customPath, "agents"),
       commandDir: join(customPath, "commands"),
       platform: known?.platform ?? dirName,
+      identityMarkers: known?.identityMarkers ?? [],
+      isolationTier: known?.isolationTier ?? "advisory",
     }];
   }
-  const detected = CLI_TARGETS.filter(t => existsSync(resolve(t.dir, "..")));
+  // Identity-marker detection: presence of `~/.claude/` alone is not enough
+  // to conclude Claude Code is installed (the dir might belong to a legacy
+  // tool or another plugin). We require at least one of the per-CLI markers
+  // declared in CLI_TARGETS — `settings.json`, `plugins/`, etc. Override
+  // with --assume-cli=<name> to force-detect when the host's marker set
+  // diverges from our list.
+  const forceDetect = (assumeCli && typeof assumeCli === "string")
+    ? new Set(assumeCli.split(","))
+    : new Set();
+  const detected = CLI_TARGETS.filter(t =>
+    forceDetect.has(t.name) || hasIdentityMarker(t)
+  );
   if (cliArg && typeof cliArg === "string") {
     const filter = cliArg.split(",");
     return detected.filter(t => filter.includes(t.name));
@@ -188,8 +273,9 @@ Commands:
   help          This message
 
 Options:
-  --cli=<list>        Comma-separated CLI names (claude, gemini, copilot, codex, cursor, kiro)
+  --cli=<list>        Comma-separated CLI names (claude, gemini, codex, cursor, kiro)
   --path=<dir>        Custom target path (e.g. --path=~/.claude)
+  --assume-cli=<list> Force-detect a CLI even if its identity markers are missing
   --force             Overwrite even if versions match
   --require=<spec>    Version spec for 'check' (e.g. 0.2.0, ^0.2.0, ~0.2.1, >=0.2.0)
   --skip-self-test    Skip the SQLite bootstrap self-test (install/update only)
@@ -235,34 +321,114 @@ function cmdStatus() {
   }
 }
 
+// Each diagnostic returns { name, status: "ok"|"warn"|"fail", message, fix? }.
+// `fail` is red and exits doctor non-zero; `warn` is amber and stays green.
 async function cmdDoctor() {
-  const issues = [];
+  const checks = [];
+
+  // Node version
   const nodeVer = process.versions.node.split(".").map(Number);
-  if (nodeVer[0] < 18) issues.push(`Node ${process.versions.node} — need >= 18`);
-  const detected = CLI_TARGETS.filter(t => existsSync(resolve(t.dir, "..")));
-  if (detected.length === 0) issues.push("No AI CLIs detected in home directory");
+  checks.push(nodeVer[0] >= 18
+    ? { name: "node",          status: "ok",   message: process.versions.node }
+    : { name: "node",          status: "fail", message: `${process.versions.node} — need >= 18`, fix: "install Node 18+" });
+
+  // AI CLI detection
+  const detected = CLI_TARGETS.filter(t => hasIdentityMarker(t));
+  checks.push(detected.length > 0
+    ? { name: "cli-detection", status: "ok",   message: detected.map(d => `${d.name} (${d.isolationTier})`).join(", ") }
+    : { name: "cli-detection", status: "fail", message: "no AI CLIs detected in home directory", fix: "install Claude Code / Gemini / Codex / Cursor / Kiro, or use --path=<dir>" });
+
+  // better-sqlite3 native module
   let sqliteOk = false;
-  try { await import("better-sqlite3"); sqliteOk = true; } catch (e) { issues.push(`better-sqlite3 load failed: ${e.message}`); }
+  try { await import("better-sqlite3"); sqliteOk = true; } catch (_) { /* report below */ }
+  checks.push(sqliteOk
+    ? { name: "better-sqlite3", status: "ok",   message: "loadable" }
+    : { name: "better-sqlite3", status: "fail", message: "native module failed to load", fix: "run `npm rebuild better-sqlite3` or reinstall Node 18+ on a supported platform" });
+
+  // Per-target install-marker integrity
+  for (const t of detected) {
+    const installed = installedVersion(t);
+    if (installed === null) {
+      checks.push({ name: `install:${t.name}`, status: "warn", message: "not installed yet", fix: `run \`npx wicked-testing install --cli=${t.name}\`` });
+    } else if (installed !== VERSION) {
+      checks.push({ name: `install:${t.name}`, status: "warn", message: `installed ${installed}, code is ${VERSION}`, fix: `run \`npx wicked-testing update --cli=${t.name}\`` });
+    } else {
+      // Spot-check: a few expected agent files are present and non-empty.
+      const expected = ["wicked-testing-acceptance-test-reviewer.md", "wicked-testing-test-oracle.md"];
+      const missing = expected.filter(f => {
+        const p = join(t.agentDir, f);
+        if (!existsSync(p)) return true;
+        try { return statSync(p).size === 0; } catch { return true; }
+      });
+      checks.push(missing.length === 0
+        ? { name: `install:${t.name}`, status: "ok",   message: `${VERSION} integrity verified (${t.isolationTier})` }
+        : { name: `install:${t.name}`, status: "fail", message: `missing/empty agent files: ${missing.join(", ")}`, fix: `run \`npx wicked-testing install --force --cli=${t.name}\`` });
+    }
+  }
+
+  // Schema version vs code (HOW-IT-WORKS.md "DB newer than code")
+  const dbPath = join(process.cwd(), ".wicked-testing", "wicked-testing.db");
+  if (sqliteOk && existsSync(dbPath)) {
+    try {
+      const { default: Database } = await import("better-sqlite3");
+      const db = new Database(dbPath, { readonly: true });
+      const row = db.prepare("SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1").get();
+      db.close();
+      const dbVer = row?.version ?? 0;
+      const codeVer = 1;
+      checks.push(dbVer <= codeVer
+        ? { name: "schema",        status: "ok",   message: `DB v${dbVer}, code v${codeVer}` }
+        : { name: "schema",        status: "fail", message: `DB v${dbVer} is newer than code v${codeVer}`, fix: "upgrade wicked-testing: `npm install -g wicked-testing@latest`" });
+    } catch (err) {
+      checks.push({ name: "schema", status: "warn", message: `could not read schema_migrations: ${err.message}`, fix: "run `npx wicked-testing status` to see full project state" });
+    }
+  }
+
+  // plugin.json drift (delegates to sync-plugin-version --check when present)
+  const syncScript = join(__dirname, "scripts", "dev", "sync-plugin-version.mjs");
+  if (existsSync(syncScript)) {
+    try {
+      const { spawnSync } = await import("node:child_process");
+      const r = spawnSync(process.execPath, [syncScript, "--check", "--quiet"], { stdio: "pipe" });
+      checks.push(r.status === 0
+        ? { name: "plugin.json",   status: "ok",   message: "in sync with package.json + disk" }
+        : { name: "plugin.json",   status: "warn", message: "drift detected", fix: "run `node scripts/dev/sync-plugin-version.mjs`" });
+    } catch (err) {
+      checks.push({ name: "plugin.json", status: "warn", message: `drift check errored: ${err.message}` });
+    }
+  }
+
+  const fails = checks.filter(c => c.status === "fail");
+  const warns = checks.filter(c => c.status === "warn");
+
   if (jsonOut) {
     console.log(JSON.stringify({
       node: process.versions.node,
       detected_clis: detected.map(d => d.name),
       sqlite_ok: sqliteOk,
-      issues,
-      healthy: issues.length === 0,
+      checks,
+      healthy: fails.length === 0,
+      warnings: warns.length,
     }, null, 2));
+    if (fails.length > 0) exit(1);
     return;
   }
-  console.log(`wicked-testing ${VERSION} — doctor`);
-  console.log(`  Node:           ${process.versions.node}`);
-  console.log(`  Detected CLIs:  ${detected.map(d => d.name).join(", ") || "(none)"}`);
-  console.log(`  better-sqlite3: ${sqliteOk ? "ok" : "FAIL"}`);
-  if (issues.length) {
-    console.log("\nIssues:");
-    for (const i of issues) console.log(`  - ${i}`);
+
+  const color = (txt, c) => `\x1b[${c}m${txt}\x1b[0m`;
+  const badge = (s) => s === "ok" ? color("✓ ok  ", 32) : s === "warn" ? color("! warn", 33) : color("✗ fail", 31);
+  console.log(`wicked-testing ${VERSION} — doctor\n`);
+  for (const c of checks) {
+    console.log(`  ${badge(c.status)}  ${c.name.padEnd(22)} ${c.message}`);
+    if (c.fix && c.status !== "ok") console.log(`         ${color("→", 36)} ${c.fix}`);
+  }
+  console.log();
+  if (fails.length > 0) {
+    console.log(color(`${fails.length} failure${fails.length === 1 ? "" : "s"}, ${warns.length} warning${warns.length === 1 ? "" : "s"}`, 31));
     exit(1);
+  } else if (warns.length > 0) {
+    console.log(color(`all critical checks passed (${warns.length} warning${warns.length === 1 ? "" : "s"})`, 33));
   } else {
-    console.log("\nAll good.");
+    console.log(color("all good", 32));
   }
 }
 
@@ -270,7 +436,7 @@ async function cmdInstall({ mode }) {
   const targets = resolveTargets();
   if (targets.length === 0) {
     console.error("No AI CLIs detected. Supported: " + CLI_TARGETS.map(t => t.name).join(", "));
-    console.error("Use --path=<dir> to target a custom location.");
+    console.error("Use --path=<dir> to target a custom location, or --assume-cli=<name> to override identity-marker detection.");
     exit(1);
   }
 
@@ -285,34 +451,70 @@ async function cmdInstall({ mode }) {
   const commandFiles = readdirSafe(commandsSrc).filter(f => f.endsWith(".md"));
 
   let totalSkills = 0, totalAgents = 0, totalCommands = 0;
+  const perTargetReport = [];
 
   for (const target of targets) {
     const existing = installedVersion(target);
     if (existing === VERSION && !force && mode !== "update") {
       console.log(`[${target.name}] already at ${VERSION}, skipping (--force to overwrite)`);
+      perTargetReport.push({ target: target.name, status: "skipped", reason: "already-current", isolationTier: target.isolationTier });
       continue;
     }
 
-    mkdirSync(target.dir, { recursive: true });
-    for (const skill of skillDirs) copyTree(join(skillsSrc, skill), join(target.dir, `wicked-testing-${skill}`));
-    totalSkills += skillDirs.length;
-
-    if (target.agentDir) {
-      mkdirSync(target.agentDir, { recursive: true });
-      for (const f of agentFiles) cpSync(join(agentsSrc, f), join(target.agentDir, `wicked-testing-${f}`), { force: true });
-      for (const f of specialistFiles) cpSync(join(specialistsSrc, f), join(target.agentDir, `wicked-testing-${f}`), { force: true });
-      totalAgents += agentFiles.length + specialistFiles.length;
+    // Writable-path pre-flight. If the home-slice is locked (corporate Mac
+    // with SIP, Windows profile sealed by policy, NFS-mounted read-only
+    // home), fail the target cleanly with an actionable line instead of
+    // a raw Node stack that leaves the user wondering which target broke.
+    // Other targets in the loop still run.
+    try {
+      mkdirSync(target.dir, { recursive: true });
+      accessSync(target.dir, FS_CONST.W_OK);
+    } catch (err) {
+      const code = err?.code || "EUNKNOWN";
+      console.error(`[${target.name}] SKIPPED — cannot write to ${target.dir}: ${code}`);
+      perTargetReport.push({ target: target.name, status: "skipped", reason: code, isolationTier: target.isolationTier });
+      continue;
     }
 
-    if (target.commandDir) {
-      const cmdDir = join(target.commandDir, "wicked-testing");
-      mkdirSync(cmdDir, { recursive: true });
-      for (const f of commandFiles) cpSync(join(commandsSrc, f), join(cmdDir, f), { force: true });
-      totalCommands += commandFiles.length;
-    }
+    try {
+      for (const skill of skillDirs) copyTree(join(skillsSrc, skill), join(target.dir, `wicked-testing-${skill}`));
+      totalSkills += skillDirs.length;
 
-    writeMarker(target);
-    console.log(`[${target.name}] installed ${VERSION} (skills=${skillDirs.length} agents=${agentFiles.length}+${specialistFiles.length} commands=${commandFiles.length})`);
+      if (target.agentDir) {
+        mkdirSync(target.agentDir, { recursive: true });
+        for (const f of agentFiles) cpSync(join(agentsSrc, f), join(target.agentDir, `wicked-testing-${f}`), { force: true });
+        for (const f of specialistFiles) cpSync(join(specialistsSrc, f), join(target.agentDir, `wicked-testing-${f}`), { force: true });
+        totalAgents += agentFiles.length + specialistFiles.length;
+      }
+
+      if (target.commandDir) {
+        const cmdDir = join(target.commandDir, "wicked-testing");
+        mkdirSync(cmdDir, { recursive: true });
+        for (const f of commandFiles) cpSync(join(commandsSrc, f), join(cmdDir, f), { force: true });
+        totalCommands += commandFiles.length;
+      }
+
+      writeMarker(target);
+      console.log(`[${target.name}] installed ${VERSION} (skills=${skillDirs.length} agents=${agentFiles.length}+${specialistFiles.length} commands=${commandFiles.length})`);
+
+      // Surface the isolation tier so users of non-Claude hosts know the
+      // reviewer's `allowed-tools: [Read]` is prompt-enforced, not
+      // host-enforced. See #73 / docs/INTEGRATION.md.
+      if (target.isolationTier === "advisory") {
+        console.log(`[${target.name}] note: allowed-tools isolation is ADVISORY on this CLI (prompt-enforced, not host-enforced). For hard isolation use Claude Code.`);
+      }
+
+      perTargetReport.push({
+        target: target.name,
+        status: "installed",
+        version: VERSION,
+        isolationTier: target.isolationTier,
+      });
+    } catch (err) {
+      const code = err?.code || "EUNKNOWN";
+      console.error(`[${target.name}] SKIPPED mid-install — ${code}: ${err?.message ?? err}`);
+      perTargetReport.push({ target: target.name, status: "failed", reason: code, isolationTier: target.isolationTier });
+    }
   }
 
   if (!skipSelfTest && mode !== "update") {
@@ -325,8 +527,19 @@ async function cmdInstall({ mode }) {
   }
 
   if (jsonOut) {
-    console.log(JSON.stringify({ version: VERSION, targets: targets.map(t => t.name), skills: totalSkills, agents: totalAgents, commands: totalCommands }));
+    console.log(JSON.stringify({
+      version: VERSION,
+      targets: perTargetReport,
+      skills: totalSkills,
+      agents: totalAgents,
+      commands: totalCommands,
+    }));
   }
+
+  // Non-zero exit if any target skipped due to a real failure (not just
+  // "already installed"). This matches CI expectations — an install script
+  // that partially succeeded should be a non-green build.
+  if (perTargetReport.some(r => r.status === "failed")) exit(1);
 }
 
 function cmdUninstall() {

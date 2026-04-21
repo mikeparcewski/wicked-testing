@@ -3,40 +3,262 @@
   "version": "0.2.0",
   "description": "Standalone QE library — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, optional wicked-bus + wicked-brain integration.",
   "skills": [
-    { "name": "wicked-testing:plan",      "path": "skills/plan/SKILL.md",      "command": "/wicked-testing:plan" },
-    { "name": "wicked-testing:authoring", "path": "skills/authoring/SKILL.md", "command": "/wicked-testing:authoring" },
-    { "name": "wicked-testing:execution", "path": "skills/execution/SKILL.md", "command": "/wicked-testing:execution" },
-    { "name": "wicked-testing:review",    "path": "skills/review/SKILL.md",    "command": "/wicked-testing:review" },
-    { "name": "wicked-testing:insight",   "path": "skills/insight/SKILL.md",   "command": "/wicked-testing:insight" }
+    {
+      "name": "wicked-testing:acceptance-testing",
+      "path": "skills/acceptance-testing/SKILL.md",
+      "command": "/wicked-testing:acceptance-testing"
+    },
+    {
+      "name": "wicked-testing:authoring",
+      "path": "skills/authoring/SKILL.md",
+      "command": "/wicked-testing:authoring"
+    },
+    {
+      "name": "wicked-testing:browser-automation",
+      "path": "skills/browser-automation/SKILL.md",
+      "command": "/wicked-testing:browser-automation"
+    },
+    {
+      "name": "wicked-testing:execution",
+      "path": "skills/execution/SKILL.md",
+      "command": "/wicked-testing:execution"
+    },
+    {
+      "name": "wicked-testing:insight",
+      "path": "skills/insight/SKILL.md",
+      "command": "/wicked-testing:insight"
+    },
+    {
+      "name": "wicked-testing:plan",
+      "path": "skills/plan/SKILL.md",
+      "command": "/wicked-testing:plan"
+    },
+    {
+      "name": "wicked-testing:review",
+      "path": "skills/review/SKILL.md",
+      "command": "/wicked-testing:review"
+    },
+    {
+      "name": "wicked-testing:scenario-authoring",
+      "path": "skills/scenario-authoring/SKILL.md",
+      "command": "/wicked-testing:scenario-authoring"
+    },
+    {
+      "name": "wicked-testing:test-oracle",
+      "path": "skills/test-oracle/SKILL.md",
+      "command": "/wicked-testing:test-oracle"
+    },
+    {
+      "name": "wicked-testing:test-runner",
+      "path": "skills/test-runner/SKILL.md",
+      "command": "/wicked-testing:test-runner"
+    },
+    {
+      "name": "wicked-testing:test-strategy",
+      "path": "skills/test-strategy/SKILL.md",
+      "command": "/wicked-testing:test-strategy"
+    }
   ],
   "agents": [
-    { "name": "test-strategist",                "path": "agents/test-strategist.md" },
-    { "name": "test-designer",                  "path": "agents/test-designer.md" },
-    { "name": "test-automation-engineer",       "path": "agents/test-automation-engineer.md" },
-    { "name": "testability-reviewer",           "path": "agents/testability-reviewer.md" },
-    { "name": "requirements-quality-analyst",   "path": "agents/requirements-quality-analyst.md" },
-    { "name": "risk-assessor",                  "path": "agents/risk-assessor.md" },
-    { "name": "code-analyzer",                  "path": "agents/code-analyzer.md" },
-    { "name": "semantic-reviewer",              "path": "agents/semantic-reviewer.md" },
-    { "name": "contract-testing-engineer",      "path": "agents/contract-testing-engineer.md" },
-    { "name": "continuous-quality-monitor",     "path": "agents/continuous-quality-monitor.md" },
-    { "name": "production-quality-engineer",    "path": "agents/production-quality-engineer.md" },
-    { "name": "acceptance-test-writer",         "path": "agents/acceptance-test-writer.md" },
-    { "name": "acceptance-test-executor",       "path": "agents/acceptance-test-executor.md" },
-    { "name": "acceptance-test-reviewer",       "path": "agents/acceptance-test-reviewer.md" },
-    { "name": "scenario-executor",              "path": "agents/scenario-executor.md" },
-    { "name": "test-oracle",                    "path": "agents/test-oracle.md" }
+    {
+      "name": "acceptance-test-executor",
+      "path": "agents/acceptance-test-executor.md"
+    },
+    {
+      "name": "acceptance-test-reviewer",
+      "path": "agents/acceptance-test-reviewer.md"
+    },
+    {
+      "name": "acceptance-test-writer",
+      "path": "agents/acceptance-test-writer.md"
+    },
+    {
+      "name": "code-analyzer",
+      "path": "agents/code-analyzer.md"
+    },
+    {
+      "name": "continuous-quality-monitor",
+      "path": "agents/continuous-quality-monitor.md"
+    },
+    {
+      "name": "contract-testing-engineer",
+      "path": "agents/contract-testing-engineer.md"
+    },
+    {
+      "name": "production-quality-engineer",
+      "path": "agents/production-quality-engineer.md"
+    },
+    {
+      "name": "requirements-quality-analyst",
+      "path": "agents/requirements-quality-analyst.md"
+    },
+    {
+      "name": "risk-assessor",
+      "path": "agents/risk-assessor.md"
+    },
+    {
+      "name": "scenario-executor",
+      "path": "agents/scenario-executor.md"
+    },
+    {
+      "name": "semantic-reviewer",
+      "path": "agents/semantic-reviewer.md"
+    },
+    {
+      "name": "test-automation-engineer",
+      "path": "agents/test-automation-engineer.md"
+    },
+    {
+      "name": "test-designer",
+      "path": "agents/test-designer.md"
+    },
+    {
+      "name": "test-oracle",
+      "path": "agents/test-oracle.md"
+    },
+    {
+      "name": "test-strategist",
+      "path": "agents/test-strategist.md"
+    },
+    {
+      "name": "testability-reviewer",
+      "path": "agents/testability-reviewer.md"
+    },
+    {
+      "name": "a11y-test-engineer",
+      "path": "agents/specialists/a11y-test-engineer.md"
+    },
+    {
+      "name": "chaos-test-engineer",
+      "path": "agents/specialists/chaos-test-engineer.md"
+    },
+    {
+      "name": "coverage-archaeologist",
+      "path": "agents/specialists/coverage-archaeologist.md"
+    },
+    {
+      "name": "data-quality-tester",
+      "path": "agents/specialists/data-quality-tester.md"
+    },
+    {
+      "name": "e2e-orchestrator",
+      "path": "agents/specialists/e2e-orchestrator.md"
+    },
+    {
+      "name": "exploratory-tester",
+      "path": "agents/specialists/exploratory-tester.md"
+    },
+    {
+      "name": "flaky-test-hunter",
+      "path": "agents/specialists/flaky-test-hunter.md"
+    },
+    {
+      "name": "fuzz-property-engineer",
+      "path": "agents/specialists/fuzz-property-engineer.md"
+    },
+    {
+      "name": "integration-test-engineer",
+      "path": "agents/specialists/integration-test-engineer.md"
+    },
+    {
+      "name": "load-performance-engineer",
+      "path": "agents/specialists/load-performance-engineer.md"
+    },
+    {
+      "name": "localization-test-engineer",
+      "path": "agents/specialists/localization-test-engineer.md"
+    },
+    {
+      "name": "mutation-test-engineer",
+      "path": "agents/specialists/mutation-test-engineer.md"
+    },
+    {
+      "name": "observability-test-engineer",
+      "path": "agents/specialists/observability-test-engineer.md"
+    },
+    {
+      "name": "test-data-manager",
+      "path": "agents/specialists/test-data-manager.md"
+    },
+    {
+      "name": "ui-component-test-engineer",
+      "path": "agents/specialists/ui-component-test-engineer.md"
+    },
+    {
+      "name": "visual-regression-engineer",
+      "path": "agents/specialists/visual-regression-engineer.md"
+    }
   ],
   "commands": [
-    { "name": "plan",      "path": "commands/plan.md",      "slash": "/wicked-testing:plan" },
-    { "name": "authoring", "path": "commands/authoring.md", "slash": "/wicked-testing:authoring" },
-    { "name": "execution", "path": "commands/execution.md", "slash": "/wicked-testing:execution" },
-    { "name": "review",    "path": "commands/review.md",    "slash": "/wicked-testing:review" },
-    { "name": "insight",   "path": "commands/insight.md",   "slash": "/wicked-testing:insight" },
-    { "name": "setup",     "path": "commands/setup.md",     "slash": "/wicked-testing:setup" },
-    { "name": "oracle",    "path": "commands/oracle.md",    "slash": "/wicked-testing:oracle" },
-    { "name": "tasks",     "path": "commands/tasks.md",     "slash": "/wicked-testing:tasks" },
-    { "name": "stats",     "path": "commands/stats.md",     "slash": "/wicked-testing:stats" },
-    { "name": "report",    "path": "commands/report.md",    "slash": "/wicked-testing:report" }
+    {
+      "name": "acceptance",
+      "path": "commands/acceptance.md",
+      "slash": "/wicked-testing:acceptance"
+    },
+    {
+      "name": "authoring",
+      "path": "commands/authoring.md",
+      "slash": "/wicked-testing:authoring"
+    },
+    {
+      "name": "automate",
+      "path": "commands/automate.md",
+      "slash": "/wicked-testing:automate"
+    },
+    {
+      "name": "execution",
+      "path": "commands/execution.md",
+      "slash": "/wicked-testing:execution"
+    },
+    {
+      "name": "insight",
+      "path": "commands/insight.md",
+      "slash": "/wicked-testing:insight"
+    },
+    {
+      "name": "oracle",
+      "path": "commands/oracle.md",
+      "slash": "/wicked-testing:oracle"
+    },
+    {
+      "name": "plan",
+      "path": "commands/plan.md",
+      "slash": "/wicked-testing:plan"
+    },
+    {
+      "name": "report",
+      "path": "commands/report.md",
+      "slash": "/wicked-testing:report"
+    },
+    {
+      "name": "review",
+      "path": "commands/review.md",
+      "slash": "/wicked-testing:review"
+    },
+    {
+      "name": "run",
+      "path": "commands/run.md",
+      "slash": "/wicked-testing:run"
+    },
+    {
+      "name": "scenarios",
+      "path": "commands/scenarios.md",
+      "slash": "/wicked-testing:scenarios"
+    },
+    {
+      "name": "setup",
+      "path": "commands/setup.md",
+      "slash": "/wicked-testing:setup"
+    },
+    {
+      "name": "stats",
+      "path": "commands/stats.md",
+      "slash": "/wicked-testing:stats"
+    },
+    {
+      "name": "tasks",
+      "path": "commands/tasks.md",
+      "slash": "/wicked-testing:tasks"
+    }
   ]
 }

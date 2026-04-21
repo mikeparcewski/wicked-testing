@@ -37,18 +37,42 @@ You generate aggressive, comprehensive test strategies for wicked-testing. Your 
 **Input**: Actual changes implemented.
 **Goal**: Recalibrate the test strategy based on what actually changed.
 
-Run this step always:
+Run this step always. Native PowerShell on Windows does not grok `2>/dev/null`,
+so probe git via a Python one-liner that does its own stderr suppression.
+
 ```bash
-git diff main --stat 2>/dev/null || git diff HEAD~1 --stat 2>/dev/null || echo "No git diff available"
-git diff main --name-only 2>/dev/null || true
+# Portable git-diff probes — Python wrapper swallows stderr and picks
+# a valid ref, so the caller never sees a non-zero exit from an absent 'main'.
+python3 -c "import subprocess; \
+  refs=['main','HEAD~1']; \
+  print(next((r.stdout for r in (subprocess.run(['git','diff',ref,'--stat'],capture_output=True,text=True) for ref in refs) if r.returncode==0), 'No git diff available'))" \
+  2>/dev/null \
+  || python -c "import subprocess; \
+  refs=['main','HEAD~1']; \
+  print(next((r.stdout for r in (subprocess.run(['git','diff',ref,'--stat'],capture_output=True,text=True) for ref in refs) if r.returncode==0), 'No git diff available'))"
+
+# Name-only list — same idea, returns empty string if the ref is absent.
+python3 -c "import subprocess; r=subprocess.run(['git','diff','main','--name-only'],capture_output=True,text=True); print(r.stdout)" \
+  2>/dev/null \
+  || python -c "import subprocess; r=subprocess.run(['git','diff','main','--name-only'],capture_output=True,text=True); print(r.stdout)"
 ```
 
 ## Process
 
 ### 1. Find Existing Tests
 
+Bash `find . -name` and stderr-silencing with `2>/dev/null` are Unix-only and
+unreliable on Windows Git Bash / PowerShell. Use Python's `pathlib.rglob`
+instead — it walks the tree on every platform and lets us filter cheaply.
+
 ```bash
-find . -name "*test*" -o -name "*spec*" 2>/dev/null | head -50
+python3 -c "import pathlib; \
+  hits=[str(p) for p in pathlib.Path('.').rglob('*') if p.is_file() and ('test' in p.name.lower() or 'spec' in p.name.lower())][:50]; \
+  print('\n'.join(hits))" \
+  2>/dev/null \
+  || python -c "import pathlib; \
+  hits=[str(p) for p in pathlib.Path('.').rglob('*') if p.is_file() and ('test' in p.name.lower() or 'spec' in p.name.lower())][:50]; \
+  print('\n'.join(hits))"
 ```
 
 ### 2. Classify Change Type and Surface Area
