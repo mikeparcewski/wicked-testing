@@ -45,14 +45,14 @@ if ! command -v hurl &>/dev/null; then
   echo "SKIP: hurl not installed. Run /wicked-testing:setup to install."
   exit 0
 fi
-cat > "${TMPDIR:-/tmp}/wicked-scenario-hurl.hurl" << 'HURL_EOF'
+cat > "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-hurl.hurl" << 'HURL_EOF'
 GET https://httpbin.org/get
 HTTP 200
 [Asserts]
 header "Content-Type" contains "application/json"
 jsonpath "$.url" == "https://httpbin.org/get"
 HURL_EOF
-hurl --test "${TMPDIR:-/tmp}/wicked-scenario-hurl.hurl"
+hurl --test "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-hurl.hurl"
 ```
 
 **Expect**: All hurl assertions pass
@@ -60,5 +60,5 @@ hurl --test "${TMPDIR:-/tmp}/wicked-scenario-hurl.hurl"
 ## Cleanup
 
 ```bash
-rm -f "${TMPDIR:-/tmp}/wicked-scenario-hurl.hurl"
+rm -f "${TMPDIR:-${TEMP:-/tmp}}/wicked-scenario-hurl.hurl"
 ```

@@ -166,6 +166,166 @@ function checkEvidenceSchema() {
   if (!data.required) err("schema", rel, "missing required fields array");
 }
 
+// --- cross-platform shell portability gate ---------------------------------
+// Scans fenced bash blocks in agents/, skills/, commands/, scenarios/, and
+// top-level scenario/format docs for Unix-only shell constructs that violate
+// the global CLAUDE.md portability rule (must work on macOS/Linux AND Windows
+// Git Bash / PowerShell). Each finding lands as `warn` so `npm test` doesn't
+// regress while the audit lands — flip to `err` once the tree is clean
+// across all audit branches.
+function checkCrossPlatform() {
+  const scanPaths = [
+    { dir: join(REPO, "agents"),        glob: /\.md$/ },
+    { dir: join(REPO, "agents", "specialists"), glob: /\.md$/ },
+    { dir: join(REPO, "commands"),      glob: /\.md$/ },
+    { dir: join(REPO, "skills"),        glob: /SKILL\.md$/, recursive: true },
+    { dir: join(REPO, "scenarios"),     glob: /\.md$/, recursive: true },
+  ];
+  const topLevelFiles = ["SCENARIO-FORMAT.md"];
+
+  const files = [];
+  for (const { dir, glob, recursive } of scanPaths) {
+    if (!existsSync(dir)) continue;
+    walkMarkdown(dir, glob, !!recursive, files);
+  }
+  for (const f of topLevelFiles) {
+    const p = join(REPO, f);
+    if (existsSync(p)) files.push(p);
+  }
+
+  // Patterns that indicate a Unix-only construct. Each matcher runs against
+  // the *shell-block text only* (we skip prose so mentions inside backticks
+  // or documentation don't fire false positives). Each matcher returns an
+  // array of { line, message } tuples.
+  const shellMatchers = [
+    {
+      name: "printf-newline-literal",
+      // printf 'foo\n' — zsh vs bash expand \n differently. Use '%s\n' or Python.
+      test: (line) => /\bprintf\s+['"][^'"%]*\\n/.test(line),
+      message: "printf with literal \\n but no %s — zsh/bash differ. Use `printf '%s\\n' ...` or a Python one-liner.",
+    },
+    {
+      name: "echo-e",
+      test: (line) => /\becho\s+-e\b/.test(line),
+      message: "`echo -e` is not portable (bash built-in behavior varies). Use `printf '%s\\n' ...` or Python.",
+    },
+    {
+      name: "bare-tmp",
+      // /tmp/... that is NOT inside a ${TMPDIR:-...} fallback on the same line.
+      test: (line) => {
+        if (!/\s\/tmp\//.test(line) && !/^"?\/tmp\//.test(line)) return false;
+        if (/\$\{TMPDIR:-/.test(line)) return false;       // guarded
+        if (/\$\{TEMP:-/.test(line))   return false;       // guarded
+        if (/^#/.test(line.trimStart())) return false;     // comment
+        return true;
+      },
+      message: "Bare `/tmp/...` path — use `${TMPDIR:-${TEMP:-/tmp}}` (Windows uses TEMP, not TMPDIR).",
+    },
+    {
+      name: "unguarded-stderr-null",
+      // 2>/dev/null that is NOT followed by `||` within ~20 chars on the same
+      // line. Multi-line chains are OK because the Python fallback lives on
+      // the next line, so we also pass if the line ends with `\` (continuation).
+      test: (line) => {
+        const m = line.match(/2>\/dev\/null(.*)$/);
+        if (!m) return false;
+        const tail = m[1];
+        if (/^\s*\\\s*$/.test(tail)) return false;         // line continuation
+        if (/\|\|/.test(tail))        return false;        // guarded with ||
+        if (/\|\s*\w/.test(tail))     return false;        // piped into next cmd (not a bare swallow)
+        return true;
+      },
+      message: "`2>/dev/null` not followed by `||` fallback on same line — add `|| true` / `|| python -c ...` or drop the redirect.",
+    },
+    {
+      name: "bare-timeout",
+      // `timeout` as the first word of a command, not inside a `command -v`
+      // guard. GNU timeout is absent from stock macOS and Windows Git Bash.
+      test: (line) => {
+        const trimmed = line.trimStart();
+        if (!/^timeout\s+\S/.test(trimmed)) return false;
+        // already wrapped in an if-guard elsewhere; the detector only fires
+        // on a raw pipeline start.
+        return true;
+      },
+      message: "Bare `timeout ...` pipeline — not present on stock macOS / Windows Git Bash. Chain `if command -v timeout ... elif gtimeout ... else bare`, or use `lib/exec-with-timeout.mjs`.",
+    },
+    {
+      name: "sed-i-no-backup",
+      // `sed -i` with no backup suffix — GNU vs BSD syntax differs.
+      test: (line) => /\bsed\s+-i\s+(?!['"][^'"]*['"]\s)/.test(line) && !/sed\s+-i\s+\.\w+/.test(line) && !/sed\s+-i\s+''/.test(line),
+      message: "`sed -i` without a backup suffix — GNU and BSD syntax differ. Use `sed -i.bak ...` and delete the backup, or a Python/Node rewrite.",
+    },
+    {
+      name: "realpath-or-readlink-f",
+      test: (line) => /\brealpath\b/.test(line) || /\breadlink\s+-f\b/.test(line),
+      message: "`realpath` / `readlink -f` are GNU coreutils only. Use a Python/Node one-liner (`python3 -c 'import os,sys;print(os.path.realpath(sys.argv[1]))'`).",
+    },
+    {
+      name: "find-dash-name",
+      // `find . -name ...` — portable `find` differs across BSD/GNU and is
+      // absent from Windows Git Bash's lean tool set. Prefer pathlib.rglob.
+      test: (line) => /\bfind\s+\.\s+-name\s+/.test(line) || /\bfind\s+\.\s+-type\s/.test(line),
+      message: "`find . -name` — flag set differs across BSD/GNU and is sparse on Windows. Use `python3 -c 'import pathlib; ...'` instead.",
+    },
+    {
+      name: "ls-pipe-wc",
+      test: (line) => /\bls\s.*\|\s*wc\b/.test(line),
+      message: "`ls ... | wc -l` — Windows Git Bash lacks `wc`. Use `python3 -c 'import pathlib; print(len(list(...)))'`.",
+    },
+  ];
+
+  for (const file of files) {
+    const rel = relative(REPO, file);
+    const content = readFileSync(file, "utf8");
+    // Walk fenced bash/sh/shell blocks only
+    const fenceRe = /```(bash|sh|shell|zsh)\r?\n([\s\S]*?)\r?\n```/g;
+    let m;
+    while ((m = fenceRe.exec(content)) !== null) {
+      const block = m[2];
+      const blockStart = content.slice(0, m.index).split(/\r?\n/).length + 1;
+      const blockLines = block.split(/\r?\n/);
+
+      // Track whether we're currently inside an `if command -v timeout` / gtimeout
+      // guard. The bare-timeout matcher is suppressed until the matching `fi`.
+      let timeoutGuardDepth = 0;
+      for (let i = 0; i < blockLines.length; i++) {
+        const line = blockLines[i];
+        if (!line.trim() || line.trim().startsWith("#")) continue;
+        if (/^\s*if\s+command\s+-v\s+(timeout|gtimeout)\b/.test(line)) timeoutGuardDepth++;
+        if (timeoutGuardDepth > 0 && /^\s*fi\b/.test(line)) timeoutGuardDepth--;
+
+        for (const matcher of shellMatchers) {
+          if (matcher.name === "bare-timeout" && timeoutGuardDepth > 0) continue;
+          try {
+            if (matcher.test(line)) {
+              warn("cross-platform", rel, `line ~${blockStart + i}: ${matcher.message}`);
+            }
+          } catch {
+            // Defensive: never let a bad regex break the whole validator.
+          }
+        }
+      }
+    }
+  }
+}
+
+function walkMarkdown(dir, globRe, recursive, out) {
+  let entries;
+  try { entries = readdirSync(dir); } catch { return; }
+  for (const name of entries) {
+    if (name === "node_modules" || name === ".git" || name === "workspace") continue;
+    const full = join(dir, name);
+    let st;
+    try { st = statSync(full); } catch { continue; }
+    if (st.isDirectory()) {
+      if (recursive) walkMarkdown(full, globRe, recursive, out);
+    } else if (globRe.test(name)) {
+      out.push(full);
+    }
+  }
+}
+
 function checkNamespaceAlignment() {
   const docPath = join(REPO, "docs", "NAMESPACE.md");
   const rel = relative(REPO, docPath);
@@ -191,6 +351,7 @@ checkSkills();
 checkPluginJson();
 checkEvidenceSchema();
 checkNamespaceAlignment();
+checkCrossPlatform();
 
 const errors = findings.filter(f => f.severity === "error");
 const warns  = findings.filter(f => f.severity === "warn");
