@@ -1,0 +1,25 @@
+{
+  "agent": "wicked-testing:plan",
+  "subagent_type": "skill:wicked-testing:plan",
+  "description": "Skill-level: routes /wicked-testing:plan inputs to the correct dispatch agent per skills/plan/SKILL.md dispatch table.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run /wicked-testing:plan on a user story describing a new checkout feature. The plan skill should route to test-strategist (not requirements-quality-analyst or testability-reviewer — the input is a feature description, not ACs or a design doc).",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:test-strategist" }
+      ],
+      "notes": "Confirms feature-description → test-strategist routing in skills/plan/SKILL.md."
+    },
+    {
+      "id": 2,
+      "prompt": "Run /wicked-testing:plan on a file containing acceptance criteria (AC-001, AC-002, AC-003 with SMART+T shapes). The plan skill should route to requirements-quality-analyst — the trigger is 'AC / clarify doc', not 'feature description'.",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:requirements-quality-analyst" }
+      ],
+      "notes": "Confirms AC → requirements-quality-analyst routing."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "agent": "wicked-testing:insight",
+  "subagent_type": "skill:wicked-testing:insight",
+  "description": "Skill-level: routes /wicked-testing:insight inputs to the correct read-only agent per skills/insight/SKILL.md dispatch table.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run /wicked-testing:insight with the question 'show me the last 10 runs'. The insight skill should route to test-oracle — natural-language ledger questions map to the fixed-SQL oracle.",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:test-oracle" }
+      ],
+      "notes": "Confirms natural-language question → test-oracle routing."
+    },
+    {
+      "id": 2,
+      "prompt": "Run /wicked-testing:insight with the request 'find flaky tests in the auth suite'. The insight skill should route to flaky-test-hunter (specialist), NOT test-oracle — flake detection has a dedicated agent.",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:flaky-test-hunter" }
+      ],
+      "notes": "Confirms 'find flaky tests' → flaky-test-hunter routing."
+    }
+  ]
+}

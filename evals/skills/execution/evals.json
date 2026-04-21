@@ -1,0 +1,26 @@
+{
+  "agent": "wicked-testing:execution",
+  "subagent_type": "skill:wicked-testing:execution",
+  "description": "Skill-level: routes /wicked-testing:execution inputs to the correct executor per skills/execution/SKILL.md dispatch table.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Run /wicked-testing:execution on scenarios/examples/api-health-check.md with the request 'run it'. The execution skill should route to scenario-executor — the default dispatch for a scenario file without an acceptance-grade verdict ask.",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "dispatches-agent", "value": "wicked-testing:scenario-executor" }
+      ],
+      "notes": "Confirms scenario file + 'run it' → scenario-executor routing."
+    },
+    {
+      "id": 2,
+      "prompt": "Run /wicked-testing:execution on scenarios/examples/api-health-check.md with the request 'give me an acceptance-grade verdict'. The execution skill should route to /wicked-testing:acceptance (the 3-agent isolated pipeline) — NOT to test-designer (dev-loop fast path is never the default).",
+      "expected_shape": "dispatch",
+      "assertions": [
+        { "kind": "contains-text", "text": "acceptance" },
+        { "kind": "not-contains-text", "values": ["test-designer"] }
+      ],
+      "notes": "Command-route case: the skill hands off to /wicked-testing:acceptance, not a direct Task() dispatch. Use contains-text since there is no single subagent_type in the trace."
+    }
+  ]
+}

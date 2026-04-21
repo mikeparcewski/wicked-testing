@@ -36,6 +36,18 @@
         { "kind": "matches-regex", "pattern": "(?i)(reset|clear|cleanup|isolate|teardown|afterEach|beforeEach)" }
       ],
       "notes": "Ordering dependency via shared state. Must recommend test isolation (reset state in beforeEach/afterEach)."
+    },
+    {
+      "id": 4,
+      "prompt": "We have a release going out in 3 hours. A flaky integration test is blocking CI — the root cause looks like a cross-process race in our message queue consumer that would take a week of redesign to fix properly. What do we do right now?",
+      "input_files": [],
+      "expected_shape": "quarantine-decision",
+      "assertions": [
+        { "kind": "contains-text", "text": "quarantine" },
+        { "kind": "matches-regex", "pattern": "(?i)(deadline|expir|review.by)" },
+        { "kind": "contains-text", "text": "root cause" }
+      ],
+      "notes": "Time pressure + non-trivial fix — must propose quarantine with an explicit deadline/review-by date AND a root-cause ticket, not just 'skip the test'."
     }
   ]
 }

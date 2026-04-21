@@ -14,6 +14,59 @@
         { "kind": "matches-regex", "pattern": "(?i)(passed|failed|status|verdict)" }
       ],
       "notes": "Dry-run mode — agent should describe execution + evidence structure without hitting real services."
+    },
+    {
+      "id": 2,
+      "prompt": "Execute this scenario:\n\n```\n---\nname: intentional-fail\ndescription: step exits non-zero on purpose\ntimeout: 10\n---\n\n# Intentional Fail\n\n## Steps\n\n### Step 1: fail\n\n```bash\nfalse\n```\n```\n\nRun it and record the result. Do not retry.",
+      "input_files": [],
+      "expected_shape": "run-record",
+      "assertions": [
+        { "kind": "verdict-in", "values": ["FAIL", "FAILED", "fail"] },
+        { "kind": "not-contains-text", "values": ["retry", "attempt 2", "retrying"] }
+      ],
+      "notes": "A step that exits non-zero — executor records FAIL, does not retry."
+    },
+    {
+      "id": 3,
+      "prompt": "Execute this scenario:\n\n```\n---\nname: missing-tool\ndescription: references a command that does not exist\ntools:\n  required: [no-such-command-xyz]\ntimeout: 10\n---\n\n# Missing Tool\n\n## Steps\n\n### Step 1: call the missing tool\n\n```bash\nno-such-command-xyz --version\n```\n```\n\nRun it and record the result.",
+      "input_files": [],
+      "expected_shape": "run-record",
+      "assertions": [
+        { "kind": "contains-text", "text": "SKIP" },
+        { "kind": "contains-text", "text": "missing" }
+      ],
+      "notes": "Missing tool — executor records SKIPPED with a reason (missing tool), does not fabricate a run."
+    },
+    {
+      "id": 4,
+      "prompt": "Execute this scenario:\n\n```\n---\nname: no-steps-section\ndescription: the Steps section is missing entirely\ntimeout: 10\n---\n\n# No Steps Section\n\nThis scenario has a title but no Steps heading or step blocks at all.\n```\n\nRun it and record the result.",
+      "input_files": [],
+      "expected_shape": "error-surface",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(steps|ERR_SCENARIO|malformed|missing.*section|no.*steps)" }
+      ],
+      "notes": "Malformed scenario (missing Steps section) — executor surfaces the structure error."
+    },
+    {
+      "id": 5,
+      "prompt": "Execute this scenario:\n\n```\n---\nname: timeout-scenario\ndescription: step runs longer than the scenario timeout\ntimeout: 2\n---\n\n# Timeout\n\n## Steps\n\n### Step 1: sleep too long\n\n```bash\nsleep 30\n```\n```\n\nRun it and record the result — the scenario-level timeout is 2 seconds and the step sleeps 30 seconds.",
+      "input_files": [],
+      "expected_shape": "run-record",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(timeout|timed.out|timed_out|exceeded.*time|deadline)" }
+      ],
+      "notes": "Step command runs longer than scenario `timeout:` frontmatter — executor terminates and records a timeout."
+    },
+    {
+      "id": 6,
+      "prompt": "Execute this scenario:\n\n```\n---\nname: artifact-producer\ndescription: step writes a file under the evidence dir\ntimeout: 10\n---\n\n# Artifact Producer\n\n## Steps\n\n### Step 1: write evidence\n\n```bash\necho 'hello from step 1' > \"${EVIDENCE_DIR}/hello.txt\"\n```\n```\n\nRun it and include the written artifact in the evidence manifest.",
+      "input_files": [],
+      "expected_shape": "run-record",
+      "assertions": [
+        { "kind": "produces-artifact", "path": "**/.wicked-testing/evidence/**/*.txt", "min_bytes": 1 },
+        { "kind": "matches-regex", "pattern": "(?i)(manifest|evidence|artifact)" }
+      ],
+      "notes": "Step writes a file under ${EVIDENCE_DIR}/ — executor must include it in the evidence manifest."
     }
   ]
 }
