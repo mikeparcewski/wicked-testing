@@ -37,6 +37,56 @@ Read the target first, then route:
 When multiple apply, dispatch in parallel. Merge results in the reply — no
 unrelated raw outputs dumped in.
 
+### Dispatch block (executable)
+
+```
+Task(
+  subagent_type="wicked-testing:test-strategist",
+  prompt="""Generate a comprehensive test strategy for the target below.
+
+## Target
+{file path, directory, or feature description}
+
+## Instructions
+1. Classify the change type (UI, API, both, data, config).
+2. Analyze the surface area (public APIs, functions, endpoints).
+3. Generate positive + negative scenario pairs for every feature.
+4. Identify risk areas and confidence level.
+5. Flag any specification gaps discovered.
+
+**MANDATORY**: Every scenario must have BOTH positive AND negative counterpart.
+Return findings in the standard test-strategist format."""
+)
+```
+
+Swap `subagent_type` to the matching agent from the table above. For the
+"test everything" path, dispatch all four in parallel (one `Task(...)` call
+per agent in the same turn) and merge the returned findings.
+
+## Tier-2 specialists this skill may pull in
+
+For domain-specific planning signals, dispatch a specialist and fold its
+output into the strategy document. These don't render verdicts — they add
+risk+scenario coverage where the generalist agents would miss signal:
+
+| Trigger (anything in the target that matches)            | Specialist                              |
+|----------------------------------------------------------|-----------------------------------------|
+| React/Vue/Svelte component under test                    | `wicked-testing:ui-component-test-engineer` |
+| API / service boundary (REST, gRPC, GraphQL)             | `wicked-testing:integration-test-engineer`  |
+| Database migration or schema change                      | `wicked-testing:data-quality-tester`        |
+| Performance-sensitive path (heavy compute, I/O)          | `wicked-testing:load-performance-engineer`  |
+| Multi-step user journey                                  | `wicked-testing:e2e-orchestrator`           |
+| UI with visual regressions risk (CSS, theming)           | `wicked-testing:visual-regression-engineer` |
+| User-facing surface (WCAG 2.1 AA relevance)              | `wicked-testing:a11y-test-engineer`         |
+| Parser / serializer / round-trip / invariants            | `wicked-testing:fuzz-property-engineer`     |
+| Translated / RTL / pluralization-sensitive copy          | `wicked-testing:localization-test-engineer` |
+| Service with logs / metrics / traces / PII-in-signals    | `wicked-testing:observability-test-engineer` |
+| Test-suite effectiveness evaluation (kill rate)          | `wicked-testing:mutation-test-engineer`     |
+| Failure-mode / resilience planning                       | `wicked-testing:chaos-test-engineer`        |
+
+Tier-2 names are internal — see [docs/NAMESPACE.md](../../docs/NAMESPACE.md).
+Consumers (wicked-garden) depend only on Tier-1 names.
+
 ## Output
 
 - A test strategy: scenarios (positive + negative), risk matrix, testability
@@ -45,15 +95,7 @@ unrelated raw outputs dumped in.
   which design changes unblock testing
 - A pointer to the ledger where this plan is recorded
 
-## Tier-2 specialists this skill may pull in
-
-For specific domains, the skill can also dispatch domain specialists:
-- UI-heavy change → ui-component-test-engineer (not contract surface)
-- API change → integration-test-engineer
-- Data migration → data-quality-tester
-- Heavy compute → load-performance-engineer
-
-Tier-2 names are not part of the public contract — see NAMESPACE.md.
+Emits `wicked.teststrategy.authored` on the bus when present.
 
 ## References
 
