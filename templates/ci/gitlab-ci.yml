@@ -1,0 +1,98 @@
+# wicked-testing acceptance pipeline for GitLab CI.
+#
+# Emitted by /wicked-testing:ci-bootstrap. See docs/CI.md for the
+# exit-code contract, secrets, retention defaults, and the PR-comment
+# (merge-request-note) generator.
+#
+# wicked-testing:ci-bootstrap:managed
+# -----------------------------------
+# Leave the marker above in place so ci-bootstrap can re-emit this
+# file on upgrades. Delete the marker line to pin your local edits.
+
+stages:
+  - test
+  - acceptance
+  - report
+
+variables:
+  # Tell every wicked-testing command to run headless.
+  WICKED_TESTING_CI: '1'
+  # Override this in `.gitlab-ci.yml` or per-pipeline variables.
+  WICKED_TESTING_SCENARIO: 'scenarios/examples/smoke.md'
+
+.wicked-base: &wicked-base
+  image: node:20
+  before_script:
+    - |
+      if [ -z "${ANTHROPIC_API_KEY}" ]; then
+        echo "ANTHROPIC_API_KEY is not set. See docs/CI.md (Secrets)."
+        exit 3
+      fi
+    - npx --yes wicked-testing install
+
+structural-test:
+  <<: *wicked-base
+  stage: test
+  script:
+    - npm test
+  artifacts:
+    when: always
+    paths:
+      - .wicked-testing/logs/
+    expire_in: 14 days
+
+acceptance:
+  <<: *wicked-base
+  stage: acceptance
+  needs: ['structural-test']
+  script:
+    - mkdir -p .wicked-testing/logs
+    - |
+      if [ ! -f "${WICKED_TESTING_SCENARIO}" ]; then
+        echo "Scenario ${WICKED_TESTING_SCENARIO} not found — marking SKIP."
+        exit 0
+      fi
+    - set -o pipefail
+    - npx --yes wicked-testing acceptance "${WICKED_TESTING_SCENARIO}" --json
+        | tee .wicked-testing/logs/acceptance.json
+  # GitLab's artifact syntax differs from GitHub Actions — paths are
+  # relative patterns, `when: always` uploads even on failed jobs,
+  # and `expire_in` is the retention knob.
+  artifacts:
+    name: 'wicked-testing-evidence-$CI_JOB_ID'
+    when: always
+    paths:
+      - .wicked-testing/evidence/*/manifest.json
+      - .wicked-testing/evidence/*/artifacts/
+      - .wicked-testing/logs/
+    expire_in: 14 days
+    reports:
+      # Optional: reuse the JSON envelope as a GitLab test report.
+      # GitLab expects junit; see docs/CI.md for the conversion script.
+      junit: .wicked-testing/logs/acceptance.junit.xml
+
+mr-comment:
+  image: node:20
+  stage: report
+  needs: ['acceptance']
+  rules:
+    - if: $CI_MERGE_REQUEST_IID
+  before_script:
+    - apt-get update -qq && apt-get install -y -qq python3 curl
+  script:
+    - |
+      python3 scripts/ci/manifest-to-comment.py \
+        --manifest-glob '.wicked-testing/evidence/*/manifest.json' \
+        --log .wicked-testing/logs/acceptance.json \
+        > .wicked-testing/logs/mr-comment.md \
+      || echo '_(wicked-testing: no manifest produced for this run)_' > .wicked-testing/logs/mr-comment.md
+    - |
+      BODY="$(cat .wicked-testing/logs/mr-comment.md)"
+      # GitLab uses a private-token (or job token) + REST API to post
+      # merge-request notes. Set GITLAB_API_TOKEN as a masked CI variable.
+      curl --silent --fail \
+        --request POST \
+        --header "PRIVATE-TOKEN: ${GITLAB_API_TOKEN}" \
+        --data-urlencode "body=${BODY}" \
+        "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes" \
+      || echo "Could not post MR note (check GITLAB_API_TOKEN scope)."

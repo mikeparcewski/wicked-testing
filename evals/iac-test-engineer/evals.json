@@ -1,0 +1,43 @@
+{
+  "agent": "iac-test-engineer",
+  "subagent_type": "wicked-testing:iac-test-engineer",
+  "description": "Tier-2 specialist — terraform plan/validate + checkov/tflint/tfsec/opa/kyverno/cfn-guard policy engines; plan-not-clean is its own verdict signal.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Audit a Terraform module at modules/rds. Run terraform validate, terraform plan, and checkov. The reviewer wants to know: (a) does the plan have drift, (b) what policies fail, (c) which rule ids and resources. Produce an IaC findings writeup.",
+      "input_files": [],
+      "expected_shape": "findings+policy-matrix",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(terraform\\s+(validate|plan)|terraform validate|terraform plan)" },
+        { "kind": "matches-regex", "pattern": "(?i)(checkov|tflint|tfsec)" },
+        { "kind": "matches-regex", "pattern": "(?i)(plan\\.json|plan\\.bin|evidence)" },
+        { "kind": "matches-regex", "pattern": "(?i)(rule|ckv_|policy|severity|finding|drift)" }
+      ],
+      "notes": "Must run terraform validate+plan, invoke at least one policy tool, and persist plan as evidence."
+    },
+    {
+      "id": 2,
+      "prompt": "Our scenario says iac_kind: terraform but the target_dir is empty — no .tf files at all. What should the agent do?",
+      "input_files": [],
+      "expected_shape": "refusal",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(ERR_TARGET_DIR_MISSING|ERR_TF_INIT_FAILED|no.*\\.tf|empty|does not exist|refuse|cannot)" },
+        { "kind": "not-contains-text", "values": ["VERDICT=PASS"], "case_sensitive": true }
+      ],
+      "notes": "Must refuse — missing input is a user error, not a clean pass."
+    },
+    {
+      "id": 3,
+      "prompt": "Terraform plan exited with code 2 (diff present) but every policy tool (checkov, tflint, tfsec) reported zero findings. The scenario declares expect_plan_clean: true. What is the verdict and why?",
+      "input_files": [],
+      "expected_shape": "verdict-reasoning",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(FAIL|fail)" },
+        { "kind": "matches-regex", "pattern": "(?i)(drift|plan.not.clean|diff.present|plan.*diff|exit.*2)" },
+        { "kind": "not-contains-text", "values": ["VERDICT=PASS"], "case_sensitive": true }
+      ],
+      "notes": "Plan-not-clean is its own verdict signal — FAIL even when every policy tool passes."
+    }
+  ]
+}

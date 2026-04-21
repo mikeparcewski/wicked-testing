@@ -1,0 +1,85 @@
+# wicked-testing acceptance pipeline — Buildkite.
+#
+# Emitted by /wicked-testing:ci-bootstrap. See docs/CI.md for the
+# exit-code contract, secrets (ANTHROPIC_API_KEY), evidence retention
+# defaults (14 days), and the PR-annotate generator.
+#
+# wicked-testing:ci-bootstrap:managed
+# Keep the marker above to allow re-bootstrap; delete it to pin edits.
+
+steps:
+  - label: ':package: install'
+    key: install
+    command: |
+      if [ -z "${ANTHROPIC_API_KEY}" ]; then
+        echo "ANTHROPIC_API_KEY not set — aborting. See docs/CI.md."
+        exit 3
+      fi
+      npx --yes wicked-testing install
+    plugins:
+      - docker#v5.11.0:
+          image: node:20
+          environment:
+            - ANTHROPIC_API_KEY
+            - WICKED_TESTING_CI=1
+
+  - wait
+
+  - label: ':white_check_mark: structural test'
+    key: test
+    command: npm test
+    plugins:
+      - docker#v5.11.0:
+          image: node:20
+
+  - label: ':mag: acceptance'
+    key: acceptance
+    depends_on: test
+    command: |
+      set -o pipefail
+      mkdir -p .wicked-testing/logs
+      SCENARIO="${WICKED_TESTING_SCENARIO:-scenarios/examples/smoke.md}"
+      if [ ! -f "${SCENARIO}" ]; then
+        echo "Scenario ${SCENARIO} not found — skipping."
+        exit 0
+      fi
+      npx --yes wicked-testing acceptance "${SCENARIO}" --json \
+        | tee .wicked-testing/logs/acceptance.json
+    # Buildkite's artifact upload is colocated with the step; paths are
+    # globbed from the checkout root. Retention is controlled by the
+    # org-level "Artifact Retention" setting — default 14 days matches
+    # docs/CI.md guidance.
+    artifact_paths:
+      - ".wicked-testing/evidence/**/manifest.json"
+      - ".wicked-testing/evidence/**/artifacts/**"
+      - ".wicked-testing/logs/**"
+    plugins:
+      - docker#v5.11.0:
+          image: node:20
+          environment:
+            - ANTHROPIC_API_KEY
+            - WICKED_TESTING_CI=1
+            - WICKED_TESTING_SCENARIO
+
+  - label: ':speech_balloon: annotate PR summary'
+    key: annotate
+    depends_on: acceptance
+    # Buildkite has no native PR-comment API — we use `buildkite-agent
+    # annotate` which renders a panel on the build page that mirrors
+    # the PR summary content. Installations that want a true PR comment
+    # can add a post-step hook calling `gh pr comment`.
+    command: |
+      buildkite-agent artifact download ".wicked-testing/logs/acceptance.json" .
+      buildkite-agent artifact download ".wicked-testing/evidence/**/manifest.json" .
+      python3 scripts/ci/manifest-to-comment.py \
+        --manifest-glob '.wicked-testing/evidence/*/manifest.json' \
+        --log .wicked-testing/logs/acceptance.json \
+        > /tmp/pr-comment.md \
+      || echo "_(wicked-testing: no manifest produced for this run)_" > /tmp/pr-comment.md
+      cat /tmp/pr-comment.md | buildkite-agent annotate --style 'info' --context 'wicked-testing'
+    plugins:
+      - docker#v5.11.0:
+          image: node:20
+          environment:
+            - BUILDKITE_JOB_ID
+            - BUILDKITE_BUILD_ID

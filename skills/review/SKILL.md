@@ -86,6 +86,10 @@ or a list of findings the skill folds into the review output:
 | Flake detection for a scenario's history               | `wicked-testing:flaky-test-hunter`          |
 | Untested-path audit                                    | `wicked-testing:coverage-archaeologist`     |
 | "Does this meet contract?" (Pact / OpenAPI)            | `wicked-testing:contract-testing-engineer`  |
+| Audit test-suite quality (smells, dead tests)          | `wicked-testing:test-code-quality-auditor`  |
+| Audit snapshot hygiene (stale, over-broad, dead)       | `wicked-testing:snapshot-hygiene-auditor`   |
+| Release gate — GO / CONDITIONAL / NO-GO                | `wicked-testing:release-readiness-engineer` |
+| Compliance evidence review (SOC2 / HIPAA / GDPR)       | `wicked-testing:compliance-test-engineer`   |
 
 ## Verdict semantics
 

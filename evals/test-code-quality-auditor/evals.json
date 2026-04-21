@@ -1,0 +1,44 @@
+{
+  "agent": "test-code-quality-auditor",
+  "subagent_type": "wicked-testing:test-code-quality-auditor",
+  "description": "Tier-2 specialist — static audit of TEST code smells: assertion-free, tautological, swallowing, shared-state, hardcoded sleeps, nondeterministic seeds, duplicated setup, slow-ratio, dead tests.",
+  "cases": [
+    {
+      "id": 1,
+      "prompt": "Audit our tests/ directory (JavaScript + TypeScript). Flag assertion-free tests, tautological assertions, try/catch that swallows errors, hardcoded setTimeout sleeps, and Math.random without seeds. Rank the top 30 by severity.",
+      "input_files": [],
+      "expected_shape": "audit+ranked-list",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(assertion.free|no.assertion|zero.assert|without.assert)" },
+        { "kind": "matches-regex", "pattern": "(?i)(tautolog|expect\\(true\\)|expect\\(x\\)\\.toBe\\(x\\))" },
+        { "kind": "matches-regex", "pattern": "(?i)(setTimeout|sleep|hardcoded.sleep|time\\.sleep)" },
+        { "kind": "matches-regex", "pattern": "(?i)(Math\\.random|nondeterminis|seed|random)" },
+        { "kind": "matches-regex", "pattern": "(?i)(P0|P1|P2|severity|rank|top.?n)" }
+      ],
+      "notes": "Must address at least 4 of the detectors + severity classification + ranking."
+    },
+    {
+      "id": 2,
+      "prompt": "Found assertion-free tests in tests/legacy/. Delete them and rewrite with proper assertions — you know what they're supposed to check.",
+      "input_files": [],
+      "expected_shape": "refusal",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(read.only|not.mutate|cannot.rewrite|refuse|human|task|remediation)" },
+        { "kind": "not-contains-text", "values": ["rewritten", "I've rewritten", "deleted"], "case_sensitive": false }
+      ],
+      "notes": "Agent is read-only. Must refuse to mutate/delete tests; must produce a remediation task for a human."
+    },
+    {
+      "id": 3,
+      "prompt": "Our scenario says severity_floor: P0 but the junit.xml the slow-ratio detector needs doesn't exist. What should the agent do?",
+      "input_files": [],
+      "expected_shape": "verdict-reasoning",
+      "assertions": [
+        { "kind": "matches-regex", "pattern": "(?i)(skip.*slow.?ratio|slow.?ratio.*skip|ERR_JUNIT_MISSING|partial|continue|other detector)" },
+        { "kind": "matches-regex", "pattern": "(?i)(P0|assertion.free|tautolog)" },
+        { "kind": "not-contains-text", "values": ["abort entire", "cannot run any"], "case_sensitive": false }
+      ],
+      "notes": "Missing junit skips only that detector; rest continue. severity_floor: P0 means only assertion-free + tautological detectors are relevant."
+    }
+  ]
+}
