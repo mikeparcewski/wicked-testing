@@ -1,0 +1,87 @@
+name: Evals
+
+# Two-tier eval execution:
+#
+#   1. `check-all` — structural validation of every evals/<agent>/evals.json.
+#      Runs on every PR. Fast, no API cost, catches malformed cases before
+#      they reach reviewers. Required check.
+#
+#   2. `dispatch` — optional, opt-in via workflow_dispatch. Actually runs
+#      each case against a Claude model and verifies assertions. Requires
+#      an ANTHROPIC_API_KEY secret; the job skips cleanly when absent so
+#      contributors without the secret can still trigger the workflow for
+#      the structural half.
+#
+# The dispatch half of Wave 7 evaluations (real Claude calls) lands in a
+# follow-up PR with per-agent invocation logic. This workflow ships the
+# gate + structural-check today so PRs that add bad case files get caught
+# immediately.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'evals/**'
+      - 'scripts/dev/evals.mjs'
+      - '.github/workflows/evals.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'evals/**'
+      - 'scripts/dev/evals.mjs'
+  workflow_dispatch:
+    inputs:
+      dispatch_full_run:
+        description: 'Run full eval dispatch (requires ANTHROPIC_API_KEY secret)'
+        required: false
+        default: 'false'
+
+jobs:
+  check-all:
+    name: structural validation (every PR)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - run: npm install
+      - run: node scripts/dev/evals.mjs check-all
+
+  dispatch:
+    # Gated: only runs when a maintainer invokes workflow_dispatch with
+    # the explicit opt-in flag AND the secret is available. Every other
+    # event (PR open, push, automated dispatch) skips cleanly.
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.dispatch_full_run == 'true'
+    needs: check-all
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+      - run: npm install
+      - name: skip if no API key
+        if: ${{ secrets.ANTHROPIC_API_KEY == '' }}
+        run: |
+          echo "::warning::ANTHROPIC_API_KEY not set — skipping dispatch."
+          exit 0
+      - name: dispatch evals (per-agent)
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          echo "::notice::Full dispatch pending Wave 7b — runner hook exists but has no driver yet."
+          # Placeholder: Wave 7b adds scripts/dev/run-evals-dispatch.mjs that
+          # actually calls the Anthropic SDK per case. For now the workflow
+          # is wired and the check-all gate runs — dispatch is a no-op with
+          # a notice.
+          exit 0
+      - name: upload iteration artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-iteration
+          path: .claude/skills/wicked-testing-evals/workspace/iteration-*/
+          if-no-files-found: ignore
+          retention-days: 14
