@@ -30,12 +30,12 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
 [3] Dispatches acceptance-test-executor (subagent)
         allowed-tools: Read, Write, Bash
         - Receives: scenario path + test plan
-        - Creates run directory: .wicked-testing/runs/{run-id}/
+        - Creates run directory: .wicked-testing/evidence/{run-id}/
         - Executes each step via Bash
         - Captures: stdout, stderr, exit codes, file artifacts
         - Writes evidence files:
-            .wicked-testing/runs/{run-id}/evidence.json
-            .wicked-testing/runs/{run-id}/step-N.json
+            .wicked-testing/evidence/{run-id}/evidence.json
+            .wicked-testing/evidence/{run-id}/step-N.json
         - Does NOT judge results — only records what happened
         |
         v
@@ -54,7 +54,7 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
 [5] DomainStore writes (dual-write: JSON + SQLite)
         store.update('runs', run.id, {
           finished_at, status: 'passed' | 'failed',
-          evidence_path: '.wicked-testing/runs/{run-id}'
+          evidence_path: '.wicked-testing/evidence/{run-id}'
         });
         store.create('verdicts', {
           run_id, verdict: 'PASS',
@@ -67,7 +67,7 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
 [6] User sees verdict
         ## Acceptance Test Results: test-runner-self-test
         ### Verdict: PASS
-        Evidence: .wicked-testing/runs/{run-id}/
+        Evidence: .wicked-testing/evidence/{run-id}/
         Run ID: {run-id}
         |
         v

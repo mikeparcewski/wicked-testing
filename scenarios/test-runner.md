@@ -123,12 +123,12 @@ import('./lib/domain-store.mjs').then(({ DomainStore }) => {
   store.update('runs', run.id, {
     finished_at: new Date().toISOString(),
     status: 'passed',
-    evidence_path: '.wicked-testing/runs/bootstrap'
+    evidence_path: '.wicked-testing/evidence/bootstrap'
   });
   const verdict = store.create('verdicts', {
     run_id: run.id,
     verdict: 'PASS',
-    evidence_path: '.wicked-testing/runs/bootstrap',
+    evidence_path: '.wicked-testing/evidence/bootstrap',
     reviewer: 'acceptance-test-reviewer',
     reason: 'Bootstrap self-test passed'
   });

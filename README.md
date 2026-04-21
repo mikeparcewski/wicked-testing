@@ -146,13 +146,15 @@ All commands support `--json` for machine-readable output.
   config.json              Project configuration + detected capabilities
   wicked-testing.db        SQLite ledger (WAL mode, 7 tables)
   evidence/
-    <run-id>/
-      manifest.json        PUBLIC contract — read by consumers
-      artifacts/
+    <run-id>/              <run-id> is the canonical run UUID
+      manifest.json        PUBLIC contract — read by consumers (see schemas/evidence.json)
+      evidence.json        Executor summary (internal)
+      step-N.json          Per-step evidence (internal)
+      context.md           Optional reviewer context (non-prejudicial; excluded from manifest artifacts)
   projects/{id}.json       Canonical JSON (dual-write with SQLite)
   strategies/{id}.json
   scenarios/{id}.json
-  runs/{id}.json
+  runs/{id}.json           Canonical run records (flat, never collides with evidence/<run-id>/)
   verdicts/{id}.json
   tasks/{id}.json
 ```
@@ -163,18 +165,18 @@ All commands support `--json` for machine-readable output.
 
 ### wicked-bus integration
 
-When wicked-bus is present, wicked-testing emits on every significant action:
+When wicked-bus is on PATH, wicked-testing emits on every significant action. Event names match the public catalog in [docs/INTEGRATION.md §4](docs/INTEGRATION.md).
 
 | Event | When |
 |-------|------|
-| `wicked.testrun.started` | Acceptance pipeline begins |
-| `wicked.testrun.completed` | Pipeline finishes (any verdict) |
+| `wicked.teststrategy.authored` | Test strategy record created |
+| `wicked.scenario.authored` | Scenario record created or updated |
+| `wicked.testrun.started` | Run row written with `status: running` |
+| `wicked.testrun.finished` | Run row updated with `finished_at` (any terminal status) |
 | `wicked.verdict.recorded` | Reviewer writes a verdict |
-| `wicked.evidence.captured` | Executor finishes a run |
-| `wicked.scenario.registered` | New scenario registered |
-| `wicked.oracle.queried` | Oracle answers a question |
+| `wicked.evidence.captured` | `evidence/<run-id>/manifest.json` written |
 
-If wicked-bus is absent, all emit calls are no-ops (single debug line).
+Emission is fire-and-forget: if wicked-bus is absent or the spawn fails, wicked-testing continues without error. See [`lib/bus-emit.mjs`](lib/bus-emit.mjs).
 
 ### wicked-brain integration
 

@@ -4,7 +4,7 @@ subagent_type: wicked-testing:acceptance-test-executor
 description: |
   Follows structured wicked-testing test plans step-by-step, collecting evidence artifacts.
   Executes and captures only — does not judge or grade pass/fail.
-  Writes evidence files to .wicked-testing/runs/{run-id}/.
+  Writes evidence files to .wicked-testing/evidence/{run-id}/.
   Use when: acceptance test execution, evidence collection, test plan execution
 
   <example>
@@ -49,7 +49,7 @@ Read the test plan produced by acceptance-test-writer. Extract:
 
 ### 2. Set Up Evidence Directory
 
-The evidence directory is provided in the task prompt (`.wicked-testing/runs/{run-id}/`). Create it:
+The evidence directory is provided in the task prompt (`.wicked-testing/evidence/{run-id}/`). Create it:
 
 ```bash
 mkdir -p "${EVIDENCE_DIR}"

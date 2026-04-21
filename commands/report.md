@@ -42,7 +42,7 @@ sqlite3 -json ".wicked-testing/wicked-testing.db" "
 "
 ```
 
-**JSON-only fallback**: Scan `.wicked-testing/runs/` directory for JSON evidence files and read directly.
+**JSON-only fallback**: Scan `.wicked-testing/evidence/` directory for JSON evidence files and read directly.
 
 ### 3. Calculate Summary Statistics
 

@@ -3,12 +3,12 @@
 // Cross-platform: macOS/Linux primary, Windows best-effort via python3||python fallback.
 
 import {
-  existsSync, mkdirSync, cpSync, readdirSync, rmSync,
+  existsSync, mkdirSync, mkdtempSync, cpSync, readdirSync, rmSync,
   readFileSync, writeFileSync,
 } from "node:fs";
 import { join, resolve, basename } from "node:path";
-import { homedir } from "node:os";
-import { argv, exit, cwd } from "node:process";
+import { homedir, tmpdir } from "node:os";
+import { argv, exit } from "node:process";
 import { fileURLToPath } from "node:url";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
@@ -30,7 +30,20 @@ const CLI_TARGETS = [
 // --- arg parsing -----------------------------------------------------------
 
 const args = argv.slice(2);
-const subcommand = args[0] && !args[0].startsWith("-") ? args[0] : "install";
+
+// Flag-aliased subcommands: --version / -v / --help / -h must route to the
+// matching subcommand, not be stripped as unknown flags and silently fall
+// through to the default `install` subcommand.
+const FLAG_SUBCOMMANDS = {
+  "--version": "version",
+  "-v":        "version",
+  "--help":    "help",
+  "-h":        "help",
+};
+const first = args[0];
+const subcommand = FLAG_SUBCOMMANDS[first]
+  ?? (first && !first.startsWith("-") ? first : "install");
+
 const flags = args.filter(a => a.startsWith("--"));
 const flagValue = (name) => {
   const f = flags.find(a => a === `--${name}` || a.startsWith(`--${name}=`));
@@ -43,6 +56,7 @@ const skipSelfTest  = !!flagValue("skip-self-test");
 const jsonOut       = !!flagValue("json");
 const cliArg        = flagValue("cli");
 const pathArg       = flagValue("path");
+const requireSpec   = flagValue("require");
 
 function resolveTargets() {
   if (pathArg && typeof pathArg === "string") {
@@ -91,8 +105,71 @@ function cmdVersion() {
   if (jsonOut) {
     console.log(JSON.stringify({ name: PKG.name, version: VERSION }));
   } else {
-    console.log(`wicked-testing ${VERSION}`);
+    // Bare semver — no name prefix. Consumer semver probes expect the
+    // same format `node --version` emits (just the version string).
+    console.log(VERSION);
   }
+}
+
+// Minimal semver-spec evaluator. Supports: exact `1.2.3`, caret `^1.2.3`,
+// tilde `~1.2.3`, and comparison operators `>=`, `>`, `<=`, `<`, `=`.
+// Pre-release tags (`-alpha.1`) are not supported — all installed versions
+// are treated as release builds. Throws on malformed specs.
+//
+// Caret (`^`) follows the strict SemVer rule for pre-1.0 versions: any
+// change in the leftmost non-zero segment is breaking. So `^0.2.0` matches
+// `0.2.x` but NOT `0.3.0` (minor bump on a 0.x is breaking); `^0.0.5`
+// matches ONLY `0.0.5` (patch bump on 0.0.x is breaking); `^1.2.3` matches
+// `1.x.y` with `x.y >= 2.3` (standard semver). This project is currently
+// at 0.2.0, so the 0.x behavior matters for consumers using `check`.
+function versionSatisfies(installed, spec) {
+  const parse = (s) => {
+    const m = /^(\d+)\.(\d+)\.(\d+)$/.exec(s);
+    if (!m) throw new Error(`unsupported version: ${s}`);
+    return [Number(m[1]), Number(m[2]), Number(m[3])];
+  };
+  const cmp = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+  const m = /^(\^|~|>=|>|<=|<|=)?\s*(\d+\.\d+\.\d+)$/.exec(spec.trim());
+  if (!m) throw new Error(`unsupported spec: ${spec}`);
+  const op = m[1] || "=";
+  const iv = parse(installed);
+  const sv = parse(m[2]);
+  const c = cmp(iv, sv);
+  switch (op) {
+    case "=":  return c === 0;
+    case "^":
+      if (sv[0] !== 0) return iv[0] === sv[0] && c >= 0;
+      if (sv[1] !== 0) return iv[0] === 0 && iv[1] === sv[1] && iv[2] >= sv[2];
+      return iv[0] === 0 && iv[1] === 0 && iv[2] === sv[2];
+    case "~":  return iv[0] === sv[0] && iv[1] === sv[1] && iv[2] >= sv[2];
+    case ">=": return c >= 0;
+    case ">":  return c > 0;
+    case "<=": return c <= 0;
+    case "<":  return c < 0;
+    default:   return false;
+  }
+}
+
+function cmdCheck() {
+  if (!requireSpec || typeof requireSpec !== "string") {
+    console.error("usage: wicked-testing check --require <spec>   (e.g. --require=^0.2.0)");
+    exit(2);
+  }
+  let satisfies;
+  try { satisfies = versionSatisfies(VERSION, requireSpec); }
+  catch (e) {
+    if (jsonOut) console.log(JSON.stringify({ current: VERSION, require: requireSpec, error: e.message }));
+    else console.error(`wicked-testing check: ${e.message}`);
+    exit(2);
+  }
+  if (jsonOut) {
+    console.log(JSON.stringify({ current: VERSION, require: requireSpec, satisfies }));
+  } else {
+    console.log(satisfies
+      ? `${VERSION} satisfies ${requireSpec}`
+      : `${VERSION} does NOT satisfy ${requireSpec}`);
+  }
+  exit(satisfies ? 0 : 1);
 }
 
 function cmdHelp() {
@@ -106,6 +183,7 @@ Commands:
   uninstall     Remove all wicked-testing files from detected AI CLI dirs
   status        Show installed version per CLI target
   doctor        Diagnose environment (Node version, detected CLIs, SQLite binding)
+  check         Exit 0 if installed version satisfies --require=<spec>, else 1 (non-zero)
   version       Print package version
   help          This message
 
@@ -113,11 +191,14 @@ Options:
   --cli=<list>        Comma-separated CLI names (claude, gemini, copilot, codex, cursor, kiro)
   --path=<dir>        Custom target path (e.g. --path=~/.claude)
   --force             Overwrite even if versions match
+  --require=<spec>    Version spec for 'check' (e.g. 0.2.0, ^0.2.0, ~0.2.1, >=0.2.0)
   --skip-self-test    Skip the SQLite bootstrap self-test (install/update only)
   --json              Machine-readable output where supported
 
 Examples:
   npx wicked-testing install
+  npx wicked-testing --version
+  npx wicked-testing check --require=^0.2.0
   npx wicked-testing status --json
   npx wicked-testing uninstall --cli=claude
   npx wicked-testing doctor
@@ -288,12 +369,16 @@ function cmdUninstall() {
 // --- self-test (kept from original, trimmed) -------------------------------
 
 async function selfTest() {
+  let bootstrapDir = null;
+  let store = null;
   try {
     const { DomainStore } = await import("./lib/domain-store.mjs");
-    const bootstrapDir = join(cwd(), ".wicked-testing-bootstrap");
-    try { rmSync(bootstrapDir, { recursive: true, force: true }); } catch {}
-    mkdirSync(bootstrapDir, { recursive: true });
-    const store = new DomainStore(bootstrapDir);
+    // Isolate the scratch dir under the OS tmp location, NOT cwd(). Running
+    // `npx wicked-testing install` from $HOME or any user dir used to clobber
+    // any existing `.wicked-testing-bootstrap/` sibling and could leak on
+    // Windows if SQLite's WAL handle kept the dir locked past cleanup.
+    bootstrapDir = mkdtempSync(join(tmpdir(), "wicked-testing-bootstrap-"));
+    store = new DomainStore(bootstrapDir);
     const project = store.create("projects", {
       name: "wicked-testing-bootstrap",
       description: "Bootstrap self-test project",
@@ -308,12 +393,17 @@ async function selfTest() {
     const run = store.create("runs", { project_id: project.id, scenario_id: scenario.id, started_at: now, status: "running" });
     store.update("runs", run.id, { finished_at: new Date().toISOString(), status: "passed" });
     store.create("verdicts", { run_id: run.id, verdict: "PASS", reviewer: "bootstrap", reason: "self-test" });
-    store.close();
-    try { rmSync(bootstrapDir, { recursive: true, force: true }); } catch {}
     return true;
   } catch (e) {
     console.warn("  self-test: " + e.message);
     return false;
+  } finally {
+    // finally runs whether the self-test passed, threw, or returned early.
+    // Close the DB first so Windows WAL handles release before rmSync tries
+    // to remove the scratch dir. Both cleanup steps swallow errors: a failed
+    // cleanup is a resource leak at worst, not a reason to crash the install.
+    if (store) { try { store.close(); } catch {} }
+    if (bootstrapDir) { try { rmSync(bootstrapDir, { recursive: true, force: true }); } catch {} }
   }
 }
 
@@ -326,12 +416,9 @@ async function selfTest() {
     case "uninstall": cmdUninstall();                         break;
     case "status":    cmdStatus();                            break;
     case "doctor":    await cmdDoctor();                      break;
-    case "version":
-    case "--version":
-    case "-v":        cmdVersion();                           break;
-    case "help":
-    case "--help":
-    case "-h":        cmdHelp();                              break;
+    case "check":     cmdCheck();                             break;
+    case "version":   cmdVersion();                           break;
+    case "help":      cmdHelp();                              break;
     default:
       console.error(`Unknown subcommand: ${subcommand}`);
       cmdHelp();

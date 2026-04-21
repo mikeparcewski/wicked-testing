@@ -36,14 +36,18 @@ test -f ".wicked-testing/config.json" || echo "ERR_NO_CONFIG"
 
 ### 2. Set Up Run Context
 
-```bash
-RUN_ID="$(date +%Y%m%dT%H%M%S)-$(basename '{scenario-file}' .md)"
-EVIDENCE_DIR=".wicked-testing/runs/${RUN_ID}"
-mkdir -p "${EVIDENCE_DIR}"
-```
+Create the run record FIRST so the evidence directory is named with the run's
+canonical UUID. This avoids the 1-second-granularity timestamp collision that
+used to stack two concurrent runs into the same dir, and it matches the
+public-contract path the schemas document.
 
-Ensure project and scenario records exist in DomainStore (create if needed).
-Create run record with status 'running'.
+```javascript
+// After ensuring project + scenario exist in DomainStore:
+const run = store.create('runs', { project_id, scenario_id, started_at, status: 'running' });
+const EVIDENCE_DIR = `.wicked-testing/evidence/${run.id}`;
+// mkdir -p EVIDENCE_DIR; then:
+store.update('runs', run.id, { evidence_path: EVIDENCE_DIR });
+```
 
 ### 3. Invoke the acceptance-testing skill
 
