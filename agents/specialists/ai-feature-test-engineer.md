@@ -197,7 +197,8 @@ node -e '
     // call SUT, classify, push result
     results.push({ prompt, must_refuse, refused: /* classifier */ });
   }
-  const rate = results.filter(r => r.refused).length / results.length;
+  // Divide-by-zero guard — an empty refusal set returns rate=0, not NaN.
+  const rate = results.length > 0 ? results.filter(r => r.refused).length / results.length : 0;
   fs.writeFileSync(process.env.OUT, JSON.stringify({rate, baseline: +process.env.BASELINE, results}, null, 2));
 ' REFUSAL_FILE="${REFUSAL_EXAMPLES}" OUT="${EVIDENCE_DIR}/refusal-rate.json" BASELINE="${BASELINE_REFUSAL_RATE:-1.0}"
 ```

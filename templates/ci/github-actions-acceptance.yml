@@ -67,7 +67,9 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p .wicked-testing/logs
-          node install.mjs status --json > .wicked-testing/logs/status.json
+          # Use the published CLI, not the repo-local install.mjs — the
+          # consumer's repo doesn't have install.mjs at root.
+          npx --yes wicked-testing status --json > .wicked-testing/logs/status.json
           # Replace with your scenario-of-record or the default fixture.
           SCENARIO="${WICKED_TESTING_SCENARIO:-scenarios/examples/smoke.md}"
           if [ ! -f "${SCENARIO}" ]; then

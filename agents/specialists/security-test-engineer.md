@@ -236,11 +236,34 @@ Evidence of vuln: HTTP 200 with the forged identity's claims honored.
 ```bash
 # 1) Request a pre-login session. 2) Authenticate. 3) Check if the
 # session id changed. No change = FAIL (fixation possible).
-PRE_SID="$(curl -sS -c - "${TARGET}/login" | awk '/session/ {print $7}')"
-curl -sS -b "session=${PRE_SID}" -d "u=${USER}&p=${PASS}" \
+#
+# The scenario MUST declare the session cookie name in frontmatter —
+# `session_cookie: JSESSIONID` (or `sid`, `connect.sid`, etc.). Default
+# is the literal name `session`; most real apps use something else, so
+# the default is a sentinel that matches nothing and the agent records
+# `ERR_SESSION_COOKIE_UNKNOWN` if the scenario didn't configure it.
+# Previously this was `awk '$7 ~ /session/'` which silently misfired on
+# JSESSIONID / sid / connect.sid.
+SESSION_COOKIE_NAME="${SESSION_COOKIE:-session}"
+
+extract_sid() {
+  # Netscape cookie file format: <domain> <flag> <path> <secure> <expiry> <name> <value>
+  # Parameterize on the configured cookie name; use -v to avoid regex
+  # injection via the cookie-name variable.
+  awk -v name="${SESSION_COOKIE_NAME}" '$6 == name {print $7; exit}' "${1:-/dev/stdin}"
+}
+
+curl -sS -c - "${TARGET}/login" > "${EVIDENCE_DIR}/authz/session-pre-login.cookies"
+PRE_SID="$(extract_sid "${EVIDENCE_DIR}/authz/session-pre-login.cookies")"
+if [ -z "${PRE_SID}" ]; then
+  echo "ERR_SESSION_COOKIE_UNKNOWN: no cookie named '${SESSION_COOKIE_NAME}' in pre-login response"
+  echo "  scenario frontmatter must declare 'session_cookie: <name>' (e.g. JSESSIONID, sid, connect.sid)"
+  exit 3
+fi
+curl -sS -b "${SESSION_COOKIE_NAME}=${PRE_SID}" -d "u=${USER}&p=${PASS}" \
   -c "${EVIDENCE_DIR}/authz/session-post-login.cookies" \
   "${TARGET}/login/submit"
-POST_SID="$(awk '/session/ {print $7}' "${EVIDENCE_DIR}/authz/session-post-login.cookies")"
+POST_SID="$(extract_sid "${EVIDENCE_DIR}/authz/session-post-login.cookies")"
 [ "${PRE_SID}" = "${POST_SID}" ] && echo "FIXATION: session id did not rotate"
 ```
 

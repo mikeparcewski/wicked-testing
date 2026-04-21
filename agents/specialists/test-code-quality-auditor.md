@@ -82,10 +82,17 @@ Assertion markers by language:
 ### Detector 2 — tautological assertions (P0)
 
 ```bash
-# Assertions that can never fail: expect(true).toBe(true), expect(x).toBe(x),
-# assertEquals(1,1). These pass even if the SUT never ran.
+# Assertions that can never fail: expect(true).toBe(true),
+# expect(false).toBe(false), expect(x).toBe(x), expect(x).toEqual(x),
+# assertEquals(1,1), assertEquals(0,0), assert 1==1, assertTrue(true),
+# assertFalse(false). These pass even if the SUT never ran.
+#
+# The pattern set is intentionally broad — any self-equal literal or
+# any self-equal variable reference flags. Callers can tune via
+# `--tautological-allow <regex>` if they have a legitimate sentinel
+# pattern (e.g., assertion-library smoke tests).
 grep -nE \
-  'expect\(true\)\.toBe\(true\)|expect\(([a-zA-Z_$][a-zA-Z0-9_$]*)\)\.toBe\(\1\)|assertEquals\(1,\s*1\)|assert\s+True' \
+  'expect\((true|false|-?[0-9]+|"[^"]*"|'"'"'[^'"'"']*'"'"')\)\.(toBe|toEqual|toStrictEqual|toMatchObject)\(\1\)|expect\(([a-zA-Z_$][a-zA-Z0-9_$]*)\)\.(toBe|toEqual|toStrictEqual|toMatchObject)\(\4\)|assert(Equals|True|False)?\((-?[0-9]+|true|false|"[^"]*"),\s*\8\)|assert\s+(True|False|1\s*==\s*1|0\s*==\s*0|".+"\s*==\s*"\10")' \
   -r "${TARGET_DIRS}" \
   > "${EVIDENCE_DIR}/detectors/tautological.txt" || true
 ```

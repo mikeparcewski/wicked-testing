@@ -84,18 +84,28 @@ captured evidence; it does not depend on LLM judgement.
 ## 3. Tool invocation
 
 ```bash
-# Per-control evidence capture. Loop iteration is lightweight; commands
-# are wrapped in lib/exec-with-timeout.mjs so a single slow control
-# cannot blow the scenario budget.
+# Per-control evidence capture. `resolve-command.mjs` returns a JSON
+# envelope `{ "cmd": "aws", "args": ["s3api", "get-bucket-policy", "--bucket", "..."] }`
+# — NOT a shell string. `run-command.mjs` then spawns it without a shell
+# (child_process.spawn with shell:false), so control templates cannot
+# smuggle shell metacharacters or chained commands through scenario
+# frontmatter. This is the CR-hardened replacement for the earlier
+# `eval "${cmd}"` pattern flagged by gemini-code-assist.
 for control in ${CONTROLS}; do
-  cmd=$(node lib/compliance/resolve-command.mjs "${control}")
+  envelope=$(node lib/compliance/resolve-command.mjs "${control}")
   out="${EVIDENCE_DIR}/controls/${control}.json"
   mkdir -p "$(dirname "${out}")"
-  eval "${cmd}" > "${out}" 2> "${out%.json}.stderr" || true
+  node lib/compliance/run-command.mjs --envelope="${envelope}" \
+    > "${out}" 2> "${out%.json}.stderr" || true
   node lib/compliance/evaluate.mjs "${control}" "${out}" \
     > "${EVIDENCE_DIR}/controls/${control}.result.json"
 done
 ```
+
+Invariant enforced by `run-command.mjs` (follow-up ticket — not in this
+PR): reject any envelope whose `cmd` is not in a per-framework allowlist
+(SOC2: `aws`, `gcloud`, `kubectl`, `jq`, `semgrep`; HIPAA: same list plus
+`bandit`; etc.). Unknown cmd -> `ERR_CONTROL_TOOL_BLOCKED`, no exec.
 
 ### Worked examples per framework
 
