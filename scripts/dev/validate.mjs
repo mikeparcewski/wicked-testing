@@ -126,7 +126,11 @@ function checkSkills() {
     // 6 of 12 skills had unprefixed names and all 12 became invisible.
     // Keep this gate strict so we never re-ship that.
     const expectedName = `wicked-testing:${d}`;
-    if (fm.name && fm.name !== expectedName) {
+    // Strict equality — empty string must also fail here. The required-
+    // fields loop above catches a missing `name:` key; this check catches
+    // the wrong value, including "". If we short-circuited on falsy fm.name
+    // an empty string would bypass the namespace check and ship.
+    if (fm.name !== expectedName) {
       err("skills", rel,
         `frontmatter name '${fm.name}' must equal '${expectedName}' — ` +
         `Claude Code's skill resolver requires the plugin-namespaced form.`);
