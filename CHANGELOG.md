@@ -4,6 +4,32 @@ All notable changes to `wicked-testing`. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [SemVer](https://semver.org/).
 
+## [0.3.1] — 2026-04-21
+
+Claude Code install-path fix + stale-layout migration. No API changes; this is strictly about making the plugin actually load on Claude Code.
+
+### Added
+
+- **`.claude-plugin/marketplace.json`** — wicked-testing is now a proper Claude Code marketplace. Users can register it via:
+
+  ```bash
+  claude plugins marketplace add mikeparcewski/wicked-testing
+  claude plugins install wicked-testing
+  ```
+
+- **`install.mjs` migrates the pre-0.3 skill layout.** Older installs dropped skills under `~/.claude/skills/{acceptance-testing,browser-automation,scenario-authoring,test-oracle,test-runner,test-strategy}/` — unprefixed, orphaned after 0.3 switched to the `wicked-testing-<name>/` layout. `install.mjs` now detects those bare-name dirs (paranoid signature check — SKILL.md frontmatter `name:` must match the dir name AND the body must reference wicked-testing) and removes them on install. Same migration runs on uninstall. Collision-safe: generic names like `test-runner` that belong to other tools are left alone.
+
+- **`install.mjs` emits Claude Code–specific guidance.** When Claude Code is detected and wicked-testing isn't yet registered via `claude plugins`, the installer prints a prominent note pointing the user at the plugin-system install path. Silent when the `claude` binary isn't on PATH or the plugin is already registered.
+
+### Fixed
+
+- **README's Claude Code install command.** Was `claude plugins add mikeparcewski/wicked-testing` (not a valid command); now `claude plugins marketplace add mikeparcewski/wicked-testing` followed by `claude plugins install wicked-testing`.
+- **Install section rewritten** to explain the two install paths (plugin-system for Claude Code vs file-copy for Gemini / Codex / Cursor / Kiro) and why — Claude Code's skill resolver only surfaces skills from registered plugins, so the file-copy install leaves skills on disk but unloaded on Claude Code.
+
+### Background
+
+Surfaced during the v0.3.0 dogfood — `wicked-testing install` ran cleanly, doctor reported green, but Claude Code's `/reload-plugins` showed none of the 12 registered skills. Investigation found no `wicked-testing` entry in `~/.claude/plugins/installed_plugins.json`: the npm install path never registered the package with Claude Code's plugin system. The 6 bare-name skill dirs from April 11 were also on disk, compounding the confusion (generic `test-runner` / `test-strategy` names looked like they could be from any tool).
+
 ## [0.3.0] — 2026-04-21
 
 First release after the end-to-end audit (see [#28](https://github.com/mikeparcewski/wicked-testing/issues/28)). Seven PRs landed 48 of 49 audit findings; this release cuts a version from the resulting main branch. No breaking API changes for consumers that followed the public contract documented in `docs/INTEGRATION.md` (the reshape of drifted claims is in doc surface only).
