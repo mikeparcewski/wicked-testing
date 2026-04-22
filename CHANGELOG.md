@@ -4,6 +4,26 @@ All notable changes to `wicked-testing`. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [SemVer](https://semver.org/).
 
+## [0.3.3] — 2026-04-21
+
+Install-path detection fix. Prior versions hardcoded `~/.claude` (and siblings) as the install target and ignored both `$CLAUDE_CONFIG_DIR` and common alt-config layouts. Users running Claude Code with its config redirected — via `CLAUDE_CONFIG_DIR`, a shared-home setup at `~/alt-configs/.claude`, or an XDG-style `~/.config/claude` — would see `wicked-testing install` complete successfully while silently writing into a path Claude Code never reads. Skills loaded as zero, doctor reported green, users lost hours.
+
+### Fixed
+
+- **`install.mjs` now honors `$CLAUDE_CONFIG_DIR`.** When set, it is authoritative — the installer writes only to that path (trusted, skipping the identity-marker check so first-run setups where the dir exists but is empty still work). This matches Claude Code's own resolution behavior.
+- **Alt-config layouts are now probed automatically.** When `CLAUDE_CONFIG_DIR` is unset, the installer probes `~/.claude`, `~/alt-configs/.claude`, and `~/.config/claude`, installing into each that carries Claude identity markers (`settings.json` / `plugins/` / `projects/`). Multi-config setups stay in sync without manual `--path` juggling.
+- **`--path <dir>` (space-separated) now works.** Previously only `--path=<dir>` was honored; the space form was silently accepted and then dropped, causing installs to fall through to default detection. Fix applies to every flag with a value (`--cli`, `--require`, `--assume-cli`, etc.).
+
+### Added
+
+- **`doctor` surfaces `CLAUDE_CONFIG_DIR` state explicitly.** Shows which path was picked up, from which source (`env:CLAUDE_CONFIG_DIR` / `default` / `alt-configs` / `xdg`), and warns when the env var points at a nonexistent dir or one without Claude identity markers.
+- **`doctor --json` now includes `claude_config_dir` and `detected_targets`** (full `{name, root, source}` records). The legacy `detected_clis` string[] shape is preserved for back-compat.
+- **Help text documents the new behavior** including a `CLAUDE_CONFIG_DIR=~/alt-configs/.claude npx wicked-testing install` example.
+
+### Why this matters
+
+Parallel patches are coming to `wicked-brain` (0.12.1) and `wicked-bus` (1.1.1) for the same bug — all three packages use the same install template and inherited the same flaw.
+
 ## [0.3.2] — 2026-04-21
 
 Real fix for the "skills aren't loading in Claude Code" symptom. The v0.3.1 release misdiagnosed the cause as missing plugin registration and shipped a `marketplace.json` workaround. Turned out to be simpler: **6 of 12 `skills/*/SKILL.md` files had unprefixed `name:` frontmatter** (`name: test-runner` instead of `name: wicked-testing:test-runner`). Claude Code's skill resolver silently rejects skills whose frontmatter namespace doesn't match the plugin — when enough skills in a batch are broken, the whole plugin goes dark.
