@@ -7,8 +7,8 @@
     {
       "name": "wicked-testing",
       "source": "./",
-      "description": "Standalone QE library for AI coding CLIs — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, 3-agent acceptance pipeline, optional wicked-bus + wicked-brain integration.",
-      "version": "0.3.1"
+      "description": "Standalone QE library for AI coding CLIs \u2014 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, 3-agent acceptance pipeline, optional wicked-bus + wicked-brain integration.",
+      "version": "0.3.2"
     }
   ],
   "version": "1.0.0"

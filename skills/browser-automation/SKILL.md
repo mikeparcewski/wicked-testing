@@ -1,5 +1,5 @@
 ---
-name: browser-automation
+name: wicked-testing:browser-automation
 description: |
   Detect and configure browser automation tools (Playwright, Cypress, k6).
   Generates test harness scaffolds and automation code for browser-based scenarios.

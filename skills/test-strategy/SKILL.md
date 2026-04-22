@@ -1,5 +1,5 @@
 ---
-name: test-strategy
+name: wicked-testing:test-strategy
 description: |
   Plan what and how to test. Generate comprehensive test strategies with coverage analysis,
   risk assessment, and scenario pairing. Writes strategy records to the DomainStore.

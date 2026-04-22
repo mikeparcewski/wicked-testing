@@ -1,5 +1,5 @@
 ---
-name: test-runner
+name: wicked-testing:test-runner
 description: |
   Execute wicked-testing scenario files via the appropriate CLI tool.
   Writes run records and evidence JSON to .wicked-testing/evidence/{run-id}/.

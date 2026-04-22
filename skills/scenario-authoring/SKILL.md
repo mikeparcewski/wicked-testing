@@ -1,5 +1,5 @@
 ---
-name: scenario-authoring
+name: wicked-testing:scenario-authoring
 description: |
   Create and edit self-contained test scenario files in the wicked-testing scenario format.
   Writes scenario records to the DomainStore.

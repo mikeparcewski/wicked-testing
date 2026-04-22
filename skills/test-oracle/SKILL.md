@@ -1,5 +1,5 @@
 ---
-name: test-oracle
+name: wicked-testing:test-oracle
 description: |
   Answer plain-language questions about the testing data domain.
   Routes questions to a fixed parameterized SQL query library — no LLM-generated SQL.
