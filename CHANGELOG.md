@@ -4,6 +4,29 @@ All notable changes to `wicked-testing`. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [SemVer](https://semver.org/).
 
+## [0.3.2] — 2026-04-21
+
+Real fix for the "skills aren't loading in Claude Code" symptom. The v0.3.1 release misdiagnosed the cause as missing plugin registration and shipped a `marketplace.json` workaround. Turned out to be simpler: **6 of 12 `skills/*/SKILL.md` files had unprefixed `name:` frontmatter** (`name: test-runner` instead of `name: wicked-testing:test-runner`). Claude Code's skill resolver silently rejects skills whose frontmatter namespace doesn't match the plugin — when enough skills in a batch are broken, the whole plugin goes dark.
+
+### Fixed
+
+- **SKILL.md frontmatter `name:`** normalized to `wicked-testing:<name>` across all 12 Tier-1 + auxiliary skills. Previously `acceptance-testing`, `browser-automation`, `scenario-authoring`, `test-oracle`, `test-runner`, `test-strategy` had bare names and were being dropped. Now every SKILL.md's `name:` matches the Claude Code plugin-namespace convention (same pattern `wicked-brain` has always used — `wicked-brain:memory`, `wicked-brain:search`, etc.).
+- **`scripts/dev/validate.mjs`** now enforces `name == 'wicked-testing:<dir>'` on every skill. A PR that re-introduces the bare-name form fails `npm test` immediately. Prevents regression of the whole v0.3.1 issue category.
+
+### Changed
+
+- **README install section simplified.** `npx wicked-testing install` is the preferred path on every CLI including Claude Code — skills get dropped into `~/.claude/skills/wicked-testing-<name>/` and Claude Code picks them up directly (same as `wicked-brain-*/`). The `claude plugins marketplace add` path still works and remains documented as an optional alternative for users who prefer the plugin-system install flow. The v0.3.1 framing of "Claude Code REQUIRES plugin registration" was wrong.
+- **`install.mjs` post-install Claude Code guidance removed.** With the frontmatter fix, `npx wicked-testing install` works correctly for Claude Code; the "also run `claude plugins install`" nudge would now be misleading. The `.claude-plugin/marketplace.json` file from v0.3.1 stays on disk for users who prefer that path.
+
+### Kept from v0.3.1
+
+- `.claude-plugin/marketplace.json` — harmless and provides an alternative install path for plugin-system enthusiasts.
+- Legacy bare-name skill-dir migration in `install.mjs` — still needed to clean up the pre-0.3 layout on upgrade.
+
+### Debug trail
+
+The actual bug was caught by listing every dir under `~/.claude/skills/` with its frontmatter `name:` side-by-side, against `~/.claude/skills/wicked-brain-*/`. Same on-disk location, identical structure — but 6 of 12 wicked-testing frontmatter names were `<dir>` instead of `wicked-testing:<dir>`. wicked-brain was 23/23 correct. Claude Code's resolver was doing exactly what any sane resolver would do — reject skills whose frontmatter doesn't declare the right namespace.
+
 ## [0.3.1] — 2026-04-21
 
 Claude Code install-path fix + stale-layout migration. No API changes; this is strictly about making the plugin actually load on Claude Code.

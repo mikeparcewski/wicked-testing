@@ -201,30 +201,20 @@ When wicked-brain is present, wicked-testing writes memories on high-signal even
 
 ## Install
 
-Two install paths depending on which AI CLI you use:
+```bash
+npx wicked-testing install
+```
 
-### Claude Code (plugin-system install)
+Detects which AI CLIs are present via identity markers (`config.json`, `settings.json`, `plugins/`, etc.), copies skills / agents / commands into each CLI's home-relative skill directory (`~/.claude/skills/`, `~/.gemini/skills/`, `~/.codex/skills/`, `~/.cursor/skills/`, `~/.kiro/skills/`), runs a bootstrap self-test, and prints a per-target isolation-tier note (hard-enforced on Claude Code, advisory on everyone else). Idempotent — safe to run multiple times.
 
-Claude Code only loads skills / agents / commands from **registered** plugins. Skills dropped into `~/.claude/skills/` without a plugin record are visible on disk but are NOT surfaced by the skill resolver. Register wicked-testing via Claude Code's marketplace system:
+**Claude Code users:** `npx wicked-testing install` is the preferred path and drops everything where Claude Code's skill resolver already looks. A `.claude-plugin/marketplace.json` also ships so you can register via the plugin-system install if you prefer:
 
 ```bash
 claude plugins marketplace add mikeparcewski/wicked-testing
 claude plugins install wicked-testing
 ```
 
-The repo ships `.claude-plugin/marketplace.json` + `.claude-plugin/plugin.json` so Claude Code can discover everything.
-
-### Gemini CLI / Codex / Cursor / Kiro (file-copy install)
-
-These CLIs load skills directly from their home-relative skill directories (`~/.gemini/skills/`, `~/.codex/skills/`, `~/.cursor/skills/`, `~/.kiro/skills/`). For those:
-
-```bash
-npx wicked-testing install
-```
-
-Detects which CLIs are present via identity markers (`config.json`, `settings.json`, etc.), copies skills / agents / commands into each, runs a bootstrap self-test, and prints a per-target isolation-tier note (hard-enforced on Claude Code, advisory on everyone else). Idempotent — safe to run multiple times.
-
-Running `npx wicked-testing install` on a machine with Claude Code detected WILL copy files to `~/.claude/skills/` for backward compatibility, but will also print a reminder to use `claude plugins install wicked-testing` for full integration.
+Both paths work; pick one.
 
 ```bash
 # Install for a specific CLI only

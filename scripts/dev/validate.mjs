@@ -119,6 +119,18 @@ function checkSkills() {
     for (const k of requiredFields) {
       if (!(k in fm)) err("skills", rel, `missing required frontmatter key: ${k}`);
     }
+    // Frontmatter `name:` MUST be `wicked-testing:<dir>`. When it's just
+    // `<dir>` (unprefixed), Claude Code's skill resolver silently drops
+    // the skill — and if enough skills in the batch are broken, it drops
+    // the whole plugin. This was the v0.3.1 regression caught in dogfood:
+    // 6 of 12 skills had unprefixed names and all 12 became invisible.
+    // Keep this gate strict so we never re-ship that.
+    const expectedName = `wicked-testing:${d}`;
+    if (fm.name && fm.name !== expectedName) {
+      err("skills", rel,
+        `frontmatter name '${fm.name}' must equal '${expectedName}' — ` +
+        `Claude Code's skill resolver requires the plugin-namespaced form.`);
+    }
   }
 }
 

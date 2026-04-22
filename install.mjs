@@ -10,7 +10,6 @@ import { join, resolve, basename } from "node:path";
 import { homedir, tmpdir } from "node:os";
 import { argv, exit } from "node:process";
 import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const home = homedir();
@@ -244,50 +243,6 @@ function migrateLegacyLayout(targets) {
     for (const r of removed) console.log(`            ${r}`);
   }
   return removed;
-}
-
-// Claude Code uses a plugin-registration system distinct from the file-copy
-// install. Skills dropped into ~/.claude/skills/ without a plugin record are
-// visible on disk but NOT loaded by the skill resolver — see the release
-// notes for 0.3.1 / audit follow-up. We detect whether wicked-testing is
-// registered via Claude Code's plugin CLI and print a one-time guidance
-// block if not. Silent when the `claude` binary isn't on PATH (other CLIs
-// don't need this).
-function maybeEmitClaudeCodeGuidance(installedClaudeTarget) {
-  if (!installedClaudeTarget) return;
-  // `claude` binary present?
-  const probe = spawnSyncSafe("claude", ["--version"]);
-  if (!probe.ok) return;
-  // Is wicked-testing already registered with Claude Code?
-  const listing = spawnSyncSafe("claude", ["plugins", "list"]);
-  if (listing.ok && /(^|\s)wicked-testing(\s|$|@)/.test(listing.stdout || "")) return;
-  if (jsonOut) return; // structured consumers don't want prose guidance
-  console.log("");
-  console.log("\x1b[33mClaude Code note:\x1b[0m the file-copy install above drops skills into");
-  console.log("~/.claude/skills/ but Claude Code only loads skills from registered plugins.");
-  console.log("For full integration, also register the plugin:");
-  console.log("");
-  console.log("  \x1b[36mclaude plugins marketplace add mikeparcewski/wicked-testing\x1b[0m");
-  console.log("  \x1b[36mclaude plugins install wicked-testing\x1b[0m");
-  console.log("");
-  console.log("Other CLIs (Gemini / Codex / Cursor / Kiro) are loaded directly from the");
-  console.log("files copied above — no further action needed on those.");
-}
-
-// Tiny shell-free wrapper so both probes above stay synchronous and never
-// throw on ENOENT. Returns { ok, stdout } — `ok` is false if the binary
-// isn't on PATH or the command exited non-zero.
-function spawnSyncSafe(cmd, args) {
-  try {
-    // shell:true so Windows resolves .cmd / .bat shims on PATH (`claude.cmd`,
-    // etc.). Args are internal and trusted — no user input reaches this call,
-    // so there's no injection surface here.
-    const r = spawnSync(cmd, args, { encoding: "utf8", timeout: 3000, shell: true });
-    if (r.error || r.status !== 0) return { ok: false, stdout: r.stdout || "" };
-    return { ok: true, stdout: r.stdout || "" };
-  } catch {
-    return { ok: false, stdout: "" };
-  }
 }
 
 // --- subcommands -----------------------------------------------------------
@@ -649,15 +604,6 @@ async function cmdInstall({ mode }) {
       legacy_layout_removed: migrated,
     }));
   }
-
-  // Claude-Code-specific guidance: skills dropped into ~/.claude/skills/
-  // without a plugin registration aren't loaded by the Claude Code skill
-  // resolver. Nudge the user toward `claude plugins marketplace add` +
-  // `claude plugins install` when wicked-testing isn't already registered.
-  const claudeInstalled = perTargetReport.find(
-    r => r.target === "claude" && (r.status === "installed" || r.status === "skipped" && r.reason === "already-current")
-  );
-  maybeEmitClaudeCodeGuidance(claudeInstalled);
 
   // Non-zero exit if any target skipped due to a real failure (not just
   // "already installed"). This matches CI expectations — an install script
