@@ -201,11 +201,21 @@ const flags = args.filter(a => a.startsWith("--"));
 const flagValue = (name) => {
   const f = flags.find(a => a === `--${name}` || a.startsWith(`--${name}=`));
   if (!f) return null;
-  if (f.includes("=")) return f.split("=")[1];
-  const idx = args.indexOf(f);
-  const next = args[idx + 1];
-  if (next && !next.startsWith("-")) return next;
-  return true;
+  let val;
+  if (f.includes("=")) {
+    val = f.split("=")[1];
+  } else {
+    const idx = args.indexOf(f);
+    const next = args[idx + 1];
+    val = (next && !next.startsWith("-")) ? next : true;
+  }
+  // String boolean coercion: `--force=false` should evaluate to boolean
+  // false, not the truthy string "false". Since callers use `!!flagValue()`
+  // the truthy-string case was silently flipping intent. Kept narrow: only
+  // literal "true" / "false" are coerced; other string values pass through.
+  if (val === "false") return false;
+  if (val === "true")  return true;
+  return val;
 };
 
 const force         = !!flagValue("force");
@@ -483,16 +493,24 @@ async function cmdDoctor() {
   // so users debugging "why didn't my install take" can see whether we
   // honored the env var. Added in 0.3.3 after installs silently hit
   // ~/.claude while the user's real config lived at ~/alt-configs/.claude.
-  const envDir = process.env.CLAUDE_CONFIG_DIR;
-  if (envDir && envDir.trim()) {
-    const resolvedEnv = resolve(envDir.trim().replace(/^~/, home));
-    if (!existsSync(resolvedEnv)) {
-      checks.push({ name: "CLAUDE_CONFIG_DIR", status: "warn", message: `set to ${resolvedEnv} but the directory does not exist`, fix: "create the directory or unset CLAUDE_CONFIG_DIR" });
+  //
+  // Reuse resolveClaudeCandidates() so the marker list and path rules stay
+  // canonical — any drift between installer and doctor would be a source
+  // of confusing "installer wrote here but doctor says that" bugs.
+  const envTarget = resolveClaudeCandidates().find(t => t.source === "env:CLAUDE_CONFIG_DIR");
+  if (envTarget) {
+    const root = envTarget.rootDir;
+    if (!existsSync(root)) {
+      checks.push({ name: "CLAUDE_CONFIG_DIR", status: "warn", message: `set to ${root} but the directory does not exist`, fix: "create the directory or unset CLAUDE_CONFIG_DIR" });
     } else {
-      const hasMarkers = ["settings.json", "plugins", "projects"].some(m => existsSync(join(resolvedEnv, m)));
+      // Identity markers are trusted-skipped at install time so empty
+      // freshly-created dirs work. In doctor we want to actually verify
+      // them so we catch the "env var points at the wrong place" case.
+      const markers = envTarget.identityMarkers || [];
+      const hasMarkers = markers.some(m => existsSync(join(root, m)));
       checks.push(hasMarkers
-        ? { name: "CLAUDE_CONFIG_DIR", status: "ok",   message: resolvedEnv }
-        : { name: "CLAUDE_CONFIG_DIR", status: "warn", message: `${resolvedEnv} exists but has no Claude identity markers (settings.json / plugins/ / projects/)`, fix: "verify Claude Code is actually configured at this path" });
+        ? { name: "CLAUDE_CONFIG_DIR", status: "ok",   message: root }
+        : { name: "CLAUDE_CONFIG_DIR", status: "warn", message: `${root} exists but has no Claude identity markers (${markers.join(" / ")})`, fix: "verify Claude Code is actually configured at this path" });
     }
   }
 
