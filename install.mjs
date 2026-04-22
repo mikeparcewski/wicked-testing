@@ -48,6 +48,12 @@ const LEGACY_BARE_SKILL_DIRS = [
 // (collides with common GitHub dotfiles, and `gh copilot` does not read
 // that path). Removed until a real integration point exists; tracked in
 // #59.
+//
+// Claude Code is special: its config root is redirectable via
+// $CLAUDE_CONFIG_DIR (used for multi-tenant setups, alt-config layouts
+// like ~/alt-configs/.claude, and corporate-policy home overrides). The
+// single-root claude entry below is only the "default" — resolveClaudeCandidates()
+// expands it into 1..N concrete targets at install time. See #87.
 const CLI_TARGETS = [
   {
     name: "claude",
@@ -103,10 +109,64 @@ const CLI_TARGETS = [
   },
 ];
 
+// Expand the canonical CLI_TARGETS "claude" entry into one or more concrete
+// target objects that reflect the user's actual Claude Code config root.
+//
+// Precedence:
+//   1. $CLAUDE_CONFIG_DIR — authoritative when set. Skip identity-marker
+//      checks (trusted) so `CLAUDE_CONFIG_DIR=/new/path npx wicked-testing`
+//      works even when the dir is freshly created and empty.
+//   2. Otherwise probe ~/.claude plus a small list of alt-config layouts
+//      (~/alt-configs/.claude, ~/.config/claude) — each is filtered by the
+//      normal identity-marker check downstream.
+//
+// Added in 0.3.3 after a user discovered their installs were silently
+// landing in ~/.claude while their real config lived at ~/alt-configs/.claude.
+function buildClaudeTarget(rootDir, source, { trusted = false } = {}) {
+  return {
+    name: "claude",
+    rootDir,
+    dir: join(rootDir, "skills"),
+    agentDir: join(rootDir, "agents"),
+    commandDir: join(rootDir, "commands"),
+    platform: "claude",
+    identityMarkers: ["settings.json", "plugins", "projects"],
+    isolationTier: "hard",
+    source,    // for doctor output ("env:CLAUDE_CONFIG_DIR" / "default" / "alt-configs" / "xdg")
+    trusted,   // skip identity-marker check when true
+  };
+}
+
+function resolveClaudeCandidates() {
+  const envDir = process.env.CLAUDE_CONFIG_DIR;
+  if (envDir && typeof envDir === "string" && envDir.trim()) {
+    const root = resolve(envDir.trim().replace(/^~/, home));
+    return [buildClaudeTarget(root, "env:CLAUDE_CONFIG_DIR", { trusted: true })];
+  }
+  return [
+    buildClaudeTarget(join(home, ".claude"),                 "default"),
+    buildClaudeTarget(join(home, "alt-configs", ".claude"),  "alt-configs"),
+    buildClaudeTarget(join(home, ".config", "claude"),       "xdg"),
+  ];
+}
+
+// Full list of candidate targets with expansion applied. Use this anywhere
+// we'd previously iterate CLI_TARGETS directly (resolveTargets, cmdDoctor).
+function allCandidateTargets() {
+  const out = [];
+  for (const spec of CLI_TARGETS) {
+    if (spec.name === "claude") out.push(...resolveClaudeCandidates());
+    else out.push(spec);
+  }
+  return out;
+}
+
 // A directory that exists but has none of the identity markers is treated
 // as "not really this CLI" — we skip it. Override with --assume-cli=<name>
-// if a power user knows their setup stores markers elsewhere.
+// if a power user knows their setup stores markers elsewhere. Targets
+// flagged `trusted` (explicit --path or $CLAUDE_CONFIG_DIR) bypass this.
 function hasIdentityMarker(target) {
+  if (target.trusted) return true;
   if (!existsSync(target.rootDir)) return false;
   for (const m of target.identityMarkers || []) {
     if (existsSync(join(target.rootDir, m))) return true;
@@ -132,10 +192,20 @@ const subcommand = FLAG_SUBCOMMANDS[first]
   ?? (first && !first.startsWith("-") ? first : "install");
 
 const flags = args.filter(a => a.startsWith("--"));
+// Supports both forms:
+//   --flag=value   (canonical)
+//   --flag value   (common shell muscle-memory; prior versions silently
+//                   treated this as bare `--flag` and dropped the value,
+//                   which is how 0.3.2-era `install --path ~/alt-configs/.claude`
+//                   fell through to default detection. Fixed in 0.3.3.)
 const flagValue = (name) => {
   const f = flags.find(a => a === `--${name}` || a.startsWith(`--${name}=`));
   if (!f) return null;
-  return f.includes("=") ? f.split("=")[1] : true;
+  if (f.includes("=")) return f.split("=")[1];
+  const idx = args.indexOf(f);
+  const next = args[idx + 1];
+  if (next && !next.startsWith("-")) return next;
+  return true;
 };
 
 const force         = !!flagValue("force");
@@ -160,6 +230,8 @@ function resolveTargets() {
       platform: known?.platform ?? dirName,
       identityMarkers: known?.identityMarkers ?? [],
       isolationTier: known?.isolationTier ?? "advisory",
+      source: "path-arg",
+      trusted: true,
     }];
   }
   // Identity-marker detection: presence of `~/.claude/` alone is not enough
@@ -168,10 +240,16 @@ function resolveTargets() {
   // declared in CLI_TARGETS — `settings.json`, `plugins/`, etc. Override
   // with --assume-cli=<name> to force-detect when the host's marker set
   // diverges from our list.
+  //
+  // For claude, allCandidateTargets() expands the canonical spec into the
+  // $CLAUDE_CONFIG_DIR target (if set) or ~/.claude + common alt-config
+  // paths (~/alt-configs/.claude, ~/.config/claude). Each candidate is
+  // filtered individually by the identity-marker check.
   const forceDetect = (assumeCli && typeof assumeCli === "string")
     ? new Set(assumeCli.split(","))
     : new Set();
-  const detected = CLI_TARGETS.filter(t =>
+  const candidates = allCandidateTargets();
+  const detected = candidates.filter(t =>
     forceDetect.has(t.name) || hasIdentityMarker(t)
   );
   if (cliArg && typeof cliArg === "string") {
@@ -335,12 +413,19 @@ Commands:
 
 Options:
   --cli=<list>        Comma-separated CLI names (claude, gemini, codex, cursor, kiro)
-  --path=<dir>        Custom target path (e.g. --path=~/.claude)
+  --path=<dir>        Custom target path (e.g. --path=~/.claude). Also accepts --path <dir>.
   --assume-cli=<list> Force-detect a CLI even if its identity markers are missing
   --force             Overwrite even if versions match
   --require=<spec>    Version spec for 'check' (e.g. 0.2.0, ^0.2.0, ~0.2.1, >=0.2.0)
   --skip-self-test    Skip the SQLite bootstrap self-test (install/update only)
   --json              Machine-readable output where supported
+
+Environment:
+  CLAUDE_CONFIG_DIR   Override Claude Code's config root (authoritative when set).
+                      Install will target ONLY this path for the claude CLI. When
+                      unset, wicked-testing probes ~/.claude, ~/alt-configs/.claude,
+                      and ~/.config/claude, and installs into each that has Claude
+                      identity markers (settings.json / plugins/ / projects/).
 
 Examples:
   npx wicked-testing install
@@ -349,6 +434,7 @@ Examples:
   npx wicked-testing status --json
   npx wicked-testing uninstall --cli=claude
   npx wicked-testing doctor
+  CLAUDE_CONFIG_DIR=~/alt-configs/.claude npx wicked-testing install
 `);
 }
 
@@ -393,10 +479,31 @@ async function cmdDoctor() {
     ? { name: "node",          status: "ok",   message: process.versions.node }
     : { name: "node",          status: "fail", message: `${process.versions.node} — need >= 18`, fix: "install Node 18+" });
 
-  // AI CLI detection
-  const detected = CLI_TARGETS.filter(t => hasIdentityMarker(t));
+  // $CLAUDE_CONFIG_DIR awareness — surface what we picked up (or didn't)
+  // so users debugging "why didn't my install take" can see whether we
+  // honored the env var. Added in 0.3.3 after installs silently hit
+  // ~/.claude while the user's real config lived at ~/alt-configs/.claude.
+  const envDir = process.env.CLAUDE_CONFIG_DIR;
+  if (envDir && envDir.trim()) {
+    const resolvedEnv = resolve(envDir.trim().replace(/^~/, home));
+    if (!existsSync(resolvedEnv)) {
+      checks.push({ name: "CLAUDE_CONFIG_DIR", status: "warn", message: `set to ${resolvedEnv} but the directory does not exist`, fix: "create the directory or unset CLAUDE_CONFIG_DIR" });
+    } else {
+      const hasMarkers = ["settings.json", "plugins", "projects"].some(m => existsSync(join(resolvedEnv, m)));
+      checks.push(hasMarkers
+        ? { name: "CLAUDE_CONFIG_DIR", status: "ok",   message: resolvedEnv }
+        : { name: "CLAUDE_CONFIG_DIR", status: "warn", message: `${resolvedEnv} exists but has no Claude identity markers (settings.json / plugins/ / projects/)`, fix: "verify Claude Code is actually configured at this path" });
+    }
+  }
+
+  // AI CLI detection — use allCandidateTargets() so alt-config Claude
+  // layouts show up here instead of being invisible to doctor.
+  const detected = allCandidateTargets().filter(t => hasIdentityMarker(t));
   checks.push(detected.length > 0
-    ? { name: "cli-detection", status: "ok",   message: detected.map(d => `${d.name} (${d.isolationTier})`).join(", ") }
+    ? { name: "cli-detection", status: "ok",   message: detected.map(d => {
+        const suffix = d.source && d.source !== "default" ? ` @ ${d.rootDir} [${d.source}]` : "";
+        return `${d.name}${suffix} (${d.isolationTier})`;
+      }).join(", ") }
     : { name: "cli-detection", status: "fail", message: "no AI CLIs detected in home directory", fix: "install Claude Code / Gemini / Codex / Cursor / Kiro, or use --path=<dir>" });
 
   // better-sqlite3 native module
@@ -406,13 +513,19 @@ async function cmdDoctor() {
     ? { name: "better-sqlite3", status: "ok",   message: "loadable" }
     : { name: "better-sqlite3", status: "fail", message: "native module failed to load", fix: "run `npm rebuild better-sqlite3` or reinstall Node 18+ on a supported platform" });
 
-  // Per-target install-marker integrity
+  // Per-target install-marker integrity. Disambiguate by source when the
+  // same CLI name has multiple roots (e.g., two claude targets at
+  // ~/.claude and ~/alt-configs/.claude).
+  const claudeTargetCount = detected.filter(t => t.name === "claude").length;
   for (const t of detected) {
+    const suffix = (t.name === "claude" && claudeTargetCount > 1 && t.source)
+      ? `[${t.source}]` : "";
+    const checkName = `install:${t.name}${suffix}`;
     const installed = installedVersion(t);
     if (installed === null) {
-      checks.push({ name: `install:${t.name}`, status: "warn", message: "not installed yet", fix: `run \`npx wicked-testing install --cli=${t.name}\`` });
+      checks.push({ name: checkName, status: "warn", message: `not installed yet at ${t.rootDir}`, fix: `run \`npx wicked-testing install --cli=${t.name}\`` });
     } else if (installed !== VERSION) {
-      checks.push({ name: `install:${t.name}`, status: "warn", message: `installed ${installed}, code is ${VERSION}`, fix: `run \`npx wicked-testing update --cli=${t.name}\`` });
+      checks.push({ name: checkName, status: "warn", message: `installed ${installed} at ${t.rootDir}, code is ${VERSION}`, fix: `run \`npx wicked-testing update --cli=${t.name}\`` });
     } else {
       // Spot-check: a few expected agent files are present and non-empty.
       const expected = ["wicked-testing-acceptance-test-reviewer.md", "wicked-testing-test-oracle.md"];
@@ -422,8 +535,8 @@ async function cmdDoctor() {
         try { return statSync(p).size === 0; } catch { return true; }
       });
       checks.push(missing.length === 0
-        ? { name: `install:${t.name}`, status: "ok",   message: `${VERSION} integrity verified (${t.isolationTier})` }
-        : { name: `install:${t.name}`, status: "fail", message: `missing/empty agent files: ${missing.join(", ")}`, fix: `run \`npx wicked-testing install --force --cli=${t.name}\`` });
+        ? { name: checkName, status: "ok",   message: `${VERSION} integrity verified (${t.isolationTier})` }
+        : { name: checkName, status: "fail", message: `missing/empty agent files: ${missing.join(", ")}`, fix: `run \`npx wicked-testing install --force --cli=${t.name}\`` });
     }
   }
 
@@ -465,7 +578,11 @@ async function cmdDoctor() {
   if (jsonOut) {
     console.log(JSON.stringify({
       node: process.versions.node,
+      claude_config_dir: process.env.CLAUDE_CONFIG_DIR ?? null,
+      // Preserve the 0.3.2 shape (string[]) for back-compat. Rich info
+      // (rootDir, source) is under detected_targets.
       detected_clis: detected.map(d => d.name),
+      detected_targets: detected.map(d => ({ name: d.name, root: d.rootDir, source: d.source ?? "default" })),
       sqlite_ok: sqliteOk,
       checks,
       healthy: fails.length === 0,
