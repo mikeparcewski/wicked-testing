@@ -30,7 +30,8 @@ The industry answer has been scripted test frameworks: Playwright, pytest, k6, a
 ## What You Get
 
 ```bash
-claude plugins add mikeparcewski/wicked-testing
+claude plugins marketplace add mikeparcewski/wicked-testing
+claude plugins install wicked-testing
 ```
 
 Then:
@@ -200,11 +201,30 @@ When wicked-brain is present, wicked-testing writes memories on high-signal even
 
 ## Install
 
+Two install paths depending on which AI CLI you use:
+
+### Claude Code (plugin-system install)
+
+Claude Code only loads skills / agents / commands from **registered** plugins. Skills dropped into `~/.claude/skills/` without a plugin record are visible on disk but are NOT surfaced by the skill resolver. Register wicked-testing via Claude Code's marketplace system:
+
+```bash
+claude plugins marketplace add mikeparcewski/wicked-testing
+claude plugins install wicked-testing
+```
+
+The repo ships `.claude-plugin/marketplace.json` + `.claude-plugin/plugin.json` so Claude Code can discover everything.
+
+### Gemini CLI / Codex / Cursor / Kiro (file-copy install)
+
+These CLIs load skills directly from their home-relative skill directories (`~/.gemini/skills/`, `~/.codex/skills/`, `~/.cursor/skills/`, `~/.kiro/skills/`). For those:
+
 ```bash
 npx wicked-testing install
 ```
 
-Detects which AI CLIs are installed (`~/.claude/`, `~/.gemini/`, `~/.codex/`, etc.) and copies skills, agents, and commands into each. Runs a bootstrap self-test to verify the SQLite schema. Idempotent — safe to run multiple times.
+Detects which CLIs are present via identity markers (`config.json`, `settings.json`, etc.), copies skills / agents / commands into each, runs a bootstrap self-test, and prints a per-target isolation-tier note (hard-enforced on Claude Code, advisory on everyone else). Idempotent — safe to run multiple times.
+
+Running `npx wicked-testing install` on a machine with Claude Code detected WILL copy files to `~/.claude/skills/` for backward compatibility, but will also print a reminder to use `claude plugins install wicked-testing` for full integration.
 
 ```bash
 # Install for a specific CLI only

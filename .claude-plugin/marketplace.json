@@ -1,0 +1,15 @@
+{
+  "name": "wicked-testing",
+  "owner": {
+    "name": "Mike Parcewski"
+  },
+  "plugins": [
+    {
+      "name": "wicked-testing",
+      "source": "./",
+      "description": "Standalone QE library for AI coding CLIs — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, 3-agent acceptance pipeline, optional wicked-bus + wicked-brain integration.",
+      "version": "0.3.1"
+    }
+  ],
+  "version": "1.0.0"
+}

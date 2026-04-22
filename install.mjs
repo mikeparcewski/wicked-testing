@@ -10,6 +10,7 @@ import { join, resolve, basename } from "node:path";
 import { homedir, tmpdir } from "node:os";
 import { argv, exit } from "node:process";
 import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const home = homedir();
@@ -17,6 +18,23 @@ const home = homedir();
 const PKG = JSON.parse(readFileSync(join(__dirname, "package.json"), "utf8"));
 const VERSION = PKG.version;
 const INSTALLED_MARKER = ".wicked-testing-version";
+
+// Bare-name skill directories from the pre-0.3 install layout. Older
+// installs dropped skills under ~/.claude/skills/{acceptance-testing,
+// browser-automation, scenario-authoring, test-oracle, test-runner,
+// test-strategy}/ — unprefixed. The 0.3 layout uses wicked-testing-<name>/
+// so those unprefixed dirs are now orphans (Claude Code only surfaces
+// skills from registered plugins, and generic names like "test-runner"
+// could collide with other tools). We migrate them away on install if
+// their SKILL.md still carries the wicked-testing signature.
+const LEGACY_BARE_SKILL_DIRS = [
+  "acceptance-testing",
+  "browser-automation",
+  "scenario-authoring",
+  "test-oracle",
+  "test-runner",
+  "test-strategy",
+];
 
 // Per-CLI target spec. `identityMarkers` is any of-list of filenames/dirs
 // that must exist inside the CLI's home-relative root before we'll install
@@ -182,6 +200,94 @@ function readdirSafe(p) { try { return readdirSync(p); } catch { return []; } }
 function copyTree(src, dest) {
   mkdirSync(dest, { recursive: true });
   cpSync(src, dest, { recursive: true, force: true });
+}
+
+// Migrate a single legacy bare-name skill dir. Returns true if removed.
+// Signature check: the dir must contain a SKILL.md whose frontmatter `name:`
+// matches the dir name AND whose body mentions "wicked-testing" — otherwise
+// it might belong to an unrelated tool and we leave it alone. Paranoid by
+// design because generic names like "test-runner" could reasonably be
+// owned by another plugin.
+function migrateOneLegacyDir(skillsDir, bareName) {
+  const path = join(skillsDir, bareName);
+  if (!existsSync(path)) return false;
+  const skillFile = join(path, "SKILL.md");
+  if (!existsSync(skillFile)) return false; // unknown dir shape — leave it
+  let body;
+  try { body = readFileSync(skillFile, "utf8"); } catch { return false; }
+  const nameMatch = body.match(/^name:\s*([A-Za-z0-9_:-]+)/m);
+  const frontmatterName = nameMatch ? nameMatch[1] : "";
+  // Signature: the SKILL.md's name field matches the dir AND body references
+  // wicked-testing. Two independent signals so we don't false-positive on
+  // a third-party plugin that happens to use the same dir name.
+  const isWickedTesting = frontmatterName === bareName && /wicked-testing/i.test(body);
+  if (!isWickedTesting) return false;
+  try {
+    rmSync(path, { recursive: true, force: true });
+    return true;
+  } catch { return false; }
+}
+
+function migrateLegacyLayout(targets) {
+  let total = 0;
+  const removed = [];
+  for (const t of targets) {
+    for (const bare of LEGACY_BARE_SKILL_DIRS) {
+      if (migrateOneLegacyDir(t.dir, bare)) {
+        removed.push(`${t.name}/${bare}`);
+        total++;
+      }
+    }
+  }
+  if (total > 0 && !jsonOut) {
+    console.log(`[migration] removed ${total} legacy bare-name skill dir(s) from the pre-0.3 layout:`);
+    for (const r of removed) console.log(`            ${r}`);
+  }
+  return removed;
+}
+
+// Claude Code uses a plugin-registration system distinct from the file-copy
+// install. Skills dropped into ~/.claude/skills/ without a plugin record are
+// visible on disk but NOT loaded by the skill resolver — see the release
+// notes for 0.3.1 / audit follow-up. We detect whether wicked-testing is
+// registered via Claude Code's plugin CLI and print a one-time guidance
+// block if not. Silent when the `claude` binary isn't on PATH (other CLIs
+// don't need this).
+function maybeEmitClaudeCodeGuidance(installedClaudeTarget) {
+  if (!installedClaudeTarget) return;
+  // `claude` binary present?
+  const probe = spawnSyncSafe("claude", ["--version"]);
+  if (!probe.ok) return;
+  // Is wicked-testing already registered with Claude Code?
+  const listing = spawnSyncSafe("claude", ["plugins", "list"]);
+  if (listing.ok && /(^|\s)wicked-testing(\s|$|@)/.test(listing.stdout || "")) return;
+  if (jsonOut) return; // structured consumers don't want prose guidance
+  console.log("");
+  console.log("\x1b[33mClaude Code note:\x1b[0m the file-copy install above drops skills into");
+  console.log("~/.claude/skills/ but Claude Code only loads skills from registered plugins.");
+  console.log("For full integration, also register the plugin:");
+  console.log("");
+  console.log("  \x1b[36mclaude plugins marketplace add mikeparcewski/wicked-testing\x1b[0m");
+  console.log("  \x1b[36mclaude plugins install wicked-testing\x1b[0m");
+  console.log("");
+  console.log("Other CLIs (Gemini / Codex / Cursor / Kiro) are loaded directly from the");
+  console.log("files copied above — no further action needed on those.");
+}
+
+// Tiny shell-free wrapper so both probes above stay synchronous and never
+// throw on ENOENT. Returns { ok, stdout } — `ok` is false if the binary
+// isn't on PATH or the command exited non-zero.
+function spawnSyncSafe(cmd, args) {
+  try {
+    // shell:true so Windows resolves .cmd / .bat shims on PATH (`claude.cmd`,
+    // etc.). Args are internal and trusted — no user input reaches this call,
+    // so there's no injection surface here.
+    const r = spawnSync(cmd, args, { encoding: "utf8", timeout: 3000, shell: true });
+    if (r.error || r.status !== 0) return { ok: false, stdout: r.stdout || "" };
+    return { ok: true, stdout: r.stdout || "" };
+  } catch {
+    return { ok: false, stdout: "" };
+  }
 }
 
 // --- subcommands -----------------------------------------------------------
@@ -453,6 +559,13 @@ async function cmdInstall({ mode }) {
   let totalSkills = 0, totalAgents = 0, totalCommands = 0;
   const perTargetReport = [];
 
+  // Clean the pre-0.3 layout (bare-name skill dirs) before we write the
+  // 0.3+ wicked-testing-<name>/ dirs — otherwise callers end up with a
+  // split-brain of stale and fresh skills under the same ~/.claude/skills/.
+  // migrateLegacyLayout is paranoid-signature-checked so it won't nuke a
+  // same-named dir that belongs to an unrelated plugin.
+  const migrated = migrateLegacyLayout(targets);
+
   for (const target of targets) {
     const existing = installedVersion(target);
     if (existing === VERSION && !force && mode !== "update") {
@@ -533,8 +646,18 @@ async function cmdInstall({ mode }) {
       skills: totalSkills,
       agents: totalAgents,
       commands: totalCommands,
+      legacy_layout_removed: migrated,
     }));
   }
+
+  // Claude-Code-specific guidance: skills dropped into ~/.claude/skills/
+  // without a plugin registration aren't loaded by the Claude Code skill
+  // resolver. Nudge the user toward `claude plugins marketplace add` +
+  // `claude plugins install` when wicked-testing isn't already registered.
+  const claudeInstalled = perTargetReport.find(
+    r => r.target === "claude" && (r.status === "installed" || r.status === "skipped" && r.reason === "already-current")
+  );
+  maybeEmitClaudeCodeGuidance(claudeInstalled);
 
   // Non-zero exit if any target skipped due to a real failure (not just
   // "already installed"). This matches CI expectations — an install script
@@ -558,6 +681,11 @@ function cmdUninstall() {
     for (const skill of skillDirs) {
       const p = join(target.dir, `wicked-testing-${skill}`);
       if (existsSync(p)) { rmSync(p, { recursive: true, force: true }); removed++; }
+    }
+    // Also clean pre-0.3 bare-name skill dirs if they're still ours
+    // (signature-checked — see migrateOneLegacyDir).
+    for (const bare of LEGACY_BARE_SKILL_DIRS) {
+      if (migrateOneLegacyDir(target.dir, bare)) removed++;
     }
     if (target.agentDir) {
       for (const f of agentFiles) {
