@@ -279,7 +279,10 @@ function maybeEmitClaudeCodeGuidance(installedClaudeTarget) {
 // isn't on PATH or the command exited non-zero.
 function spawnSyncSafe(cmd, args) {
   try {
-    const r = spawnSync(cmd, args, { encoding: "utf8", timeout: 3000 });
+    // shell:true so Windows resolves .cmd / .bat shims on PATH (`claude.cmd`,
+    // etc.). Args are internal and trusted — no user input reaches this call,
+    // so there's no injection surface here.
+    const r = spawnSync(cmd, args, { encoding: "utf8", timeout: 3000, shell: true });
     if (r.error || r.status !== 0) return { ok: false, stdout: r.stdout || "" };
     return { ok: true, stdout: r.stdout || "" };
   } catch {
