@@ -74,24 +74,13 @@ Slash commands mirror the Tier-1 skills, plus operational commands:
 |-------------------------------|------------------------------------------------|
 | `/wicked-testing:plan`        | Plan / strategy / risk / testability           |
 | `/wicked-testing:authoring`   | Author scenarios + test code                   |
-| `/wicked-testing:scenarios`   | Manage scenario files (list, show, archive)    |
-| `/wicked-testing:automate`    | Generate runnable test code from a scenario    |
 | `/wicked-testing:execution`   | Run scenarios, collect evidence                |
-| `/wicked-testing:run`         | Execute a scenario (fast path via scenario-executor) |
 | `/wicked-testing:acceptance`  | Full 3-agent pipeline (writer → executor → reviewer) |
 | `/wicked-testing:review`      | Produce an independent verdict                 |
-| `/wicked-testing:insight`     | Stats, reports, flaky / coverage signals       |
+| `/wicked-testing:insight`     | Stats, reports, oracle queries, flaky / coverage signals |
 | `/wicked-testing:setup`       | First-run installation nudge / health check    |
-| `/wicked-testing:oracle`      | Fixed-SQL questions over the ledger            |
-| `/wicked-testing:tasks`       | Task tracking (quarantines, follow-ups)        |
-| `/wicked-testing:stats`       | Quick summary stats                            |
-| `/wicked-testing:report`      | Human-readable run report                      |
-| `/wicked-testing:ci-bootstrap`| Detect CI provider + emit workflow template    |
 
-All 14 commands are supported. The earlier plan to alias
-`/wicked-testing:scenarios`, `/wicked-testing:automate`, `/wicked-testing:run`,
-and `/wicked-testing:acceptance` under a "retired" notice was **reversed** —
-those commands are first-class and documented in the README command table.
+All 7 commands are supported.
 
 ---
 

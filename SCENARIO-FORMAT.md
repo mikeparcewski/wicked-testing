@@ -209,13 +209,13 @@ npx playwright test --reporter=list 2>/dev/null || true
 
 ```yaml
 ---
-name: wt-stats-returns-json
+name: wt-insight-returns-json
 description: |
-  Verify that /wicked-testing:stats --json returns valid JSON with expected fields.
+  Verify that /wicked-testing:insight --json returns valid JSON with expected fields.
   Self-test scenario: wicked-testing validates itself.
 version: "1.0"
 category: cli
-tags: [self-test, stats, json]
+tags: [self-test, insight, json]
 tools:
   required: [node]
   optional: [sqlite3]
@@ -290,7 +290,7 @@ A valid scenario file MUST:
 ## Integration with wicked-testing
 
 Scenarios are:
-- **Executed** by `/wicked-testing:run` → evidence JSON written to `.wicked-testing/evidence/<run-id>/`
+- **Executed** by `/wicked-testing:execution` → evidence JSON written to `.wicked-testing/evidence/<run-id>/`
 - **Accepted** by `/wicked-testing:acceptance` → 3-agent pipeline produces verdicts
-- **Registered** in DomainStore via `scenario-authoring` skill
-- **Queryable** via `/wicked-testing:oracle "what scenarios exist for project X?"`
+- **Registered** in DomainStore via `wicked-testing:authoring` skill
+- **Queryable** via `/wicked-testing:insight "what scenarios exist for project X?"`

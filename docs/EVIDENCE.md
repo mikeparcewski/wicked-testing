@@ -187,7 +187,7 @@ directly. This is supported and stable. SQLite access is **not** stable.
 ## 6. Multi-Run Queries
 
 For "has this scenario passed recently?" / "flake rate" style queries, use the
-`test-oracle` via `/wicked-testing:oracle <question>` or `npx wicked-testing
+`test-oracle` via `/wicked-testing:insight <question>` or `npx wicked-testing
 oracle <question>`. It dispatches to fixed SQL that treats the ledger as an
 internal index — consumers get stable answers without depending on the schema.
 

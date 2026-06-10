@@ -14,11 +14,6 @@
       "command": "/wicked-testing:authoring"
     },
     {
-      "name": "wicked-testing:browser-automation",
-      "path": "skills/browser-automation/SKILL.md",
-      "command": "/wicked-testing:browser-automation"
-    },
-    {
       "name": "wicked-testing:execution",
       "path": "skills/execution/SKILL.md",
       "command": "/wicked-testing:execution"
@@ -37,26 +32,6 @@
       "name": "wicked-testing:review",
       "path": "skills/review/SKILL.md",
       "command": "/wicked-testing:review"
-    },
-    {
-      "name": "wicked-testing:scenario-authoring",
-      "path": "skills/scenario-authoring/SKILL.md",
-      "command": "/wicked-testing:scenario-authoring"
-    },
-    {
-      "name": "wicked-testing:test-oracle",
-      "path": "skills/test-oracle/SKILL.md",
-      "command": "/wicked-testing:test-oracle"
-    },
-    {
-      "name": "wicked-testing:test-runner",
-      "path": "skills/test-runner/SKILL.md",
-      "command": "/wicked-testing:test-runner"
-    },
-    {
-      "name": "wicked-testing:test-strategy",
-      "path": "skills/test-strategy/SKILL.md",
-      "command": "/wicked-testing:test-strategy"
     },
     {
       "name": "wicked-testing:update",

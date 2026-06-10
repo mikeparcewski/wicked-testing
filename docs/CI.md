@@ -5,7 +5,7 @@ exit-code contract, artifact publishing, PR-comment summaries, secrets,
 headless-mode conventions, and caching rules.
 
 Ready-to-paste templates for the major providers live in
-[`templates/ci/`](../templates/ci/). Use `/wicked-testing:ci-bootstrap`
+[`templates/ci/`](../templates/ci/). Use `/wicked-testing:setup`
 to detect your provider and drop the right file into the correct
 location.
 
@@ -43,7 +43,7 @@ map to the numeric contract as follows:
 
 Two existing spots don't map cleanly and should be treated as advisory:
 
-- `/wicked-testing:run` exits `2` on **PARTIAL** (mixed PASS + SKIP).
+- `/wicked-testing:execution` exits `2` on **PARTIAL** (mixed PASS + SKIP).
   The new contract keeps `2` semantically equivalent (inconclusive),
   just widened to cover INCONCLUSIVE verdicts.
 - Agent-specific codes in the `64-78` range (e.g. `ERR_AXE_TIMEOUT`)
@@ -339,9 +339,9 @@ cache:
 ## 7. Bootstrapping a provider
 
 ```
-/wicked-testing:ci-bootstrap              # auto-detect, write template, print summary
-/wicked-testing:ci-bootstrap --dry-run    # show what would be written
-/wicked-testing:ci-bootstrap --json       # machine-readable summary
+/wicked-testing:setup                     # auto-detect provider, write template, print summary
+/wicked-testing:setup --dry-run           # show what would be written
+/wicked-testing:setup --json              # machine-readable summary
 ```
 
 Detection rules (first match wins):

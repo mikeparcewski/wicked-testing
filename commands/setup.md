@@ -101,7 +101,7 @@ Oracle and stats commands require SQLite. Run: npm rebuild better-sqlite3
 
 Next steps:
 - `/wicked-testing:plan` — create a test strategy
-- `/wicked-testing:scenarios` — author test scenarios
+- `/wicked-testing:authoring` — author test scenarios
 - `/wicked-testing:acceptance scenarios/test-runner.md` — run acceptance test pipeline
 ```
 
