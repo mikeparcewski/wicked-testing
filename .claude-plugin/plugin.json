@@ -1,6 +1,6 @@
 {
   "name": "wicked-testing",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "description": "Standalone QE library — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, optional wicked-bus + wicked-brain integration.",
   "skills": [
     {
@@ -12,11 +12,6 @@
       "name": "wicked-testing:authoring",
       "path": "skills/authoring/SKILL.md",
       "command": "/wicked-testing:authoring"
-    },
-    {
-      "name": "wicked-testing:browser-automation",
-      "path": "skills/browser-automation/SKILL.md",
-      "command": "/wicked-testing:browser-automation"
     },
     {
       "name": "wicked-testing:execution",
@@ -37,26 +32,6 @@
       "name": "wicked-testing:review",
       "path": "skills/review/SKILL.md",
       "command": "/wicked-testing:review"
-    },
-    {
-      "name": "wicked-testing:scenario-authoring",
-      "path": "skills/scenario-authoring/SKILL.md",
-      "command": "/wicked-testing:scenario-authoring"
-    },
-    {
-      "name": "wicked-testing:test-oracle",
-      "path": "skills/test-oracle/SKILL.md",
-      "command": "/wicked-testing:test-oracle"
-    },
-    {
-      "name": "wicked-testing:test-runner",
-      "path": "skills/test-runner/SKILL.md",
-      "command": "/wicked-testing:test-runner"
-    },
-    {
-      "name": "wicked-testing:test-strategy",
-      "path": "skills/test-strategy/SKILL.md",
-      "command": "/wicked-testing:test-strategy"
     },
     {
       "name": "wicked-testing:update",
@@ -242,16 +217,6 @@
       "slash": "/wicked-testing:authoring"
     },
     {
-      "name": "automate",
-      "path": "commands/automate.md",
-      "slash": "/wicked-testing:automate"
-    },
-    {
-      "name": "ci-bootstrap",
-      "path": "commands/ci-bootstrap.md",
-      "slash": "/wicked-testing:ci-bootstrap"
-    },
-    {
       "name": "execution",
       "path": "commands/execution.md",
       "slash": "/wicked-testing:execution"
@@ -262,19 +227,9 @@
       "slash": "/wicked-testing:insight"
     },
     {
-      "name": "oracle",
-      "path": "commands/oracle.md",
-      "slash": "/wicked-testing:oracle"
-    },
-    {
       "name": "plan",
       "path": "commands/plan.md",
       "slash": "/wicked-testing:plan"
-    },
-    {
-      "name": "report",
-      "path": "commands/report.md",
-      "slash": "/wicked-testing:report"
     },
     {
       "name": "review",
@@ -282,29 +237,9 @@
       "slash": "/wicked-testing:review"
     },
     {
-      "name": "run",
-      "path": "commands/run.md",
-      "slash": "/wicked-testing:run"
-    },
-    {
-      "name": "scenarios",
-      "path": "commands/scenarios.md",
-      "slash": "/wicked-testing:scenarios"
-    },
-    {
       "name": "setup",
       "path": "commands/setup.md",
       "slash": "/wicked-testing:setup"
-    },
-    {
-      "name": "stats",
-      "path": "commands/stats.md",
-      "slash": "/wicked-testing:stats"
-    },
-    {
-      "name": "tasks",
-      "path": "commands/tasks.md",
-      "slash": "/wicked-testing:tasks"
     }
   ]
 }

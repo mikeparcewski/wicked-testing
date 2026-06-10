@@ -5,9 +5,8 @@ exit-code contract, artifact publishing, PR-comment summaries, secrets,
 headless-mode conventions, and caching rules.
 
 Ready-to-paste templates for the major providers live in
-[`templates/ci/`](../templates/ci/). Use `/wicked-testing:ci-bootstrap`
-to detect your provider and drop the right file into the correct
-location.
+[`templates/ci/`](../templates/ci/). Use `/wicked-testing:execution`
+to wire CI to run these tests (emit CI trigger, pre-push / GH Actions step).
 
 ---
 
@@ -43,7 +42,7 @@ map to the numeric contract as follows:
 
 Two existing spots don't map cleanly and should be treated as advisory:
 
-- `/wicked-testing:run` exits `2` on **PARTIAL** (mixed PASS + SKIP).
+- `/wicked-testing:execution` exits `2` on **PARTIAL** (mixed PASS + SKIP).
   The new contract keeps `2` semantically equivalent (inconclusive),
   just widened to cover INCONCLUSIVE verdicts.
 - Agent-specific codes in the `64-78` range (e.g. `ERR_AXE_TIMEOUT`)
@@ -338,11 +337,19 @@ cache:
 
 ## 7. Bootstrapping a provider
 
-```
-/wicked-testing:ci-bootstrap              # auto-detect, write template, print summary
-/wicked-testing:ci-bootstrap --dry-run    # show what would be written
-/wicked-testing:ci-bootstrap --json       # machine-readable summary
-```
+Use `/wicked-testing:execution` to wire CI to run these tests. Tell it
+"bootstrap CI" or "wire CI for tests" and it will emit a CI trigger
+(pre-push hook or GH Actions step) appropriate for your project.
+
+For ready-to-paste template content, copy the matching file from
+[`templates/ci/`](../templates/ci/) into the provider's conventional path:
+
+| Provider         | Target path                                                   |
+|------------------|---------------------------------------------------------------|
+| `github-actions` | `.github/workflows/wicked-testing-acceptance.yml`             |
+| `gitlab`         | `.gitlab-ci.wicked-testing.yml` (include from main pipeline)  |
+| `jenkins`        | `Jenkinsfile.wicked-testing`                                  |
+| `buildkite`      | `.buildkite/wicked-testing.yml`                               |
 
 Detection rules (first match wins):
 
@@ -350,8 +357,4 @@ Detection rules (first match wins):
 2. `.gitlab-ci.yml` at root   → **gitlab**
 3. `Jenkinsfile` at root      → **jenkins**
 4. `.buildkite/pipeline.yml`  → **buildkite**
-5. None of the above          → prompt; default **github-actions**
-
-The command drops the template into the provider's conventional path
-and appends a `wicked-testing:ci-bootstrap:managed` marker comment so
-subsequent runs are idempotent.
+5. None of the above          → default **github-actions**

@@ -13,7 +13,7 @@ tools:
 timeout: 120
 assertions:
   - id: A1
-    description: /wicked-testing:stats returns valid JSON with ok=true
+    description: /wicked-testing:insight returns valid JSON with ok=true
   - id: A2
     description: Stats response contains row counts for all 7 tables
   - id: A3
@@ -220,5 +220,5 @@ import('./lib/oracle-queries.mjs').then(({ routeQuestion, QUERIES }) => {
 
 ```bash
 echo "Self-test complete. .wicked-testing/ directory retained for oracle verification."
-echo "Run: /wicked-testing:oracle 'show bootstrap verdict' to confirm end-to-end."
+echo "Run: /wicked-testing:insight 'show bootstrap verdict' to confirm end-to-end."
 ```

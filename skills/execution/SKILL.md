@@ -31,6 +31,7 @@ writes the ledger entry. Evidence lives under
 | Pre-written plan, "just execute"                         | `wicked-testing:acceptance-test-executor`                                                                |
 | "run the suite" (no scenario)                            | Project's native runner; record result                                                                   |
 | Contract verification                                    | `wicked-testing:contract-testing-engineer`                                                               |
+| "wire CI" / "bootstrap CI for tests"                     | Emit CI trigger (pre-push / GH Actions step); record nothing until a real run executes                   |
 
 **Default posture:** verdict requests go to the 3-agent pipeline. `test-designer`
 is the dev-loop fast path with known self-grading risk; it is never the default

@@ -4,6 +4,30 @@ All notable changes to `wicked-testing`. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [SemVer](https://semver.org/).
 
+## [0.4.0] — 2026-06-10
+
+**Breaking: command surface cut 15 → 7.** wicked-testing now exposes exactly the
+five-core it always advertised — `plan` / `authoring` / `execution` / `review` /
+`insight` — plus `acceptance` (the 3-agent gate) and `setup`. The 41 agents are
+unchanged and remain reachable by dispatch from the surviving skills.
+
+### Removed (breaking)
+- `stats`, `report`, `oracle` → ask **`insight`** (same fixed-SQL oracle underneath).
+- `tasks` → removed; task rows stay queryable via `insight`, task mutation via the `DomainStore` API (`lib/domain-store.mjs`).
+- `scenarios`, `automate` → ask **`authoring`**.
+- `run` → ask **`execution`**.
+- `ci-bootstrap` → **capability removed, not relocated.** Its CI provider-detection and workflow-template auto-generation are dropped. The templates remain in `templates/ci/` for manual use (see `docs/CI.md`); portable, re-derived CI gating is wicked-garden's `compile`. `execution` owns only the lightweight "wire CI to run these tests" intent.
+
+### Changed
+- Skills consolidated 12 → 7 (`scenario-authoring` + `browser-automation` → `authoring`; `test-strategy` → `plan`; `test-oracle` skill → `insight`, the test-oracle *agent* is unchanged; `test-runner` → `execution` + `setup`).
+- Browser testing standards (console-error = automatic FAIL, headless by default, no fixed `sleep`) moved from the retired `browser-automation` skill into the `e2e-orchestrator` agent.
+
+### Added
+- **Opt-in claim-boundary hook** (off by default). Set `"claim_nudge": true` in `.wicked-testing/config.json` to be nudged to run `acceptance` when a turn claims "tests pass" with no acceptance verdict on record. Non-blocking (one line, ignorable). Auto-registers under a marketplace/plugin install; loose-skill installs (`npx wicked-testing install`) require plugin-mode for the hook to fire — a follow-up will add loose-path registration.
+
+### Unchanged
+- Ledger schema, evidence format, and scenario file format are untouched — this is a surface cut, not a data migration. Existing scenarios, runs, and verdicts keep working.
+
 ## [0.3.3] — 2026-04-21
 
 Install-path detection fix. Prior versions hardcoded `~/.claude` (and siblings) as the install target and ignored both `$CLAUDE_CONFIG_DIR` and common alt-config layouts. Users running Claude Code with its config redirected — via `CLAUDE_CONFIG_DIR`, a shared-home setup at `~/alt-configs/.claude`, or an XDG-style `~/.config/claude` — would see `wicked-testing install` complete successfully while silently writing into a path Claude Code never reads. Skills loaded as zero, doctor reported green, users lost hours.

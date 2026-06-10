@@ -348,14 +348,14 @@ emitBusEvent('wicked.evidence.captured', {
 - **{assertion}**: Expected {X}, found {Y}. Cause: {taxonomy}
 
 *Run ID: {run_id} | Evidence: {EVIDENCE_DIR}*
-*Verdict written to DomainStore — query with /wicked-testing:oracle*
+*Verdict written to DomainStore — query with /wicked-testing:insight*
 ```
 
 **With `--json`** — Use `scripts/_python.sh` Python pattern for the JSON envelope.
 
 ## Integration
 
-- Results queryable via `/wicked-testing:oracle "what was the last verdict for scenario X?"`
+- Results queryable via `/wicked-testing:insight "what was the last verdict for scenario X?"`
 - Evidence files at `.wicked-testing/evidence/<run-id>/` (see [schemas/evidence.json](../../schemas/evidence.json))
 - Public manifest: `.wicked-testing/evidence/<run-id>/manifest.json` — the only file downstream consumers should read
 - Verdict written to DomainStore `verdicts` table
