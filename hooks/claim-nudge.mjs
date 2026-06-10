@@ -14,7 +14,7 @@ import { shouldNudge } from './claim-nudge.decision.mjs';
 
 function readStdin() {
   try {
-    const raw = readFileSync('/dev/stdin', 'utf8');
+    const raw = readFileSync(0, 'utf8'); // fd 0 = stdin; portable (native Windows lacks /dev/stdin)
     return raw.trim() ? JSON.parse(raw) : {};
   } catch {
     return {};
