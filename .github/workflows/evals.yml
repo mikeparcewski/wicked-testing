@@ -41,8 +41,8 @@ jobs:
     name: structural validation (every PR)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - run: npm install
@@ -57,8 +57,8 @@ jobs:
     needs: check-all
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: lts/*
       - run: npm install
@@ -78,7 +78,7 @@ jobs:
           exit 0
       - name: upload iteration artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: eval-iteration
           path: .claude/skills/wicked-testing-evals/workspace/iteration-*/
