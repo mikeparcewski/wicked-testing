@@ -7,13 +7,13 @@
                                                                  |___/ 
 ```
 
-**41 specialist agents. 5 coordinating skills. A 3-agent acceptance pipeline that eliminates self-grading.**
+**40 specialist agents. 5 coordinating skills. A 3-agent acceptance pipeline that eliminates self-grading.**
 
 ```bash
 npx wicked-testing install
 ```
 
-Works with **Claude Code**, **Gemini CLI**, **Copilot CLI**, **Cursor**, **Codex**, and **Kiro**.
+Works with **Claude Code**, **Gemini CLI**, **Cursor**, **Codex**, and **Kiro**.
 
 ---
 
@@ -47,15 +47,15 @@ Then:
 /wicked-testing:insight "what was the last verdict for the login scenario?"
 ```
 
-Under the hood: a project-local SQLite ledger, 41 specialist agents grouped into 5 Tier-1 skills, and a public event contract for wicked-garden integration.
+Under the hood: a project-local SQLite ledger, 40 specialist agents grouped into 5 Tier-1 skills, and a public event contract for wicked-garden integration.
 
 ---
 
-## 41 Agents, 5 Tier-1 Skills
+## 40 Agents, 5 Tier-1 Skills
 
 ### Tier-1 Agents — Public Contract
 
-The 16 Tier-1 agents form the stable integration surface. wicked-garden and other consumers depend only on these.
+The 15 Tier-1 agents form the stable integration surface. wicked-garden and other consumers depend only on these.
 
 | Agent | Invoked By | What It Does |
 |-------|-----------|--------------|

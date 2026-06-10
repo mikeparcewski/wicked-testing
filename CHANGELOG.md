@@ -4,6 +4,20 @@ All notable changes to `wicked-testing`. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [SemVer](https://semver.org/).
 
+## [0.4.1] — 2026-06-10
+
+Docs-truth patch — no behavior change.
+
+### Fixed
+- README still claimed **41** specialist agents and **16** Tier-1 agents after the
+  0.4.0 roster trim (41 → 40, `continuous-quality-monitor` folded into
+  `code-analyzer`); now reads **40** / **15** everywhere.
+- README listed **Copilot CLI** as a supported platform; Copilot support was
+  removed in 0.4.0 pending a verified integration point
+  ([#59](https://github.com/mikeparcewski/wicked-testing/issues/59)). Supported
+  CLIs are Claude Code, Gemini CLI, Cursor, Codex, and Kiro. The stale `copilot`
+  npm keyword is dropped too.
+
 ## [0.4.0] — 2026-06-10
 
 **Breaking: command surface cut 15 → 7.** wicked-testing now exposes exactly the
