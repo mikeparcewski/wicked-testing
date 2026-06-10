@@ -242,11 +242,6 @@
       "slash": "/wicked-testing:authoring"
     },
     {
-      "name": "ci-bootstrap",
-      "path": "commands/ci-bootstrap.md",
-      "slash": "/wicked-testing:ci-bootstrap"
-    },
-    {
       "name": "execution",
       "path": "commands/execution.md",
       "slash": "/wicked-testing:execution"
@@ -265,11 +260,6 @@
       "name": "review",
       "path": "commands/review.md",
       "slash": "/wicked-testing:review"
-    },
-    {
-      "name": "run",
-      "path": "commands/run.md",
-      "slash": "/wicked-testing:run"
     },
     {
       "name": "setup",
