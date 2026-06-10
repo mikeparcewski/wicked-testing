@@ -262,19 +262,9 @@
       "slash": "/wicked-testing:insight"
     },
     {
-      "name": "oracle",
-      "path": "commands/oracle.md",
-      "slash": "/wicked-testing:oracle"
-    },
-    {
       "name": "plan",
       "path": "commands/plan.md",
       "slash": "/wicked-testing:plan"
-    },
-    {
-      "name": "report",
-      "path": "commands/report.md",
-      "slash": "/wicked-testing:report"
     },
     {
       "name": "review",
@@ -295,16 +285,6 @@
       "name": "setup",
       "path": "commands/setup.md",
       "slash": "/wicked-testing:setup"
-    },
-    {
-      "name": "stats",
-      "path": "commands/stats.md",
-      "slash": "/wicked-testing:stats"
-    },
-    {
-      "name": "tasks",
-      "path": "commands/tasks.md",
-      "slash": "/wicked-testing:tasks"
     }
   ]
 }

@@ -33,6 +33,9 @@ so answers are auditable, not LLM-guessed.
 | "run an exploratory session"                    | `wicked-testing:exploratory-tester`          |
 | "audit production quality" / post-deploy read   | `wicked-testing:production-quality-engineer` |
 | Unknown question                                | Oracle returns the supported question list   |
+| "domain health" / "row counts" / "schema version"  | `wicked-testing:test-oracle` → `row_counts` / `schema_version` queries |
+| "generate a report" / "run summary"                 | `wicked-testing:test-oracle` rows → markdown summary (no new SQL)      |
+| "what tasks are open" / "tasks for X"               | `wicked-testing:test-oracle` → `tasks_by_status` / `tasks_for_project` |
 
 ### Dispatch block (executable)
 
