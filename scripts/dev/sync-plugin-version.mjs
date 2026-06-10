@@ -21,6 +21,15 @@ import { fileURLToPath } from "node:url";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO = resolve(__dirname, "..", "..");
 
+function tierOf(absPath) {
+  try {
+    const c = readFileSync(absPath, "utf8");
+    const fm = c.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+    const m = fm && fm[1].match(/^tier:\s*([12])\s*$/m);
+    return m ? Number(m[1]) : null;
+  } catch { return null; }
+}
+
 const pkgPath    = join(REPO, "package.json");
 const pluginPath = join(REPO, ".claude-plugin", "plugin.json");
 const argv = process.argv.slice(2);
@@ -62,13 +71,13 @@ function listAgents() {
   const direct = readdirSync(dir)
     .filter(f => f.endsWith(".md"))
     .sort()
-    .map(f => ({ name: f.replace(/\.md$/, ""), path: `agents/${f}` }));
+    .map(f => ({ name: f.replace(/\.md$/, ""), path: `agents/${f}`, tier: tierOf(join(dir, f)) }));
   const specDir = join(dir, "specialists");
   const specialists = existsSync(specDir)
     ? readdirSync(specDir)
         .filter(f => f.endsWith(".md"))
         .sort()
-        .map(f => ({ name: f.replace(/\.md$/, ""), path: `agents/specialists/${f}` }))
+        .map(f => ({ name: f.replace(/\.md$/, ""), path: `agents/specialists/${f}`, tier: tierOf(join(specDir, f)) }))
     : [];
   return [...direct, ...specialists];
 }

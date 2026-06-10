@@ -67,167 +67,208 @@
   "agents": [
     {
       "name": "acceptance-test-executor",
-      "path": "agents/acceptance-test-executor.md"
+      "path": "agents/acceptance-test-executor.md",
+      "tier": 1
     },
     {
       "name": "acceptance-test-reviewer",
-      "path": "agents/acceptance-test-reviewer.md"
+      "path": "agents/acceptance-test-reviewer.md",
+      "tier": 1
     },
     {
       "name": "acceptance-test-writer",
-      "path": "agents/acceptance-test-writer.md"
+      "path": "agents/acceptance-test-writer.md",
+      "tier": 1
     },
     {
       "name": "code-analyzer",
-      "path": "agents/code-analyzer.md"
+      "path": "agents/code-analyzer.md",
+      "tier": 1
     },
     {
       "name": "continuous-quality-monitor",
-      "path": "agents/continuous-quality-monitor.md"
+      "path": "agents/continuous-quality-monitor.md",
+      "tier": 1
     },
     {
       "name": "contract-testing-engineer",
-      "path": "agents/contract-testing-engineer.md"
+      "path": "agents/contract-testing-engineer.md",
+      "tier": 1
     },
     {
       "name": "production-quality-engineer",
-      "path": "agents/production-quality-engineer.md"
+      "path": "agents/production-quality-engineer.md",
+      "tier": 1
     },
     {
       "name": "requirements-quality-analyst",
-      "path": "agents/requirements-quality-analyst.md"
+      "path": "agents/requirements-quality-analyst.md",
+      "tier": 1
     },
     {
       "name": "risk-assessor",
-      "path": "agents/risk-assessor.md"
+      "path": "agents/risk-assessor.md",
+      "tier": 1
     },
     {
       "name": "scenario-executor",
-      "path": "agents/scenario-executor.md"
+      "path": "agents/scenario-executor.md",
+      "tier": 1
     },
     {
       "name": "semantic-reviewer",
-      "path": "agents/semantic-reviewer.md"
+      "path": "agents/semantic-reviewer.md",
+      "tier": 1
     },
     {
       "name": "test-automation-engineer",
-      "path": "agents/test-automation-engineer.md"
+      "path": "agents/test-automation-engineer.md",
+      "tier": 1
     },
     {
       "name": "test-designer",
-      "path": "agents/test-designer.md"
+      "path": "agents/test-designer.md",
+      "tier": 1
     },
     {
       "name": "test-oracle",
-      "path": "agents/test-oracle.md"
+      "path": "agents/test-oracle.md",
+      "tier": 1
     },
     {
       "name": "test-strategist",
-      "path": "agents/test-strategist.md"
+      "path": "agents/test-strategist.md",
+      "tier": 1
     },
     {
       "name": "testability-reviewer",
-      "path": "agents/testability-reviewer.md"
+      "path": "agents/testability-reviewer.md",
+      "tier": 1
     },
     {
       "name": "a11y-test-engineer",
-      "path": "agents/specialists/a11y-test-engineer.md"
+      "path": "agents/specialists/a11y-test-engineer.md",
+      "tier": 2
     },
     {
       "name": "ai-feature-test-engineer",
-      "path": "agents/specialists/ai-feature-test-engineer.md"
+      "path": "agents/specialists/ai-feature-test-engineer.md",
+      "tier": 2
     },
     {
       "name": "chaos-test-engineer",
-      "path": "agents/specialists/chaos-test-engineer.md"
+      "path": "agents/specialists/chaos-test-engineer.md",
+      "tier": 2
     },
     {
       "name": "compliance-test-engineer",
-      "path": "agents/specialists/compliance-test-engineer.md"
+      "path": "agents/specialists/compliance-test-engineer.md",
+      "tier": 2
     },
     {
       "name": "coverage-archaeologist",
-      "path": "agents/specialists/coverage-archaeologist.md"
+      "path": "agents/specialists/coverage-archaeologist.md",
+      "tier": 2
     },
     {
       "name": "data-quality-tester",
-      "path": "agents/specialists/data-quality-tester.md"
+      "path": "agents/specialists/data-quality-tester.md",
+      "tier": 2
     },
     {
       "name": "e2e-orchestrator",
-      "path": "agents/specialists/e2e-orchestrator.md"
+      "path": "agents/specialists/e2e-orchestrator.md",
+      "tier": 2
     },
     {
       "name": "exploratory-tester",
-      "path": "agents/specialists/exploratory-tester.md"
+      "path": "agents/specialists/exploratory-tester.md",
+      "tier": 2
     },
     {
       "name": "flaky-test-hunter",
-      "path": "agents/specialists/flaky-test-hunter.md"
+      "path": "agents/specialists/flaky-test-hunter.md",
+      "tier": 2
     },
     {
       "name": "fuzz-property-engineer",
-      "path": "agents/specialists/fuzz-property-engineer.md"
+      "path": "agents/specialists/fuzz-property-engineer.md",
+      "tier": 2
     },
     {
       "name": "iac-test-engineer",
-      "path": "agents/specialists/iac-test-engineer.md"
+      "path": "agents/specialists/iac-test-engineer.md",
+      "tier": 2
     },
     {
       "name": "incident-to-scenario-synthesizer",
-      "path": "agents/specialists/incident-to-scenario-synthesizer.md"
+      "path": "agents/specialists/incident-to-scenario-synthesizer.md",
+      "tier": 2
     },
     {
       "name": "integration-test-engineer",
-      "path": "agents/specialists/integration-test-engineer.md"
+      "path": "agents/specialists/integration-test-engineer.md",
+      "tier": 2
     },
     {
       "name": "load-performance-engineer",
-      "path": "agents/specialists/load-performance-engineer.md"
+      "path": "agents/specialists/load-performance-engineer.md",
+      "tier": 2
     },
     {
       "name": "localization-test-engineer",
-      "path": "agents/specialists/localization-test-engineer.md"
+      "path": "agents/specialists/localization-test-engineer.md",
+      "tier": 2
     },
     {
       "name": "mutation-test-engineer",
-      "path": "agents/specialists/mutation-test-engineer.md"
+      "path": "agents/specialists/mutation-test-engineer.md",
+      "tier": 2
     },
     {
       "name": "observability-test-engineer",
-      "path": "agents/specialists/observability-test-engineer.md"
+      "path": "agents/specialists/observability-test-engineer.md",
+      "tier": 2
     },
     {
       "name": "release-readiness-engineer",
-      "path": "agents/specialists/release-readiness-engineer.md"
+      "path": "agents/specialists/release-readiness-engineer.md",
+      "tier": 2
     },
     {
       "name": "security-test-engineer",
-      "path": "agents/specialists/security-test-engineer.md"
+      "path": "agents/specialists/security-test-engineer.md",
+      "tier": 2
     },
     {
       "name": "snapshot-hygiene-auditor",
-      "path": "agents/specialists/snapshot-hygiene-auditor.md"
+      "path": "agents/specialists/snapshot-hygiene-auditor.md",
+      "tier": 2
     },
     {
       "name": "test-code-quality-auditor",
-      "path": "agents/specialists/test-code-quality-auditor.md"
+      "path": "agents/specialists/test-code-quality-auditor.md",
+      "tier": 2
     },
     {
       "name": "test-data-manager",
-      "path": "agents/specialists/test-data-manager.md"
+      "path": "agents/specialists/test-data-manager.md",
+      "tier": 2
     },
     {
       "name": "test-impact-analyzer",
-      "path": "agents/specialists/test-impact-analyzer.md"
+      "path": "agents/specialists/test-impact-analyzer.md",
+      "tier": 2
     },
     {
       "name": "ui-component-test-engineer",
-      "path": "agents/specialists/ui-component-test-engineer.md"
+      "path": "agents/specialists/ui-component-test-engineer.md",
+      "tier": 2
     },
     {
       "name": "visual-regression-engineer",
-      "path": "agents/specialists/visual-regression-engineer.md"
+      "path": "agents/specialists/visual-regression-engineer.md",
+      "tier": 2
     }
   ],
   "commands": [
