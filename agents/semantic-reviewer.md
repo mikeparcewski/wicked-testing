@@ -1,5 +1,6 @@
 ---
 name: semantic-reviewer
+tier: 1
 subagent_type: wicked-testing:semantic-reviewer
 description: |
   Verify spec-to-code alignment after implementation. Extracts numbered
@@ -13,7 +14,6 @@ description: |
   NOT THIS WHEN:
   - Evaluating AC quality itself (SMART+T) before any code is written — use `requirements-quality-analyst`
   - General code-quality, complexity, or testability review without a spec — use `code-analyzer`
-  - Live coaching during the build phase (advisory, non-blocking) — use `continuous-quality-monitor`
   - Rendering a full acceptance verdict (writer + reviewer + executor 3-agent pipeline) — use `/wicked-testing:acceptance`
 model: sonnet
 effort: medium

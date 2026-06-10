@@ -1,5 +1,6 @@
 ---
 name: ui-component-test-engineer
+tier: 2
 subagent_type: wicked-testing:ui-component-test-engineer
 description: |
   Component-level UI testing — React Testing Library, Vitest, Testing Library

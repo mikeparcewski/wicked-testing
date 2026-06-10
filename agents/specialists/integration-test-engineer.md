@@ -1,5 +1,6 @@
 ---
 name: integration-test-engineer
+tier: 2
 subagent_type: wicked-testing:integration-test-engineer
 description: |
   Real-service integration testing — distinct from contract testing. Spins up

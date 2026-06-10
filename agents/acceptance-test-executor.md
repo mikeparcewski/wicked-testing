@@ -1,5 +1,6 @@
 ---
 name: acceptance-test-executor
+tier: 1
 subagent_type: wicked-testing:acceptance-test-executor
 description: |
   Follows structured wicked-testing test plans step-by-step, collecting evidence artifacts.

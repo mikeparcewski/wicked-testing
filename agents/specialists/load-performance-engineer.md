@@ -1,5 +1,6 @@
 ---
 name: load-performance-engineer
+tier: 2
 subagent_type: wicked-testing:load-performance-engineer
 description: |
   Load + performance testing — k6, locust, hey. SLO validation, P95/P99

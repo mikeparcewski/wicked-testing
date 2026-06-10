@@ -1,5 +1,6 @@
 ---
 name: e2e-orchestrator
+tier: 2
 subagent_type: wicked-testing:e2e-orchestrator
 description: |
   Multi-service, multi-UI journey orchestration across environments. Coordinates

@@ -1,5 +1,6 @@
 ---
 name: coverage-archaeologist
+tier: 2
 subagent_type: wicked-testing:coverage-archaeologist
 description: |
   Find dark corners in legacy code — untested, unreferenced, or low-confidence

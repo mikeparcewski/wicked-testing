@@ -79,7 +79,7 @@ function parseFrontmatter(content) {
 
 function checkAgents() {
   const dirs = [join(REPO, "agents"), join(REPO, "agents", "specialists")];
-  const requiredFields = ["name", "subagent_type", "description", "model", "allowed-tools"];
+  const requiredFields = ["name", "subagent_type", "description", "model", "allowed-tools", "tier"];
   for (const dir of dirs) {
     if (!existsSync(dir)) continue;
     const entries = readdirSync(dir).filter(f => f.endsWith(".md"));
@@ -94,6 +94,14 @@ function checkAgents() {
       }
       if (fm.subagent_type && !fm.subagent_type.startsWith("wicked-testing:")) {
         err("agents", rel, `subagent_type must start with 'wicked-testing:' (got: ${fm.subagent_type})`);
+      }
+      const tier = fm.tier;
+      if (tier !== "1" && tier !== "2") {
+        err("agents", rel, `tier must be 1 or 2 (got: ${tier ?? "missing"})`);
+      } else {
+        const inSpecialists = path.includes(join("agents", "specialists"));
+        if (tier === "2" && !inSpecialists) err("agents", rel, `tier: 2 but not under agents/specialists/`);
+        if (tier === "1" && inSpecialists) err("agents", rel, `tier: 1 but under agents/specialists/`);
       }
       const expectedName = f.replace(/\.md$/, "");
       if (fm.name && fm.name !== expectedName) {
@@ -349,14 +357,30 @@ function checkNamespaceAlignment() {
   const rel = relative(REPO, docPath);
   if (!existsSync(docPath)) { err("namespace", rel, "NAMESPACE.md missing"); return; }
   const doc = readFileSync(docPath, "utf8");
-
-  const tier1Dir = join(REPO, "agents");
-  if (existsSync(tier1Dir)) {
-    for (const f of readdirSync(tier1Dir).filter(x => x.endsWith(".md"))) {
-      const agentName = f.replace(/\.md$/, "");
-      const token = `wicked-testing:${agentName}`;
-      if (!doc.includes(token)) {
-        warn("namespace", rel, `Tier-1 agent '${token}' not referenced in NAMESPACE.md`);
+  const t1Start = doc.indexOf("Tier-1");
+  const t2Start = doc.indexOf("Tier-2");
+  const t1Section = t1Start >= 0 ? doc.slice(t1Start, t2Start >= 0 ? t2Start : undefined) : "";
+  // Scope t2Section to only the Tier-2 block itself (stop at the next --- separator),
+  // so migration-table references to tier-1 tokens don't trigger false positives.
+  let t2End = doc.length;
+  if (t2Start >= 0) {
+    const nextSep = doc.indexOf("\n---", t2Start + 1);
+    if (nextSep >= 0) t2End = nextSep;
+  }
+  const t2Section = t2Start >= 0 ? doc.slice(t2Start, t2End) : "";
+  for (const [dir, tier] of [["agents", "1"], [join("agents", "specialists"), "2"]]) {
+    const d = join(REPO, dir);
+    if (!existsSync(d)) continue;
+    for (const f of readdirSync(d).filter(x => x.endsWith(".md"))) {
+      const token = `wicked-testing:${f.replace(/\.md$/, "")}`;
+      const inT1 = t1Section.includes(token);
+      const inT2 = t2Section.includes(token);
+      if (tier === "1") {
+        if (!inT1) err("namespace", rel, `Tier-1 agent '${token}' missing from NAMESPACE.md Tier-1 section`);
+        if (inT2) err("namespace", rel, `Tier-1 agent '${token}' wrongly listed under Tier-2`);
+      } else {
+        // Tier-2 is churnable; only assert it isn't miscategorized as Tier-1.
+        if (inT1) err("namespace", rel, `Tier-2 agent '${token}' wrongly listed under Tier-1`);
       }
     }
   }

@@ -1,5 +1,6 @@
 ---
 name: test-designer
+tier: 1
 subagent_type: wicked-testing:test-designer
 description: |
   DEV-LOOP FAST PATH ONLY. Single-role plan→execute→verdict for local iteration

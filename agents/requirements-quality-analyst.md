@@ -1,5 +1,6 @@
 ---
 name: requirements-quality-analyst
+tier: 1
 subagent_type: wicked-testing:requirements-quality-analyst
 description: |
   Evaluate acceptance-criteria quality at the clarify phase. Check whether ACs

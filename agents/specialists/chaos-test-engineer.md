@@ -1,5 +1,6 @@
 ---
 name: chaos-test-engineer
+tier: 2
 subagent_type: wicked-testing:chaos-test-engineer
 description: |
   Chaos + resilience specialist — failure injection via Toxiproxy, tc,

@@ -1,5 +1,6 @@
 ---
 name: test-automation-engineer
+tier: 1
 subagent_type: wicked-testing:test-automation-engineer
 description: |
   Generate test code and configure test automation infrastructure. Creates unit,

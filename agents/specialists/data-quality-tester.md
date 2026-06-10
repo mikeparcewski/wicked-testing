@@ -1,5 +1,6 @@
 ---
 name: data-quality-tester
+tier: 2
 subagent_type: wicked-testing:data-quality-tester
 description: |
   Data-quality specialist — schema drift, referential integrity, migration

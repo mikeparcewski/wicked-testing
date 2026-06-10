@@ -1,5 +1,6 @@
 ---
 name: incident-to-scenario-synthesizer
+tier: 2
 subagent_type: wicked-testing:incident-to-scenario-synthesizer
 description: |
   Turns a production incident into a deterministic scenario file that

@@ -406,6 +406,16 @@ function cmdCheck() {
   exit(satisfies ? 0 : 1);
 }
 
+function cmdContract() {
+  const plugin = JSON.parse(readFileSync(join(__dirname, ".claude-plugin", "plugin.json"), "utf8"));
+  const out = {
+    version: plugin.version,
+    agents: (plugin.agents || []).map(a => ({ subagent_type: `wicked-testing:${a.name}`, tier: a.tier })),
+  };
+  process.stdout.write(JSON.stringify(out));
+  process.exit(0);
+}
+
 function cmdHelp() {
   console.log(`wicked-testing ${VERSION}
 
@@ -418,6 +428,7 @@ Commands:
   status        Show installed version per CLI target
   doctor        Diagnose environment (Node version, detected CLIs, SQLite binding)
   check         Exit 0 if installed version satisfies --require=<spec>, else 1 (non-zero)
+  contract      Print the published agent/tier contract from plugin.json (JSON)
   version       Print package version
   help          This message
 
@@ -526,10 +537,16 @@ async function cmdDoctor() {
 
   // better-sqlite3 native module
   let sqliteOk = false;
-  try { await import("better-sqlite3"); sqliteOk = true; } catch (_) { /* report below */ }
-  checks.push(sqliteOk
-    ? { name: "better-sqlite3", status: "ok",   message: "loadable" }
-    : { name: "better-sqlite3", status: "fail", message: "native module failed to load", fix: "run `npm rebuild better-sqlite3` or reinstall Node 18+ on a supported platform" });
+  try {
+    await import("better-sqlite3");
+    sqliteOk = true;
+    checks.push({ name: "better-sqlite3", status: "ok", message: "ok" });
+  } catch (err) {
+    const abi = /NODE_MODULE_VERSION|compiled against a different Node|ERR_DLOPEN_FAILED/i.test(String(err && err.message));
+    checks.push(abi
+      ? { name: "better-sqlite3", status: "warn", message: "ABI mismatch — run `npm rebuild better-sqlite3`", fix: "run `npm rebuild better-sqlite3`" }
+      : { name: "better-sqlite3", status: "warn", message: "not loadable (" + String(err && err.message).split("\n")[0] + ")", fix: "run `npm rebuild better-sqlite3` or reinstall Node 18+ on a supported platform" });
+  }
 
   // Per-target install-marker integrity. Disambiguate by source when the
   // same CLI name has multiple roots (e.g., two claude targets at
@@ -839,6 +856,7 @@ async function selfTest() {
     case "status":    cmdStatus();                            break;
     case "doctor":    await cmdDoctor();                      break;
     case "check":     cmdCheck();                             break;
+    case "contract":  cmdContract();                           break;
     case "version":   cmdVersion();                           break;
     case "help":      cmdHelp();                              break;
     default:

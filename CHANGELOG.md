@@ -8,8 +8,9 @@ All notable changes to `wicked-testing`. Format loosely follows
 
 **Breaking: command surface cut 15 → 7.** wicked-testing now exposes exactly the
 five-core it always advertised — `plan` / `authoring` / `execution` / `review` /
-`insight` — plus `acceptance` (the 3-agent gate) and `setup`. The 41 agents are
-unchanged and remain reachable by dispatch from the surviving skills.
+`insight` — plus `acceptance` (the 3-agent gate) and `setup`. Agents stay
+dispatch-reachable from the surviving skills, are now self-describing via `tier:`
+metadata, and the roster is trimmed 41 → 40.
 
 ### Removed (breaking)
 - `stats`, `report`, `oracle` → ask **`insight`** (same fixed-SQL oracle underneath).
@@ -21,9 +22,13 @@ unchanged and remain reachable by dispatch from the surviving skills.
 ### Changed
 - Skills consolidated 12 → 7 (`scenario-authoring` + `browser-automation` → `authoring`; `test-strategy` → `plan`; `test-oracle` skill → `insight`, the test-oracle *agent* is unchanged; `test-runner` → `execution` + `setup`).
 - Browser testing standards (console-error = automatic FAIL, headless by default, no fixed `sleep`) moved from the retired `browser-automation` skill into the `e2e-orchestrator` agent.
+- **Agent tier is now single-source metadata.** `tier:` frontmatter on each agent is the sole source of truth; `validate.mjs` **fails the build** if it disagrees with `plugin.json` or the `NAMESPACE.md`/`INTEGRATION.md §3` tier tables — eliminating the recurring drift across the previously-duplicated copies. `plugin.json` `agents[]` now carries `tier`.
+- **Roster trimmed 41 → 40.** Cut `continuous-quality-monitor` (advisory-only tier-1, base-agent-replaceable), folding its build-phase signals into `code-analyzer` (which keeps its post-code static-quality niche).
 
 ### Added
 - **Opt-in claim-boundary hook** (off by default). Set `"claim_nudge": true` in `.wicked-testing/config.json` to be nudged to run `acceptance` when a turn claims "tests pass" with no acceptance verdict on record. Non-blocking (one line, ignorable). Auto-registers under a marketplace/plugin install; loose-skill installs (`npx wicked-testing install`) require plugin-mode for the hook to fire — a follow-up will add loose-path registration.
+- **`npx wicked-testing contract --json`** subcommand emits the published tier contract; **`wicked.contract.published`** bus event announces contract changes (a non-load-bearing refresh hint — consumers read the contract, never a hardcoded mirror).
+- **better-sqlite3 ABI-mismatch nudge.** On a Node ABI mismatch the store degrades to JSON-only; the degradation message and `doctor` now tell you to run `npm rebuild better-sqlite3` (it failed silently before).
 
 ### Unchanged
 - Ledger schema, evidence format, and scenario file format are untouched — this is a surface cut, not a data migration. Existing scenarios, runs, and verdicts keep working.

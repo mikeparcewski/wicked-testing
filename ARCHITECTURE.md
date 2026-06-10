@@ -46,11 +46,11 @@ User --> AI CLI (Claude / Gemini / Codex / Cursor / Kiro / Copilot)
               +-- 5 Tier-1 skills (SKILL.md files)
               |     plan, authoring, execution, review, insight
               |
-              +-- 16 Tier-1 agents (public contract)
+              +-- 15 Tier-1 agents (public contract)
               |     test-strategist, test-designer, test-automation-engineer,
               |     testability-reviewer, requirements-quality-analyst,
               |     risk-assessor, code-analyzer, semantic-reviewer,
-              |     contract-testing-engineer, continuous-quality-monitor,
+              |     contract-testing-engineer,
               |     production-quality-engineer, acceptance-test-writer,
               |     acceptance-test-executor, acceptance-test-reviewer,
               |     scenario-executor, test-oracle

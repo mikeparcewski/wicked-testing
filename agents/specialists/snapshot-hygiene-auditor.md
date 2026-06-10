@@ -1,5 +1,6 @@
 ---
 name: snapshot-hygiene-auditor
+tier: 2
 subagent_type: wicked-testing:snapshot-hygiene-auditor
 description: |
   Snapshot-rot detector. Scans `__snapshots__/`, `*.snap`, `*.golden`,

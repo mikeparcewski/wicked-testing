@@ -1,5 +1,6 @@
 ---
 name: release-readiness-engineer
+tier: 2
 subagent_type: wicked-testing:release-readiness-engineer
 description: |
   Tier-2 specialist — aggregates ledger verdicts, open flakes, risk

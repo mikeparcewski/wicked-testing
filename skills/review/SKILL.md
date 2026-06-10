@@ -29,7 +29,6 @@ rendered — not inside the executor, not as a side effect of running.
 | Spec + implementation (post-code divergence)               | `wicked-testing:semantic-reviewer`           |
 | Test suite path                                            | `wicked-testing:code-analyzer` + Tier-2      |
 | Production metrics, post-deploy                            | `wicked-testing:production-quality-engineer` |
-| Active build, quality signals                              | `wicked-testing:continuous-quality-monitor`  |
 
 ### Dispatch block (executable)
 
@@ -113,5 +112,4 @@ Emits `wicked.verdict.recorded` on the bus when present.
 - [`docs/INTEGRATION.md`](../../docs/INTEGRATION.md)
 - [`docs/EVIDENCE.md`](../../docs/EVIDENCE.md)
 - `agents/acceptance-test-reviewer.md`, `agents/semantic-reviewer.md`,
-  `agents/code-analyzer.md`, `agents/continuous-quality-monitor.md`,
-  `agents/production-quality-engineer.md`
+  `agents/code-analyzer.md`, `agents/production-quality-engineer.md`

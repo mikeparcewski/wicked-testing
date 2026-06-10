@@ -1,5 +1,6 @@
 ---
 name: test-impact-analyzer
+tier: 2
 subagent_type: wicked-testing:test-impact-analyzer
 description: |
   Tier-2 specialist — answers "given this diff, which tests must I run?"

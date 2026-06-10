@@ -1,5 +1,6 @@
 ---
 name: observability-test-engineer
+tier: 2
 subagent_type: wicked-testing:observability-test-engineer
 description: |
   Assert that logs, metrics, and traces emit correctly. Verify structured

@@ -1,5 +1,6 @@
 ---
 name: acceptance-test-writer
+tier: 1
 subagent_type: wicked-testing:acceptance-test-writer
 description: |
   Reads wicked-testing acceptance scenarios and produces structured, evidence-gated test plans.
