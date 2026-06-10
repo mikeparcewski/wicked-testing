@@ -34,6 +34,13 @@ Every run creates `.wicked-testing/evidence/<run-id>/manifest.json` per
 
 Output: run_id, verdict, evidence path. One line.
 
+## Modes (absorbed in 0.4.0)
+
+| Old command    | Ask execution instead |
+|----------------|-----------------------|
+| `run`          | "run scenario <path>" — execution dispatches `scenario-executor` and records the run |
+| `ci-bootstrap` | "wire CI to run these tests" — execution emits the CI trigger; for the portable evidence gate use wicked-garden's `compile` |
+
 ## References
 
 - [Execution skill](../skills/execution/SKILL.md)

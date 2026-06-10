@@ -1,0 +1,17 @@
+{
+  "description": "wicked-testing — one opt-in claim-boundary nudge",
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/claim-nudge.mjs\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}

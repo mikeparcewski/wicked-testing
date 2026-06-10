@@ -44,7 +44,7 @@ test -f ".wicked-testing/wicked-testing.db" && echo "DB_AVAILABLE" || echo "DB_M
 
 If the DB file is missing, return:
 ```
-The wicked-testing SQLite database is not available. Run /wicked-testing:setup to initialize the store, then run /wicked-testing:acceptance or /wicked-testing:run to populate it.
+The wicked-testing SQLite database is not available. Run /wicked-testing:setup to initialize the store, then run /wicked-testing:acceptance or /wicked-testing:execution to populate it.
 Code: ERR_SQLITE_UNAVAILABLE
 ```
 
@@ -113,7 +113,7 @@ If a filter value doesn't match, return `ERR_FILTER_INVALID` — do not attempt 
 ```markdown
 No data found for this question.
 The store may be empty, or the filter may not match any records.
-Run /wicked-testing:stats to check data availability.
+Run /wicked-testing:insight to check data availability.
 ```
 
 **JSON response** (when `--json` is passed):

@@ -1,6 +1,6 @@
 # How It Works — wicked-testing End-to-End Walkthrough
 
-This document walks through the full E2E flow: from running `/wicked-testing:acceptance scenario.md` through to `/wicked-testing:oracle` answering a question about the result.
+This document walks through the full E2E flow: from running `/wicked-testing:acceptance scenario.md` through to `/wicked-testing:insight` answering a question about the result.
 
 ---
 
@@ -77,8 +77,8 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
         Run ID: {run-id}
         |
         v
-[7] Oracle query
-        User: /wicked-testing:oracle "what was the verdict for the bootstrap run?"
+[7] Insight query
+        User: /wicked-testing:insight "what was the verdict for the bootstrap run?"
         |
         test-oracle agent activates
         - Maps question to named query: last_verdict_for_scenario
@@ -184,7 +184,7 @@ After install, you can verify with:
 
 ```bash
 /wicked-testing:acceptance scenarios/test-runner.md
-/wicked-testing:oracle "show bootstrap verdict"
+/wicked-testing:insight "show bootstrap verdict"
 ```
 
 The oracle query confirms the full pipeline: create project → create scenario → create run → create verdict → query verdict.

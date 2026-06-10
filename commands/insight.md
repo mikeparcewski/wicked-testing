@@ -34,6 +34,26 @@ reader can audit).
 
 This command **does not mutate** state and **does not emit bus events**.
 
+## Modes (absorbed in 0.4.0)
+
+`insight` is the single read-only door to the ledger. What used to be separate
+commands are now questions you ask it:
+
+| Old command | Ask insight instead |
+|-------------|---------------------|
+| `stats`     | "domain health" / "row counts" / "schema version" — routes to the `row_counts`, `schema_version`, `recent_runs` oracle queries |
+| `report`    | "generate a report for <project/scope>" — oracle rows rendered as a markdown summary |
+| `oracle`    | any plain-language data question — this *is* the oracle; `insight` was always built on it |
+
+Flags `--project`, `--status`, `--since`, `--json` are honored as before.
+
+> **`tasks` is removed, not absorbed.** `insight` is read-only and will not
+> create or mutate tasks. Existing task rows remain queryable here
+> ("what tasks are open?", "tasks for <project>") via the `tasks_by_status`
+> and `tasks_for_project` oracle queries. Task *creation/update* via a command
+> is gone in 0.4.0 — use the `DomainStore` API (`lib/domain-store.mjs`) directly
+> if a workflow needs it.
+
 ## References
 
 - [Insight skill](../skills/insight/SKILL.md)

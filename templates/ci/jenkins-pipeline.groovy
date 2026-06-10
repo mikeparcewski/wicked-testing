@@ -1,6 +1,6 @@
 // wicked-testing acceptance pipeline — declarative Jenkins.
 //
-// Emitted by /wicked-testing:ci-bootstrap. See docs/CI.md for the
+// Manual CI template (copy into your repo) — see docs/CI.md. ci-bootstrap auto-emission was removed in 0.4.0. See docs/CI.md for the
 // exit-code contract, secrets, retention defaults, and the PR-comment
 // generator used by the notify-pr stage.
 //

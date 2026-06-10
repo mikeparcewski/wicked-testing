@@ -209,7 +209,7 @@ emitBusEvent("wicked.release.assessed", {
 
 - New `/wicked-testing:release` command dispatches this agent (see
   `commands/release.md` — added in a follow-up once the gate code stabilizes).
-- `/wicked-testing:oracle "release readiness for HEAD"` answers from the
+- `/wicked-testing:insight "release readiness for HEAD"` answers from the
   most recent verdicts row with `reviewer: wicked-testing:release-readiness-engineer`.
 - Crew phase `cutover` can require a GO verdict before advancing.
 

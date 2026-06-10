@@ -27,12 +27,13 @@ so answers are auditable, not LLM-guessed.
 | Input                                           | Dispatch                                     |
 |-------------------------------------------------|----------------------------------------------|
 | A question, natural language                    | `wicked-testing:test-oracle` (fixed SQL)     |
-| "generate a report"                             | Report-generator flow via oracle + Tier-2    |
+| "generate a report" / "run summary"             | Oracle rows rendered as a markdown summary (no new SQL); add Tier-2 specialists when the report needs them |
 | "find flaky tests"                              | `wicked-testing:flaky-test-hunter`           |
 | "find untested legacy code"                     | `wicked-testing:coverage-archaeologist`      |
 | "run an exploratory session"                    | `wicked-testing:exploratory-tester`          |
 | "audit production quality" / post-deploy read   | `wicked-testing:production-quality-engineer` |
 | Unknown question                                | Oracle returns the supported question list   |
+| "domain health" / "row counts" / "schema version"  | `wicked-testing:test-oracle` → `row_counts` / `schema_version` queries || "what tasks are open" / "tasks for X"               | `wicked-testing:test-oracle` → `tasks_by_status` / `tasks_for_project` |
 
 ### Dispatch block (executable)
 

@@ -41,6 +41,9 @@ point to the business outcome.
 - Seed test data via API, not UI clicks, when possible
 - Teardown is mandatory — leave no residue
 - Capture video + trace on failure, screenshot on every step
+- **Console errors fail the run** — monitor the browser console throughout; any unhandled JS exception or console error is an automatic FAIL
+- **Headless by default** — run browsers headless (`headless: true`) unless a scenario explicitly requires headed mode
+- **No fixed sleeps** — never `sleep N`; always wait for an explicit condition (selector visible, network idle, application state)
 
 ## Output
 

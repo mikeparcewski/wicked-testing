@@ -1,6 +1,6 @@
 # wicked-testing acceptance pipeline on every PR.
 #
-# Emitted by /wicked-testing:ci-bootstrap. Idempotent marker below —
+# Manual CI template (copy into your repo) — see docs/CI.md. ci-bootstrap auto-emission was removed in 0.4.0. Idempotent marker below —
 # re-running the bootstrap overwrites this file only if the marker is
 # present. See docs/CI.md for the full integration guide (exit codes,
 # secrets, artifact retention, PR-comment generator).

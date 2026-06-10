@@ -154,7 +154,7 @@ Through `lib/domain-store.mjs`:
 
 ```js
 // Record the impact analysis as a task with the ranked list so CI can
-// consume it via /wicked-testing:oracle "most impactful tests for HEAD".
+// consume it via /wicked-testing:insight "most impactful tests for HEAD".
 store.create("tasks", {
   project_id: PROJECT_ID,
   title: `TIA for ${DIFF_REF}...HEAD — top ${TOP_N} scenarios to run`,
@@ -196,7 +196,7 @@ the top N and the scenario-executor / acceptance pipeline produces verdicts.
 - Command `/wicked-testing:execution --selective --since <ref>` should dispatch
   this agent, read `impact-ranking.json`, and run the top-N (default 40).
   Flag `--selective-confidence-floor 0.3` filters by score.
-- `/wicked-testing:oracle "most impactful tests for HEAD"` answers from the
+- `/wicked-testing:insight "most impactful tests for HEAD"` answers from the
   most recent `tasks` row with `assignee_skill: test-impact-analyzer:consume`.
 - The agent is strictly read-only for source code. Bash usage is scoped to
   `git`, `sqlite3`, and optional call-graph tools.
