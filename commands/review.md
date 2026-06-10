@@ -28,7 +28,6 @@ Invoke the **wicked-testing:review** skill. Routes to:
 - `semantic-reviewer` — spec-to-code Gap Report
 - `code-analyzer` — static testability + quality signals
 - `production-quality-engineer` — post-deploy quality read
-- `continuous-quality-monitor` — live build-phase signals
 
 ## Output
 

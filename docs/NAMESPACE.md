@@ -41,7 +41,6 @@ plugins) reference them by these exact names. Renames require a major version.
 | `wicked-testing:semantic-reviewer`             | Spec-to-code alignment check                   |
 | `wicked-testing:code-analyzer`                 | Static quality / testability metrics           |
 | `wicked-testing:production-quality-engineer`   | Post-deploy quality monitoring                 |
-| `wicked-testing:continuous-quality-monitor`    | Build-phase quality signals                    |
 | `wicked-testing:test-oracle`                   | Fixed-SQL oracle queries over the ledger       |
 
 ---

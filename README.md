@@ -72,7 +72,6 @@ The 16 Tier-1 agents form the stable integration surface. wicked-garden and othe
 | `acceptance-test-reviewer` | `review` | Reads cold evidence only (`allowed-tools: Read`) — never sees executor context |
 | `scenario-executor` | `execution` | Runs a scenario markdown file step-by-step |
 | `semantic-reviewer` | `review` | Gap Report per AC: aligned / divergent / missing |
-| `continuous-quality-monitor` | `review` | Build-phase quality signals — lint, coverage, complexity coaching |
 | `production-quality-engineer` | `insight` | Post-deploy health: healthy / degraded / unhealthy + next action |
 | `test-oracle` | `insight` | Plain-English questions → 12 named parameterized SQL queries. No ad-hoc SQL. |
 

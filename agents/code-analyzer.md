@@ -13,7 +13,6 @@ description: |
   NOT THIS WHEN:
   - Reviewing acceptance criteria for SMART+T (pre-code, no implementation yet) — use `requirements-quality-analyst`
   - Judging whether the implementation matches a spec (post-code divergence detection) — use `semantic-reviewer`
-  - Live coaching during an active build phase (non-blocking, advisory-only) — use `continuous-quality-monitor`
   - Rendering a full acceptance verdict (writer + reviewer + executor pipeline) — use `/wicked-testing:acceptance`
 model: sonnet
 effort: medium
@@ -42,6 +41,31 @@ signals that matter for risk.
 If the project has an analyzer configured (eslint, ruff, pylint, rubocop,
 golangci-lint, etc.) run it. Don't duplicate work it already does. Use manual
 analysis only for what tools miss.
+
+## Build-phase signals (advisory, non-blocking)
+
+When invoked during an active build (per-commit or per-phase), emit a
+lightweight delta report alongside any full analysis. Never block; never gate.
+
+Signals to track against the prior commit's baseline:
+- **Lint delta** — new issues introduced vs. baseline
+- **Type errors** — new type errors (↑ or ↓ from prior)
+- **Coverage delta** — overall coverage % vs. prior commit; flag any decrease
+- **Test count delta** — did the count drop? (a test deleted, not replaced)
+- **TDD cadence** — red → green → refactor rhythm present, or red-less commits?
+
+Cadence: emit on commit (one-line summary) and on phase end (full signal report).
+
+Example compact format:
+```
+Quality signals — build phase
+  lint:       0 new issues (baseline: 3)
+  types:      1 new error   (↑ from 0)
+  complexity: 2 functions above 15 (unchanged)
+  coverage:   82.3% (↓ from 83.1%)
+  tests:      417 → 421 (+4)
+  verdict:    keep going, fix the typecheck error
+```
 
 ## Output
 

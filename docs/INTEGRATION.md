@@ -65,7 +65,6 @@ subagent_type. This list is frozen; renames require a major version.
 | `wicked-testing:semantic-reviewer`                 | review         |
 | `wicked-testing:code-analyzer`                     | review         |
 | `wicked-testing:production-quality-engineer`       | review         |
-| `wicked-testing:continuous-quality-monitor`        | review         |
 | `wicked-testing:test-oracle`                       | insight        |
 
 Tier-2 specialists (integration, ui-component, e2e, visual, a11y, load, chaos,

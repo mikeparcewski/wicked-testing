@@ -86,11 +86,6 @@
       "tier": 1
     },
     {
-      "name": "continuous-quality-monitor",
-      "path": "agents/continuous-quality-monitor.md",
-      "tier": 1
-    },
-    {
       "name": "contract-testing-engineer",
       "path": "agents/contract-testing-engineer.md",
       "tier": 1
