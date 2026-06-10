@@ -56,7 +56,8 @@ config = {
         'curl': True,
         'pa11y': False
     },
-    'created_at': __import__('datetime').datetime.utcnow().isoformat() + 'Z'
+    'created_at': __import__('datetime').datetime.utcnow().isoformat() + 'Z',
+    'claim_nudge': False
 }
 sys.stdout.write(json.dumps(config, indent=2))
 " 2>/dev/null || python -c "..."
@@ -103,6 +104,10 @@ Next steps:
 - `/wicked-testing:plan` — create a test strategy
 - `/wicked-testing:authoring` — author test scenarios
 - `/wicked-testing:acceptance scenarios/test-runner.md` — run acceptance test pipeline
+- **Claim-boundary nudge (optional, off by default):** set `"claim_nudge": true` in
+  `.wicked-testing/config.json` to be reminded to run `acceptance` whenever a turn
+  claims "tests pass" with no acceptance verdict on record. Auto-registers under a
+  marketplace/plugin install; loose-skill installs require plugin-mode (see CHANGELOG).
 ```
 
 **With `--json`** — emit the JSON envelope via Python pattern:

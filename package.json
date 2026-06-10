@@ -41,6 +41,7 @@
     "skills/",
     "agents/",
     "commands/",
+    "hooks/",
     "lib/",
     "scripts/_python.sh",
     "scenarios/",
