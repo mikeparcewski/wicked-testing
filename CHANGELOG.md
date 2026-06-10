@@ -19,7 +19,7 @@ unchanged and remain reachable by dispatch from the surviving skills.
 - `ci-bootstrap` → **capability removed, not relocated.** Its CI provider-detection and workflow-template auto-generation are dropped. The templates remain in `templates/ci/` for manual use (see `docs/CI.md`); portable, re-derived CI gating is wicked-garden's `compile`. `execution` owns only the lightweight "wire CI to run these tests" intent.
 
 ### Changed
-- Skills consolidated 12 → 8 (`scenario-authoring` + `browser-automation` → `authoring`; `test-strategy` → `plan`; `test-oracle` skill → `insight`, the test-oracle *agent* is unchanged; `test-runner` → `execution` + `setup`).
+- Skills consolidated 12 → 7 (`scenario-authoring` + `browser-automation` → `authoring`; `test-strategy` → `plan`; `test-oracle` skill → `insight`, the test-oracle *agent* is unchanged; `test-runner` → `execution` + `setup`).
 - Browser testing standards (console-error = automatic FAIL, headless by default, no fixed `sleep`) moved from the retired `browser-automation` skill into the `e2e-orchestrator` agent.
 
 ### Added
