@@ -1,5 +1,6 @@
 ---
 name: iac-test-engineer
+tier: 2
 subagent_type: wicked-testing:iac-test-engineer
 description: |
   Infrastructure-as-Code specialist — terraform validate/plan, checkov,

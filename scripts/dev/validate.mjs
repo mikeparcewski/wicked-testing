@@ -79,7 +79,7 @@ function parseFrontmatter(content) {
 
 function checkAgents() {
   const dirs = [join(REPO, "agents"), join(REPO, "agents", "specialists")];
-  const requiredFields = ["name", "subagent_type", "description", "model", "allowed-tools"];
+  const requiredFields = ["name", "subagent_type", "description", "model", "allowed-tools", "tier"];
   for (const dir of dirs) {
     if (!existsSync(dir)) continue;
     const entries = readdirSync(dir).filter(f => f.endsWith(".md"));
@@ -94,6 +94,14 @@ function checkAgents() {
       }
       if (fm.subagent_type && !fm.subagent_type.startsWith("wicked-testing:")) {
         err("agents", rel, `subagent_type must start with 'wicked-testing:' (got: ${fm.subagent_type})`);
+      }
+      const tier = fm.tier;
+      if (tier !== "1" && tier !== "2") {
+        err("agents", rel, `tier must be 1 or 2 (got: ${tier ?? "missing"})`);
+      } else {
+        const inSpecialists = path.includes(join("agents", "specialists"));
+        if (tier === "2" && !inSpecialists) err("agents", rel, `tier: 2 but not under agents/specialists/`);
+        if (tier === "1" && inSpecialists) err("agents", rel, `tier: 1 but under agents/specialists/`);
       }
       const expectedName = f.replace(/\.md$/, "");
       if (fm.name && fm.name !== expectedName) {

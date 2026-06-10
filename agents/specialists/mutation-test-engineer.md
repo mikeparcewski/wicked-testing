@@ -1,5 +1,6 @@
 ---
 name: mutation-test-engineer
+tier: 2
 subagent_type: wicked-testing:mutation-test-engineer
 description: |
   Mutation-testing specialist — Stryker (JS/TS), Mutmut (Python), Pitest (Java),

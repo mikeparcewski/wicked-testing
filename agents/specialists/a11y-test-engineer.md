@@ -1,5 +1,6 @@
 ---
 name: a11y-test-engineer
+tier: 2
 subagent_type: wicked-testing:a11y-test-engineer
 description: |
   Accessibility specialist — axe-core + pa11y, WCAG 2.1 AA / 2.2 AA,

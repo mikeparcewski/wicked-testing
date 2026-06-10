@@ -1,5 +1,6 @@
 ---
 name: contract-testing-engineer
+tier: 1
 subagent_type: wicked-testing:contract-testing-engineer
 description: |
   API contract testing specialist. Designs and reviews consumer-driven contracts,

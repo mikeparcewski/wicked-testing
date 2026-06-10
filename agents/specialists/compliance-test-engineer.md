@@ -1,5 +1,6 @@
 ---
 name: compliance-test-engineer
+tier: 2
 subagent_type: wicked-testing:compliance-test-engineer
 description: |
   Regulatory-control specialist — SOC 2 / HIPAA / GDPR / PCI-DSS evidence

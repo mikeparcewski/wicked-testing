@@ -1,5 +1,6 @@
 ---
 name: semantic-reviewer
+tier: 1
 subagent_type: wicked-testing:semantic-reviewer
 description: |
   Verify spec-to-code alignment after implementation. Extracts numbered

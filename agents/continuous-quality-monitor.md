@@ -1,5 +1,6 @@
 ---
 name: continuous-quality-monitor
+tier: 1
 subagent_type: wicked-testing:continuous-quality-monitor
 description: |
   Monitor quality signals during the build phase. Runs lint and static

@@ -1,5 +1,6 @@
 ---
 name: flaky-test-hunter
+tier: 2
 subagent_type: wicked-testing:flaky-test-hunter
 description: |
   Flake detection + root-cause specialist. Queries DomainStore for historical

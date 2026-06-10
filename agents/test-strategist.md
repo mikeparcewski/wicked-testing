@@ -1,5 +1,6 @@
 ---
 name: test-strategist
+tier: 1
 subagent_type: wicked-testing:test-strategist
 description: |
   Generate test strategies and coverage plans from code and requirements.

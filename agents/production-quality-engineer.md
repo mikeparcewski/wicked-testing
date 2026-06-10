@@ -1,5 +1,6 @@
 ---
 name: production-quality-engineer
+tier: 1
 subagent_type: wicked-testing:production-quality-engineer
 description: |
   Monitor production quality post-deploy. Track SLO targets, error budgets,

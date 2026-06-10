@@ -1,5 +1,6 @@
 ---
 name: ai-feature-test-engineer
+tier: 2
 subagent_type: wicked-testing:ai-feature-test-engineer
 description: |
   Tier-2 specialist — testing LLM-backed features. Prompt-injection probes

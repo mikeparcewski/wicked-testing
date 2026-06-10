@@ -1,5 +1,6 @@
 ---
 name: localization-test-engineer
+tier: 2
 subagent_type: wicked-testing:localization-test-engineer
 description: |
   i18n / localization testing — pluralization, RTL, date/currency formatting,

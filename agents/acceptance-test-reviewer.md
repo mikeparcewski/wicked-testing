@@ -1,5 +1,6 @@
 ---
 name: acceptance-test-reviewer
+tier: 1
 subagent_type: wicked-testing:acceptance-test-reviewer
 description: |
   Evaluates evidence artifacts against test plan assertions independently.

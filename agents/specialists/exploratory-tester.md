@@ -1,5 +1,6 @@
 ---
 name: exploratory-tester
+tier: 2
 subagent_type: wicked-testing:exploratory-tester
 description: |
   Session-based, unscripted exploratory testing — the agent acts like a

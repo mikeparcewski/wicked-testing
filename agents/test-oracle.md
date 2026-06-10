@@ -1,5 +1,6 @@
 ---
 name: test-oracle
+tier: 1
 subagent_type: wicked-testing:test-oracle
 description: |
   Answers plain-language questions about the wicked-testing data domain.

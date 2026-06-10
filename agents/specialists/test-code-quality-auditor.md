@@ -1,5 +1,6 @@
 ---
 name: test-code-quality-auditor
+tier: 2
 subagent_type: wicked-testing:test-code-quality-auditor
 description: |
   Audits the TEST code itself — not the SUT. Detects assertion-free tests,

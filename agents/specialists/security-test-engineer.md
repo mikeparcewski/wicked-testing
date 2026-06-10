@@ -1,5 +1,6 @@
 ---
 name: security-test-engineer
+tier: 2
 subagent_type: wicked-testing:security-test-engineer
 description: |
   Tier-2 specialist — application security testing. SAST orchestration

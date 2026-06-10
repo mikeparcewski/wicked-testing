@@ -1,5 +1,6 @@
 ---
 name: fuzz-property-engineer
+tier: 2
 subagent_type: wicked-testing:fuzz-property-engineer
 description: |
   Property-based and fuzz testing — Hypothesis (Python), fast-check (TS),

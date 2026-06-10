@@ -1,5 +1,6 @@
 ---
 name: visual-regression-engineer
+tier: 2
 subagent_type: wicked-testing:visual-regression-engineer
 description: |
   Snapshot + perceptual-diff specialist. Playwright for capture, pixelmatch /

@@ -1,5 +1,6 @@
 ---
 name: test-data-manager
+tier: 2
 subagent_type: wicked-testing:test-data-manager
 description: |
   Fixtures, factories, anonymized production snapshots. factory_boy / fishery

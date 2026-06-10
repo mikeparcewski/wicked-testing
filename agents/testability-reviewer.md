@@ -1,5 +1,6 @@
 ---
 name: testability-reviewer
+tier: 1
 subagent_type: wicked-testing:testability-reviewer
 description: |
   Review design artifacts and code structure for testability. Flags designs

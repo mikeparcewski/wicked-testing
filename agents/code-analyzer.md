@@ -1,5 +1,6 @@
 ---
 name: code-analyzer
+tier: 1
 subagent_type: wicked-testing:code-analyzer
 description: |
   Static code analysis for testability, quality, and maintainability. Reviews
