@@ -92,12 +92,13 @@ the emit is a no-op; wicked-testing's own SQLite ledger is always written.
 
 | Event Type                    | Subdomain             | Description                                           |
 |-------------------------------|-----------------------|-------------------------------------------------------|
-| `wicked.teststrategy.authored`| `scenario.authoring`  | A test strategy document was produced                 |
-| `wicked.scenario.authored`    | `scenario.authoring`  | A scenario file was created or updated                |
-| `wicked.testrun.started`      | `testrun`             | A test run began                                      |
-| `wicked.testrun.finished`     | `testrun`             | A test run completed (any terminal status)            |
-| `wicked.verdict.recorded`     | `verdict`             | A reviewer emitted a verdict (PASS / FAIL / N-A / SKIP)|
-| `wicked.evidence.captured`    | `evidence`            | Evidence artifacts written to disk for a run          |
+| `wicked.teststrategy.authored`  | `scenario.authoring`  | A test strategy document was produced                 |
+| `wicked.scenario.authored`      | `scenario.authoring`  | A scenario file was created or updated                |
+| `wicked.testrun.started`        | `testrun`             | A test run began                                      |
+| `wicked.testrun.finished`       | `testrun`             | A test run completed (any terminal status)            |
+| `wicked.verdict.recorded`       | `verdict`             | A reviewer emitted a verdict (PASS / FAIL / N-A / SKIP)|
+| `wicked.evidence.captured`      | `evidence`            | Evidence artifacts written to disk for a run          |
+| `wicked.contract.published`     | `contract`            | plugin.json manifest synced; full agent/tier roster   |
 
 ### Payload shape (common fields)
 
@@ -123,6 +124,7 @@ All events include:
 **`wicked.testrun.finished`** — `{ run_id, scenario_id, status, started_at, finished_at, evidence_path }`
 **`wicked.verdict.recorded`** — `{ verdict_id, run_id, verdict: "PASS|FAIL|N-A|SKIP", reviewer, evidence_path }`
 **`wicked.evidence.captured`** — `{ run_id, evidence_path, artifact_count }`
+**`wicked.contract.published`** — `{ version: "<semver>", agents: [{ subagent_type: "wicked-testing:<name>", tier: 1|2 }] }`
 
 Status values for `wicked.testrun.finished`: `passed | failed | errored | skipped`.
 

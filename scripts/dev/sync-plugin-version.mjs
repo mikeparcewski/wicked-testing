@@ -17,6 +17,7 @@
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { emitBusEvent } from "../../lib/bus-emit.mjs";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO = resolve(__dirname, "..", "..");
@@ -131,3 +132,8 @@ const merged = { ...plugin, ...desired };
 writeFileSync(pluginPath, JSON.stringify(merged, null, 2) + "\n");
 log(`plugin.json updated:`);
 for (const d of drifts) log(`  - ${d}`);
+
+emitBusEvent("wicked.contract.published", {
+  version: desired.version,
+  agents: desired.agents.map(a => ({ subagent_type: `wicked-testing:${a.name}`, tier: a.tier })),
+});
