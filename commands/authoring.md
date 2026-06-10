@@ -33,6 +33,13 @@ route to `test-strategist`, `test-automation-engineer`,
 Output: the scenario path + test file path, plus a one-line summary.
 Emits `wicked.scenario.authored` on the bus when present.
 
+## Modes (absorbed in 0.4.0)
+
+| Old command | Ask authoring instead |
+|-------------|-----------------------|
+| `scenarios` | "write/edit a scenario for <X>" — authoring writes scenario files in the format in `SCENARIO-FORMAT.md` |
+| `automate`  | "scaffold browser automation for <X>" — authoring generates the Playwright/Cypress/k6 harness; tool *detection* lives in `setup` |
+
 ## References
 
 - [Authoring skill](../skills/authoring/SKILL.md)

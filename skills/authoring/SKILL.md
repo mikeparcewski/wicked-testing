@@ -31,6 +31,8 @@ jest / etc. that runs in CI).
 | "author an acceptance test plan" (3-agent pipeline)  | `wicked-testing:acceptance-test-writer`      |
 | "build fixtures" / "need test data"                  | `wicked-testing:test-data-manager`           |
 | Contract work (OpenAPI, Pact, gRPC, GraphQL)         | `wicked-testing:contract-testing-engineer`   |
+| "write a scenario" / "edit scenario"                 | scenario-authoring flow (markdown per SCENARIO-FORMAT.md) |
+| "scaffold playwright/cypress/k6" / "browser test"    | `wicked-testing:e2e-orchestrator` (run) / harness scaffold; detection via `setup` |
 
 ### Dispatch block (executable)
 

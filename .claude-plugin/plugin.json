@@ -242,11 +242,6 @@
       "slash": "/wicked-testing:authoring"
     },
     {
-      "name": "automate",
-      "path": "commands/automate.md",
-      "slash": "/wicked-testing:automate"
-    },
-    {
       "name": "ci-bootstrap",
       "path": "commands/ci-bootstrap.md",
       "slash": "/wicked-testing:ci-bootstrap"
@@ -275,11 +270,6 @@
       "name": "run",
       "path": "commands/run.md",
       "slash": "/wicked-testing:run"
-    },
-    {
-      "name": "scenarios",
-      "path": "commands/scenarios.md",
-      "slash": "/wicked-testing:scenarios"
     },
     {
       "name": "setup",
