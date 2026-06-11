@@ -17,7 +17,7 @@ steps:
       fi
       npx --yes wicked-testing install
     plugins:
-      - docker#v5.11.0:
+      - docker#v5.13.0:
           image: node:20
           environment:
             - ANTHROPIC_API_KEY
@@ -29,7 +29,7 @@ steps:
     key: test
     command: npm test
     plugins:
-      - docker#v5.11.0:
+      - docker#v5.13.0:
           image: node:20
 
   - label: ':mag: acceptance'
@@ -54,7 +54,7 @@ steps:
       - ".wicked-testing/evidence/**/artifacts/**"
       - ".wicked-testing/logs/**"
     plugins:
-      - docker#v5.11.0:
+      - docker#v5.13.0:
           image: node:20
           environment:
             - ANTHROPIC_API_KEY
@@ -78,7 +78,7 @@ steps:
       || echo "_(wicked-testing: no manifest produced for this run)_" > /tmp/pr-comment.md
       cat /tmp/pr-comment.md | buildkite-agent annotate --style 'info' --context 'wicked-testing'
     plugins:
-      - docker#v5.11.0:
+      - docker#v5.13.0:
           image: node:20
           environment:
             - BUILDKITE_JOB_ID
