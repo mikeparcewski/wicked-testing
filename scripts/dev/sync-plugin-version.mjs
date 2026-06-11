@@ -33,6 +33,7 @@ function tierOf(absPath) {
 
 const pkgPath    = join(REPO, "package.json");
 const pluginPath = join(REPO, ".claude-plugin", "plugin.json");
+const marketplacePath = join(REPO, ".claude-plugin", "marketplace.json");
 const argv = process.argv.slice(2);
 const checkOnly = argv.includes("--check");
 const quiet     = argv.includes("--quiet");
@@ -46,6 +47,22 @@ try {
 } catch (err) {
   console.error(`sync-plugin-version: could not read inputs — ${err.message}`);
   process.exit(2);
+}
+
+// marketplace.json carries its own copy of the plugin version in plugins[].
+// It is NOT derived from package.json the way plugin.json is, so it silently
+// drifted (0.4.0 vs a 0.4.2 plugin.json) until this was wired in. Optional —
+// tolerate its absence so the script stays reusable for siblings without one.
+let marketplace = null;
+let mpEntry = null;
+if (existsSync(marketplacePath)) {
+  try {
+    marketplace = JSON.parse(readFileSync(marketplacePath, "utf8"));
+  } catch (err) {
+    console.error(`sync-plugin-version: could not read marketplace.json — ${err.message}`);
+    process.exit(2);
+  }
+  mpEntry = (marketplace.plugins ?? []).find(p => p.name === plugin.name) ?? null;
 }
 
 // --- Derive the canonical manifest shape from disk -------------------------
@@ -113,6 +130,8 @@ if (plugin.version !== desired.version)       drifts.push(`version: ${plugin.ver
 if (!jsonEqual(plugin.skills,   desired.skills))   drifts.push(`skills (${plugin.skills?.length ?? 0} -> ${desired.skills.length})`);
 if (!jsonEqual(plugin.agents,   desired.agents))   drifts.push(`agents (${plugin.agents?.length ?? 0} -> ${desired.agents.length})`);
 if (!jsonEqual(plugin.commands, desired.commands)) drifts.push(`commands (${plugin.commands?.length ?? 0} -> ${desired.commands.length})`);
+if (mpEntry && mpEntry.version !== desired.version)
+  drifts.push(`marketplace.json entry: ${mpEntry.version} -> ${desired.version}`);
 
 if (drifts.length === 0) {
   log(`plugin.json in sync (v${pkg.version}, ${desired.skills.length} skills, ${desired.agents.length} agents, ${desired.commands.length} commands)`);
@@ -130,7 +149,15 @@ if (checkOnly) {
 
 const merged = { ...plugin, ...desired };
 writeFileSync(pluginPath, JSON.stringify(merged, null, 2) + "\n");
-log(`plugin.json updated:`);
+
+// Keep the marketplace plugin entry's version in lockstep too. Only the
+// version is derived — descriptions/source are author-maintained.
+if (mpEntry && mpEntry.version !== desired.version) {
+  mpEntry.version = desired.version;
+  writeFileSync(marketplacePath, JSON.stringify(marketplace, null, 2) + "\n");
+}
+
+log(`manifest updated:`);
 for (const d of drifts) log(`  - ${d}`);
 
 emitBusEvent("wicked.contract.published", {
