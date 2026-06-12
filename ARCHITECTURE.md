@@ -38,7 +38,7 @@ specialists never breaks downstream.
 ## Component Diagram
 
 ```
-User --> AI CLI (Claude / Gemini / Codex / Cursor / Kiro / Copilot)
+User --> AI CLI (Claude / Gemini / Codex / Cursor / Kiro)
               |
               v
          wicked-testing plugin

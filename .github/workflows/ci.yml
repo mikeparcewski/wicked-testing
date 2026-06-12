@@ -9,3 +9,5 @@ on:
 jobs:
   ci:
     uses: mikeparcewski/wicked-ci/.github/workflows/node-ci.yml@6573ae1b5eeb50468193308750c08ceeafde8039 # v1.1.1
+    with:
+      test_cmd: 'npm test && npm run test:unit'

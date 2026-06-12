@@ -203,7 +203,10 @@ const flagValue = (name) => {
   if (!f) return null;
   let val;
   if (f.includes("=")) {
-    val = f.split("=")[1];
+    // Take everything after the FIRST `=` so two-char operators in values
+    // (e.g. `--require=>=20`, `--require=<=20`) survive. `split("=")[1]`
+    // truncated `>=`/`<=` to `>`/`<`, breaking `check --require`.
+    val = f.slice(f.indexOf("=") + 1);
   } else {
     const idx = args.indexOf(f);
     const next = args[idx + 1];
