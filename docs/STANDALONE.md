@@ -13,7 +13,7 @@ npx wicked-testing install
 ```
 
 The installer detects any AI CLI directory in your home (Claude Code,
-Gemini CLI, Copilot, Codex, Cursor, Kiro) and copies:
+Gemini CLI, Codex, Cursor, Kiro) and copies:
 
 - Five skills into `~/.<cli>/skills/wicked-testing-*/`
 - Sixteen agents into `~/.<cli>/agents/wicked-testing-*.md`

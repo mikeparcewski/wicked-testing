@@ -44,7 +44,7 @@ This isolation is enforced three ways:
 2. Evidence-only dispatch — the acceptance-testing skill passes only paths, not content
 3. Subagent context boundary — you run as a separate subagent with no shared history
 
-**Enforcement note**: On Claude Code, `allowed-tools` is enforced at the host level. On other CLIs (Gemini, Codex, Copilot), it is advisory — the skill still enforces evidence-only dispatch at the API level.
+**Enforcement note**: On Claude Code, `allowed-tools` is enforced at the host level. On other CLIs (Gemini, Codex, Cursor, Kiro), it is advisory — the skill still enforces evidence-only dispatch at the API level.
 
 ## Cold Context File (`context.md`) — Allowed Input
 

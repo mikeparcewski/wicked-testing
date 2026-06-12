@@ -1,6 +1,6 @@
 {
   "name": "wicked-testing",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "type": "module",
   "description": "Standalone QE library for AI coding CLIs — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, 3-agent acceptance pipeline, bus+brain optional integration.",
   "keywords": [
@@ -57,6 +57,7 @@
     "status": "node install.mjs status",
     "doctor": "node install.mjs doctor",
     "test": "node scripts/dev/validate.mjs && node scripts/dev/sync-plugin-version.mjs --check --quiet",
+    "test:unit": "node --test \"tests/unit/**/*.test.mjs\" \"hooks/**/*.test.mjs\"",
     "prepublishOnly": "node scripts/dev/sync-plugin-version.mjs && node scripts/dev/validate.mjs",
     "evals:list": "node scripts/dev/evals.mjs list",
     "evals:plan": "node scripts/dev/evals.mjs plan",

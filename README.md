@@ -288,7 +288,7 @@ See [SCENARIO-FORMAT.md](SCENARIO-FORMAT.md) for the full spec. Working examples
 
 ## Requirements
 
-- Node.js ≥ 18
+- Node.js ≥ 20
 - One of: Claude Code, Gemini CLI, Codex, Cursor, Kiro (Copilot support removed — no verified integration point; see [#59](https://github.com/mikeparcewski/wicked-testing/issues/59))
 - `better-sqlite3` — installed via `npm install`, pre-built binaries for macOS x64/arm64, Linux x64/arm64, Windows x64. On unsupported platforms, `npm install` falls back to `node-gyp rebuild` which requires a C++ toolchain.
 

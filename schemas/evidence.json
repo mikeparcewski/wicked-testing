@@ -34,13 +34,13 @@
     "duration_ms": { "type": "integer", "minimum": 0 },
     "status": {
       "type": "string",
-      "enum": ["passed", "failed", "errored", "skipped"]
+      "enum": ["passed", "failed", "partial", "inconclusive", "errored", "skipped"]
     },
     "verdict": {
       "type": "object",
       "required": ["value", "reviewer", "recorded_at"],
       "properties": {
-        "value":    { "type": "string", "enum": ["PASS", "FAIL", "N-A", "SKIP"] },
+        "value":    { "type": "string", "enum": ["PASS", "FAIL", "PARTIAL", "INCONCLUSIVE", "N-A", "SKIP"] },
         "reviewer": { "type": "string", "minLength": 1 },
         "reason":   { "type": "string" },
         "recorded_at": { "type": "string", "format": "date-time" }

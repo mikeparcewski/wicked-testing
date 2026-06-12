@@ -62,7 +62,7 @@ See `agents/acceptance-test-reviewer.md` for the reviewer's isolation annotation
 |-----|-----------------------|
 | Claude Code | Hard-enforced (tool restriction at host level) |
 | Gemini CLI | Advisory (skill enforces evidence-only dispatch; host does not block tools) |
-| Codex, Copilot | Advisory only |
+| Codex, Cursor, Kiro | Advisory only |
 
 Tests tagged `@requires-enforcement: claude-code` validate the hard tier.
 Tests without that tag validate the skill's dispatch contract (valid everywhere).
@@ -289,16 +289,37 @@ Two writes and one manifest build, in order:
 
 ```javascript
 // 1. Finalize run (triggers wicked.testrun.finished emit)
+//
+// Preserve the reviewer's full taxonomy — do NOT collapse everything-not-PASS
+// to 'failed'. "couldn't evaluate" (INCONCLUSIVE) and "partly satisfied"
+// (PARTIAL) are distinct outcomes from a true FAIL; conflating them lets a
+// missing-evidence run masquerade as a real failure (and vice-versa) in the
+// ledger, the oracle, and every downstream gate. Map 1:1.
+//
+//   PASS         → passed
+//   FAIL         → failed
+//   PARTIAL      → partial         (some criteria met, some need human review)
+//   INCONCLUSIVE → inconclusive    (evidence missing / context contaminated)
+//
+// `errored` and `skipped` remain reachable only via the run lifecycle
+// (executor crash / stale-run sweep, all-steps-skipped) — never from a verdict.
+const VERDICT_TO_STATUS = {
+  PASS: 'passed',
+  FAIL: 'failed',
+  PARTIAL: 'partial',
+  INCONCLUSIVE: 'inconclusive',
+};
+const runStatus = VERDICT_TO_STATUS[reviewerVerdict] ?? 'inconclusive';
 store.update('runs', run.id, {
   finished_at: new Date().toISOString(),
-  status: reviewerVerdict === 'PASS' ? 'passed' : 'failed',
+  status: runStatus,
   evidence_path: EVIDENCE_DIR,
 });
 
 // 2. Record verdict (triggers wicked.verdict.recorded emit)
 const verdictRecord = store.create('verdicts', {
   run_id: run.id,
-  verdict: reviewerVerdict,            // 'PASS' | 'FAIL' | 'N-A' | 'SKIP'
+  verdict: reviewerVerdict,            // 'PASS' | 'FAIL' | 'PARTIAL' | 'INCONCLUSIVE'
   evidence_path: EVIDENCE_DIR,
   reviewer: 'acceptance-test-reviewer',
   reason: reviewerSummary,

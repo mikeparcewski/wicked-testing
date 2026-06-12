@@ -56,7 +56,10 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
         // fires with a terminal status, THEN write the verdict row so the
         // verdict row's evidence_path references an already-finalized run.
         store.update('runs', run.id, {
-          finished_at, status: 'passed' | 'failed',
+          // 1:1 from the reviewer verdict — PASS→passed, FAIL→failed,
+          // PARTIAL→partial, INCONCLUSIVE→inconclusive. Not-PASS is never
+          // collapsed to 'failed'.
+          finished_at, status: 'passed' | 'failed' | 'partial' | 'inconclusive',
           evidence_path: '.wicked-testing/evidence/{run-id}'
         });
         store.create('verdicts', {
