@@ -12,7 +12,7 @@ name: scenario-name          # Required. Unique identifier (slug format)
 description: |               # Required. What this scenario tests
   One or more lines describing the scenario's purpose.
 version: "1.0"               # Required. Scenario format version
-category: api                # Required. api|browser|perf|infra|security|a11y|cli
+category: api                # Required. api|browser|perf|infra|security|a11y|cli|equivalence
 tags: [smoke, auth]          # Optional. List of tags for filtering
 tools:
   required: [curl]           # Required CLIs — scenario SKIPs if missing
@@ -23,6 +23,11 @@ assertions:                  # Required. High-level acceptance criteria
     description: Response status is 200
   - id: A2
     description: Response body contains expected fields
+  - id: A3                   # Optional equivalence assertion (baseline-match)
+    description: Output matches the captured baseline
+    baseline: tests/baselines/cart.json   # Optional. Path to the captured baseline artifact
+    method: golden-master                 # Optional. golden-master|contract|reconciliation|perceptual
+    tolerance: 0                          # Optional. Allowed diff count (default 0)
 ---
 ```
 
@@ -39,6 +44,9 @@ assertions:                  # Required. High-level acceptance criteria
 | `tools.optional` | No | CLIs used if present; degraded gracefully if absent |
 | `timeout` | No | Per-step timeout in seconds (default: 120) |
 | `assertions` | Yes | Array of high-level acceptance criteria (id + description) |
+| `assertions[].baseline` | No | Path to a captured baseline artifact — makes the assertion an equivalence (baseline-match) check |
+| `assertions[].method` | No | Equivalence method when `baseline` is set: `golden-master`, `contract`, `reconciliation`, or `perceptual` (default `golden-master`) |
+| `assertions[].tolerance` | No | Allowed diff count for an equivalence assertion (default `0` — exact match) |
 
 ## Category Values
 
@@ -51,6 +59,7 @@ assertions:                  # Required. High-level acceptance criteria
 | `security` | semgrep | SAST, code security patterns |
 | `a11y` | pa11y | WCAG compliance, accessibility violations |
 | `cli` | bash | CLI command behavior, exit codes |
+| `equivalence` | diff, jq, pixelmatch | Baseline-match: output reproduces a captured baseline within tolerance (golden-master / contract / reconciliation / perceptual) |
 
 ## Body Format
 
@@ -248,7 +257,7 @@ import('./lib/domain-store.mjs').then(({ DomainStore }) => {
 
 **Expect**: Exit code 0, valid JSON with `counts` object containing table names
 
-### Step 2: Schema version is 1 (node)
+### Step 2: Schema version is at least 1 (node)
 
 ```bash
 node -e "
@@ -256,13 +265,13 @@ import('./lib/domain-store.mjs').then(({ DomainStore }) => {
   const store = new DomainStore('.wicked-testing');
   const version = store.schemaVersion();
   console.log('Schema version:', version);
-  if (version !== 1) { console.error('FAIL: expected version 1, got', version); process.exit(1); }
+  if (!(version >= 1)) { console.error('FAIL: expected version >= 1, got', version); process.exit(1); }
   store.close();
 }).catch(e => { console.error(e.message); process.exit(1); });
 "
 ```
 
-**Expect**: Exit code 0, "Schema version: 1"
+**Expect**: Exit code 0, "Schema version:" line with a value >= 1 (currently 2)
 ```
 
 ## Validation Rules

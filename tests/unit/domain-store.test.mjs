@@ -195,3 +195,60 @@ test("rejects an unknown table name (allowlist guard)", () => {
     (err) => err.code === "ERR_INVALID_SOURCE"
   );
 });
+
+// --- CONDITIONAL verdict (rec #1): now a legal enum value end-to-end ---
+// Four Tier-2 agents (release-readiness, security, ai-feature, test-code-
+// quality) emit CONDITIONAL. Migration 002 added it to the verdicts.verdict
+// CHECK constraint, so the write must persist through the real store (which
+// opens the DB with foreign_keys = ON and the CHECK active) — not silently
+// fail the SQLite insert and drift to JSON-only.
+
+test("a CONDITIONAL verdict persists through the store (CHECK constraint accepts it)", () => {
+  const { run } = seedRunChain();
+  store.update("runs", run.id, { status: "partial", finished_at: new Date().toISOString() });
+  const verdict = store.create("verdicts", {
+    run_id: run.id,
+    verdict: "CONDITIONAL",
+    reviewer: "release-readiness-engineer",
+    reason: "ship with the two listed fixes",
+  });
+
+  // Index row + canonical JSON agree, and the row really landed in SQLite
+  // (drift_count stays 0 — a CHECK rejection would have bumped it and the
+  // index would diverge from JSON).
+  const fromIndex = store.get("verdicts", verdict.id);
+  const fromJson = readJsonRecord("verdicts", verdict.id);
+  assert.equal(fromIndex.verdict, "CONDITIONAL");
+  assert.equal(fromJson.verdict, "CONDITIONAL");
+  assert.equal(store.stats().drift_count, 0, "CONDITIONAL must NOT trip the CHECK constraint (no SQLite drift)");
+});
+
+// --- Equivalence facet (rec #5): equivalence_json column round-trips ---
+
+test("a verdict's equivalence_json (baseline-match facet) round-trips through index and JSON", () => {
+  const { run } = seedRunChain();
+  store.update("runs", run.id, { status: "partial", finished_at: new Date().toISOString() });
+  const equivalence_json = JSON.stringify({
+    baseline_ref: "tests/baselines/cart.json",
+    baseline_sha: "a".repeat(64),
+    method: "golden-master",
+    diff_count: 0,
+    tolerance: 0,
+    matched: true,
+  });
+  const verdict = store.create("verdicts", {
+    run_id: run.id,
+    verdict: "CONDITIONAL",
+    reviewer: "data-quality-tester",
+    reason: "matched baseline within tolerance",
+    equivalence_json,
+  });
+
+  const fromIndex = store.get("verdicts", verdict.id);
+  const fromJson = readJsonRecord("verdicts", verdict.id);
+  assert.equal(fromIndex.equivalence_json, equivalence_json, "equivalence_json must persist in the SQLite index");
+  assert.equal(fromJson.equivalence_json, equivalence_json, "equivalence_json must persist in the canonical JSON");
+  const eq = JSON.parse(fromIndex.equivalence_json);
+  assert.equal(eq.matched, true);
+  assert.equal(eq.method, "golden-master");
+});

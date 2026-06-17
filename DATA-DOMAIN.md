@@ -91,12 +91,13 @@ The Node.js implementation diverges from wicked-garden's `_domain_store.py` in t
 
 ## Oracle Query Library
 
-The `test-oracle` skill uses `lib/oracle-queries.mjs` — a fixed library of 12 named parameterized queries:
+The `test-oracle` skill uses `lib/oracle-queries.mjs` — a fixed library of 13 named parameterized queries:
 
 - `scenarios_for_project`, `last_verdict_for_scenario`, `runs_by_status`
 - `failed_runs_since`, `tasks_by_status`, `tasks_for_project`
 - `current_strategy_for_project`, `recent_runs`, `verdicts_since`
 - `row_counts`, `schema_version`, `most_recent_project`
+- `baseline_matches_for_scenario` (equivalence / baseline-match facts)
 
 No LLM-generated SQL. No ad-hoc queries. Every query is auditable by code review.
 

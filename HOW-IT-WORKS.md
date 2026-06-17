@@ -111,8 +111,8 @@ Created by `/wicked-testing:setup`. Records the project name and detected CLI ca
 
 Singleton-per-process DomainStore. On construction:
 1. Opens/creates `.wicked-testing/wicked-testing.db`
-2. Applies `lib/schema.sql` (idempotent `CREATE TABLE IF NOT EXISTS`)
-3. Checks schema version against `SCHEMA_VERSION = 1`
+2. Applies pending migrations from `lib/migrations/NNN_*.sql` in numeric order (`lib/migrate.mjs`)
+3. Checks schema version against `SCHEMA_VERSION = 2`
 4. Prepares INSERT statements for all 7 tables
 5. Enables WAL mode for concurrent readers
 
