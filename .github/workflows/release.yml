@@ -9,10 +9,12 @@ permissions:
   contents: write
   packages: write
   id-token: write
+  pull-requests: write
 
 jobs:
   release:
     uses: mikeparcewski/wicked-ci/.github/workflows/node-release.yml@d8c9b0a14fb91c2d13f5da0468eeeff983c27e5a # v1.1.2
     with:
       package_name: wicked-testing
+      enable_sync_pr: true
     secrets: inherit
