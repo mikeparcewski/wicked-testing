@@ -164,3 +164,40 @@ test("a consistent equivalence facet (matched === diff_count<=tolerance) is kept
   assert.equal(eq.diff_count, 2);
   assert.equal(eq.tolerance, 5);
 });
+
+// --- Gemini review: tolerance must be a FINITE number ---
+
+test("a non-finite tolerance (Infinity) is rejected, not carried onto the facet", () => {
+  // `typeof Infinity === "number"` and `Infinity >= 0` is true, so the old
+  // `typeof`-based guard would have accepted it — making any diff_count appear
+  // "within tolerance" — and Infinity serializes to null, violating the schema.
+  // Number.isFinite rejects it: the tolerance field is simply omitted. With
+  // tolerance gone the NIT-4 invariant (needs BOTH diff_count and tolerance)
+  // does not fire, so the rest of the facet is kept.
+  const { manifest } = buildManifest(
+    records({ verdict: "PASS", equivalence: { method: "golden-master", matched: true, diff_count: 0, tolerance: Infinity } })
+  );
+  const eq = manifest.verdict.equivalence;
+  assert.ok(eq, "the facet itself is still valid (matched + method present)");
+  assert.equal("tolerance" in eq, false, "a non-finite tolerance must not land on the manifest");
+  assert.equal(eq.diff_count, 0);
+});
+
+test("a NaN tolerance is rejected, not carried onto the facet", () => {
+  const { manifest } = buildManifest(
+    records({ verdict: "PASS", equivalence: { method: "perceptual", matched: true, diff_count: 1, tolerance: NaN } })
+  );
+  const eq = manifest.verdict.equivalence;
+  assert.ok(eq, "the facet itself is still valid");
+  assert.equal("tolerance" in eq, false, "a NaN tolerance must not land on the manifest");
+});
+
+test("an Infinity tolerance arriving via equivalence_json is dropped (JSON.parse yields null → not a finite number)", () => {
+  // JSON has no Infinity literal; producers serialize it as null. Number.isFinite(null)
+  // is false, so the tolerance is omitted regardless of the input form.
+  const equivalence_json = JSON.stringify({ method: "contract", matched: true, diff_count: 0, tolerance: Infinity });
+  const { manifest } = buildManifest(records({ verdict: "PASS", equivalence_json }));
+  const eq = manifest.verdict.equivalence;
+  assert.ok(eq, "facet parsed and kept");
+  assert.equal("tolerance" in eq, false, "null-serialized non-finite tolerance must not land on the manifest");
+});
