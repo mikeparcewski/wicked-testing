@@ -45,7 +45,7 @@ Formal JSON Schema: [`schemas/evidence.json`](../schemas/evidence.json)
   "duration_ms": 3217,
   "status":  "failed",              // passed | failed | partial | inconclusive | errored | skipped
   "verdict": {
-    "value":     "FAIL",            // PASS | FAIL | PARTIAL | INCONCLUSIVE | N-A | SKIP
+    "value":     "FAIL",            // PASS | FAIL | PARTIAL | CONDITIONAL | INCONCLUSIVE | N-A | SKIP
     "reviewer":  "wicked-testing:acceptance-test-reviewer",
     "reason":    "Step 3 assertion: expected 401, got 200",
     "recorded_at": "2026-04-20T14:03:16.103Z"
@@ -104,9 +104,10 @@ Formal JSON Schema: [`schemas/evidence.json`](../schemas/evidence.json)
 | `finished_at`         | yes      | ISO 8601 UTC with `Z`.                               |
 | `duration_ms`         | yes      | Integer milliseconds.                                |
 | `status`              | yes      | `passed | failed | partial | inconclusive | errored | skipped`. |
-| `verdict.value`       | yes      | `PASS | FAIL | PARTIAL | INCONCLUSIVE | N-A | SKIP`.  |
+| `verdict.value`       | yes      | `PASS | FAIL | PARTIAL | CONDITIONAL | INCONCLUSIVE | N-A | SKIP`.  |
 | `verdict.reviewer`    | yes      | Agent subagent_type that judged.                     |
 | `verdict.reason`      | when FAIL/N-A/SKIP | Free text. ≤ 500 chars recommended.        |
+| `verdict.equivalence` | no       | Optional baseline-match facet. When both `diff_count` and `tolerance` are present, the producer guarantees the invariant `matched === (diff_count <= tolerance)`; a contradictory facet is dropped rather than recorded. |
 | `environment.*`       | yes      | Best-effort capture at run start.                    |
 | `artifacts[]`         | yes      | Empty array allowed for `skipped`.                   |
 | `artifacts[].kind`    | yes      | See table below.                                     |

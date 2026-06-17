@@ -4,6 +4,37 @@ All notable changes to `wicked-testing`. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+- **`CONDITIONAL` is now a legal verdict value (latent contract bug).** Four
+  Tier-2 agents (`release-readiness`, `security`, `ai-feature`,
+  `test-code-quality`) already emit `CONDITIONAL`, but it was absent from the
+  manifest verdict enum (`schemas/evidence.json`, `lib/manifest.mjs`
+  `validateShape`) — so the first manifest built off such a run threw
+  `invalid verdict.value 'CONDITIONAL'`. Added to the enum, the prejudicial-
+  content matcher, `docs/EVIDENCE.md`, and the acceptance-skill
+  `VERDICT_TO_STATUS` map (`CONDITIONAL → partial`). Migration `002` adds a
+  `CHECK` constraint to `verdicts.verdict` covering the full enum, and
+  `DomainStore.create()` now validates the verdict against the enum (the shared
+  `VERDICT_VALUES` source of truth) *before* the dual-write — so an out-of-enum
+  value fails loudly and atomically (throws `ERR_INVALID_VERDICT`, nothing
+  written to either store) instead of silently diverging the canonical JSON
+  from the SQLite index.
+
+### Added
+- **Equivalence / baseline-match as a first-class verdict facet.** Optional
+  `verdict.equivalence` block `{ baseline_ref, baseline_sha, method, diff_count,
+  tolerance, matched }` in the evidence schema (manifest minor bump
+  `1.0.0 → 1.1.0`); an `EQUIVALENT_TO_BASELINE` reviewer operator; scenario
+  `assertions[].baseline` / `method` / `tolerance` support + `equivalence`
+  category; a nullable `verdicts.equivalence_json` column (migration `002`); and
+  the fixed oracle query `baseline_matches_for_scenario`. All optional and
+  backward-compatible — existing rows, readers, and manifests are unaffected.
+- **Versioned migration `002_verdict_check_and_equivalence.sql`** — the first
+  follow-on migration; applies in numeric order via `lib/migrate.mjs` on both
+  fresh and pre-existing v1 databases. `SCHEMA_VERSION` bumped `1 → 2`.
+
 ## [0.4.1] — 2026-06-10
 
 Docs-truth patch — no behavior change.

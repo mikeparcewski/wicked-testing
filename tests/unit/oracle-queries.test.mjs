@@ -26,7 +26,7 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 
 import {
   QUERIES,
@@ -55,12 +55,13 @@ const EXPECTED_QUERY_NAMES = [
   "row_counts",
   "schema_version",
   "most_recent_project",
+  "baseline_matches_for_scenario",
 ];
 
-// --- The closed set is exactly 12 named queries ---
+// --- The closed set is exactly 13 named queries ---
 
-test("ships exactly the 12 documented named queries — no more, no fewer", () => {
-  assert.equal(QUERY_NAMES.length, 12, `expected 12 fixed queries, got ${QUERY_NAMES.length}`);
+test("ships exactly the 13 documented named queries — no more, no fewer", () => {
+  assert.equal(QUERY_NAMES.length, 13, `expected 13 fixed queries, got ${QUERY_NAMES.length}`);
   assert.deepEqual([...QUERY_NAMES].sort(), [...EXPECTED_QUERY_NAMES].sort());
 });
 
@@ -129,7 +130,7 @@ test("buildOracleQuery returns null for an unknown query name (cannot invent SQL
   assert.equal(buildOracleQuery("totally_made_up_query", {}), null);
 });
 
-test("supportedPatterns lists all 12 query descriptions", () => {
+test("supportedPatterns lists all 13 query descriptions", () => {
   const text = supportedPatterns();
   for (const name of EXPECTED_QUERY_NAMES) {
     assert.match(text, new RegExp(name), `supportedPatterns missing ${name}`);
@@ -140,8 +141,13 @@ test("supportedPatterns lists all 12 query descriptions", () => {
 
 function seededDb() {
   const db = new Database(":memory:");
-  const migration = readFileSync(join(__dirname, "..", "..", "lib", "migrations", "001_initial.sql"), "utf8");
-  db.exec(migration);
+  // Apply every migration in numeric order so the seeded schema matches the
+  // real DB (including 002's verdict CHECK + equivalence_json column). Reading
+  // the files directly keeps this test independent of the migration runner.
+  const migDir = join(__dirname, "..", "..", "lib", "migrations");
+  for (const f of readdirSync(migDir).filter(x => /^\d+_.+\.sql$/.test(x)).sort()) {
+    db.exec(readFileSync(join(migDir, f), "utf8"));
+  }
 
   const iso = "2026-06-01T00:00:00.000Z";
   db.prepare("INSERT INTO projects (id,name,description,created_at,updated_at,deleted) VALUES (?,?,?,?,?,0)")
@@ -152,6 +158,29 @@ function seededDb() {
     .run("r1", "p1", "s1", iso, "inconclusive", iso, iso);
   db.prepare("INSERT INTO verdicts (id,run_id,verdict,reviewer,reason,created_at,updated_at,deleted) VALUES (?,?,?,?,?,?,?,0)")
     .run("v1", "r1", "INCONCLUSIVE", "acceptance-test-reviewer", "evidence missing", iso, iso);
+  return db;
+}
+
+// Seed a project/scenario/run plus a CONDITIONAL verdict that carries a
+// baseline-match facet (equivalence_json). Used by the equivalence-oracle
+// tests below.
+function seededDbWithEquivalence() {
+  const db = seededDb();
+  const iso = "2026-06-02T00:00:00.000Z";
+  db.prepare("INSERT INTO scenarios (id,project_id,name,format_version,created_at,updated_at,deleted) VALUES (?,?,?,?,?,?,0)")
+    .run("s2", "p1", "cart-checkout-equivalence", "1.0", iso, iso);
+  db.prepare("INSERT INTO runs (id,project_id,scenario_id,started_at,status,created_at,updated_at,deleted) VALUES (?,?,?,?,?,?,?,0)")
+    .run("r2", "p1", "s2", iso, "partial", iso, iso);
+  const eq = JSON.stringify({
+    baseline_ref: "tests/baselines/cart.json",
+    baseline_sha: "a".repeat(64),
+    method: "golden-master",
+    diff_count: 0,
+    tolerance: 0,
+    matched: true,
+  });
+  db.prepare("INSERT INTO verdicts (id,run_id,verdict,reviewer,reason,equivalence_json,created_at,updated_at,deleted) VALUES (?,?,?,?,?,?,?,?,0)")
+    .run("v2", "r2", "CONDITIONAL", "data-quality-tester", "matched baseline within tolerance", eq, iso, iso);
   return db;
 }
 
@@ -209,5 +238,84 @@ test("recent_runs with project filter binds both params and runs", () => {
     assert.equal(rows[0].project_name, "demo");
   } finally {
     db.close();
+  }
+});
+
+// --- Equivalence / baseline-match oracle query (R1) ---
+
+test("baseline_matches_for_scenario returns only verdicts carrying an equivalence facet", () => {
+  const db = seededDbWithEquivalence();
+  try {
+    const { sql, params } = buildOracleQuery("baseline_matches_for_scenario", {
+      scenario_name: "cart-checkout-equivalence",
+    });
+    assert.deepEqual(params, ["cart-checkout-equivalence"]);
+    const rows = db.prepare(sql).all(...params);
+    assert.equal(rows.length, 1, "exactly the one equivalence verdict is returned");
+    const row = rows[0];
+    assert.equal(row.scenario_name, "cart-checkout-equivalence");
+    assert.equal(row.verdict, "CONDITIONAL");
+    assert.ok(row.equivalence_json, "equivalence_json is surfaced for the oracle to parse");
+    const eq = JSON.parse(row.equivalence_json);
+    assert.equal(eq.matched, true);
+    assert.equal(eq.method, "golden-master");
+    assert.equal(eq.diff_count, 0);
+  } finally {
+    db.close();
+  }
+});
+
+test("baseline_matches_for_scenario excludes non-equivalence verdicts (equivalence_json IS NULL)", () => {
+  const db = seededDbWithEquivalence();
+  try {
+    // scenario "login" has only a plain INCONCLUSIVE verdict (no equivalence facet).
+    const { sql, params } = buildOracleQuery("baseline_matches_for_scenario", { scenario_name: "login" });
+    const rows = db.prepare(sql).all(...params);
+    assert.equal(rows.length, 0, "a verdict without a baseline facet must not appear here");
+  } finally {
+    db.close();
+  }
+});
+
+test("routeQuestion sends baseline / equivalence questions to baseline_matches_for_scenario", () => {
+  for (const q of [
+    "did the cart scenario still match its baseline?",
+    "show me equivalence results for checkout",
+    "what reproduced the golden master?",
+  ]) {
+    assert.equal(routeQuestion(q), "baseline_matches_for_scenario", `routing failed for: ${q}`);
+  }
+});
+
+// --- MED-2 regression: a "last verdict" question must NOT misroute to the
+// equivalence query just because the SCENARIO NAME carries an equivalence noun
+// (baseline / golden-master / equivalence). The specific last-verdict route
+// wins; the equivalence route only fires on an explicit equivalence INTENT
+// (noun + verb). ---
+
+test("a 'last verdict' question for a baseline-named scenario routes to last_verdict_for_scenario", () => {
+  for (const q of [
+    "show me the last verdict for my golden master scenario",
+    "most recent verdict for baseline-cart",
+    "what is the latest verdict for the equivalence-cart scenario?",
+  ]) {
+    assert.equal(
+      routeQuestion(q),
+      "last_verdict_for_scenario",
+      `last-verdict intent must win even when the scenario name mentions equivalence: ${q}`
+    );
+  }
+});
+
+test("an explicit baseline/equivalence question (noun + verb) still routes to baseline_matches_for_scenario", () => {
+  for (const q of [
+    "did baseline-cart still match its baseline?",
+    "show the equivalence results — did checkout reproduce the golden master?",
+  ]) {
+    assert.equal(
+      routeQuestion(q),
+      "baseline_matches_for_scenario",
+      `explicit equivalence intent must route to the equivalence query: ${q}`
+    );
   }
 });

@@ -108,6 +108,7 @@ For each assertion in the test plan:
 | `NOT_EMPTY` | Non-whitespace content present. |
 | `JSON_PATH` | Parse JSON, navigate path, check value. |
 | `COUNT_GTE` | Count >= threshold. |
+| `EQUIVALENT_TO_BASELINE` | Compare a fresh artifact against a captured baseline artifact (both paths supplied in the test plan). Count differences with the assertion's `method` (`golden-master` byte/field diff, `contract` schema diff, `reconciliation` row/field diff, `perceptual` pixel diff). PASS iff `diff_count <= tolerance` (default tolerance 0). Record the result as a `verdict.equivalence` facet `{ baseline_ref, baseline_sha, method, diff_count, tolerance, matched }`. A missing baseline is `INCONCLUSIVE` (cannot evaluate), never PASS. |
 | `HUMAN_REVIEW` | Flag for human review with context. |
 
 For each assertion:
@@ -118,6 +119,28 @@ For each assertion:
 - **Verdict**: PASS|FAIL|INCONCLUSIVE
 - **Reasoning**: {why this verdict}
 ```
+
+#### Baseline-match (`EQUIVALENT_TO_BASELINE`)
+
+When an assertion declares a `baseline:` and `method:`, you are rendering an
+**equivalence verdict** — "did this output reproduce the captured baseline?".
+A green run is *not* sufficient evidence of a faithful reproduction; the
+baseline-match is the verdict-of-record. Report it as a typed facet so it is
+queryable from the ledger (oracle query `baseline_matches_for_scenario`):
+
+```markdown
+#### Assertion: `cart-response.json` EQUIVALENT_TO_BASELINE `tests/baselines/cart.json` (golden-master)
+- **Baseline examined**: tests/baselines/cart.json (sha256 7d8f…)
+- **Diff count**: 0 (tolerance: 0)
+- **Verdict**: PASS — output matched the baseline within tolerance
+- **equivalence**: { "baseline_ref": "tests/baselines/cart.json", "baseline_sha": "7d8f…",
+  "method": "golden-master", "diff_count": 0, "tolerance": 0, "matched": true }
+```
+
+The skill carries this `equivalence` object onto the verdict it writes (it
+lands in `verdict.equivalence` in the manifest and the `equivalence_json`
+column in the ledger). If the baseline artifact is absent, this is
+`INCONCLUSIVE` (`EVIDENCE_MISSING`), never PASS.
 
 ### 4. Check Specification Notes
 

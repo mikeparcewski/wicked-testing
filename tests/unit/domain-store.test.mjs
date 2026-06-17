@@ -195,3 +195,118 @@ test("rejects an unknown table name (allowlist guard)", () => {
     (err) => err.code === "ERR_INVALID_SOURCE"
   );
 });
+
+// --- CONDITIONAL verdict (rec #1): now a legal enum value end-to-end ---
+// Four Tier-2 agents (release-readiness, security, ai-feature, test-code-
+// quality) emit CONDITIONAL. Migration 002 added it to the verdicts.verdict
+// CHECK constraint, so the write must persist through the real store (which
+// opens the DB with foreign_keys = ON and the CHECK active) — not silently
+// fail the SQLite insert and drift to JSON-only.
+
+test("a CONDITIONAL verdict persists through the store (CHECK constraint accepts it)", () => {
+  const { run } = seedRunChain();
+  store.update("runs", run.id, { status: "partial", finished_at: new Date().toISOString() });
+  const verdict = store.create("verdicts", {
+    run_id: run.id,
+    verdict: "CONDITIONAL",
+    reviewer: "release-readiness-engineer",
+    reason: "ship with the two listed fixes",
+  });
+
+  // Index row + canonical JSON agree, and the row really landed in SQLite
+  // (drift_count stays 0 — a CHECK rejection would have bumped it and the
+  // index would diverge from JSON).
+  const fromIndex = store.get("verdicts", verdict.id);
+  const fromJson = readJsonRecord("verdicts", verdict.id);
+  assert.equal(fromIndex.verdict, "CONDITIONAL");
+  assert.equal(fromJson.verdict, "CONDITIONAL");
+  assert.equal(store.stats().drift_count, 0, "CONDITIONAL must NOT trip the CHECK constraint (no SQLite drift)");
+});
+
+// --- Equivalence facet (rec #5): equivalence_json column round-trips ---
+
+test("a verdict's equivalence_json (baseline-match facet) round-trips through index and JSON", () => {
+  const { run } = seedRunChain();
+  store.update("runs", run.id, { status: "partial", finished_at: new Date().toISOString() });
+  const equivalence_json = JSON.stringify({
+    baseline_ref: "tests/baselines/cart.json",
+    baseline_sha: "a".repeat(64),
+    method: "golden-master",
+    diff_count: 0,
+    tolerance: 0,
+    matched: true,
+  });
+  const verdict = store.create("verdicts", {
+    run_id: run.id,
+    verdict: "CONDITIONAL",
+    reviewer: "data-quality-tester",
+    reason: "matched baseline within tolerance",
+    equivalence_json,
+  });
+
+  const fromIndex = store.get("verdicts", verdict.id);
+  const fromJson = readJsonRecord("verdicts", verdict.id);
+  assert.equal(fromIndex.equivalence_json, equivalence_json, "equivalence_json must persist in the SQLite index");
+  assert.equal(fromJson.equivalence_json, equivalence_json, "equivalence_json must persist in the canonical JSON");
+  const eq = JSON.parse(fromIndex.equivalence_json);
+  assert.equal(eq.matched, true);
+  assert.equal(eq.method, "golden-master");
+});
+
+// --- MED-1 regression: an out-of-enum verdict fails LOUDLY and ATOMICALLY ---
+// Before the fix, create() wrote canonical JSON first, then _dbInsert swallowed
+// the CHECK-constraint failure (drift++ + stderr) — leaving the row in JSON but
+// NOT in the index (split-brain: get() returns null while JSON says it exists).
+// create() now validates the verdict against the enum (single source of truth,
+// lib/manifest.mjs VERDICT_VALUES) BEFORE any write and throws, so neither
+// store gets a dangling row.
+
+test("an out-of-enum verdict throws and leaves NO split-brain (neither JSON nor index)", () => {
+  const { run } = seedRunChain();
+  const bogusId = "bogus-verdict-id";
+
+  assert.throws(
+    () => store.create("verdicts", {
+      id: bogusId,
+      run_id: run.id,
+      verdict: "WONTFIX", // not in the enum
+      reviewer: "some-agent",
+      reason: "should never persist",
+    }),
+    (err) => err.code === "ERR_INVALID_VERDICT" && /WONTFIX/.test(err.message),
+    "create() must throw a clear ERR_INVALID_VERDICT for an out-of-enum verdict"
+  );
+
+  // No canonical JSON file was written (atomic: the throw is BEFORE the write).
+  const jsonPath = join(root, "verdicts", `${bogusId}.json`);
+  assert.equal(existsSync(jsonPath), false, "no canonical JSON row may exist for a rejected verdict");
+
+  // No index row either, and the failure did NOT register as drift (it was a
+  // clean pre-write rejection, not a swallowed CHECK violation).
+  assert.equal(store.get("verdicts", bogusId), null, "no index row may exist for a rejected verdict");
+  assert.equal(store.stats().drift_count, 0, "a rejected verdict must not count as dual-write drift");
+});
+
+test("every valid verdict value (incl. CONDITIONAL) persists and reads back from BOTH stores", () => {
+  const { run } = seedRunChain();
+  const FULL_ENUM = ["PASS", "FAIL", "PARTIAL", "CONDITIONAL", "INCONCLUSIVE", "N-A", "SKIP"];
+
+  for (const value of FULL_ENUM) {
+    const v = store.create("verdicts", {
+      run_id: run.id,
+      verdict: value,
+      reviewer: "acceptance-test-reviewer",
+      reason: `value=${value}`,
+    });
+    const fromIndex = store.get("verdicts", v.id);
+    const fromJson = readJsonRecord("verdicts", v.id);
+    assert.ok(fromIndex, `index row must exist for verdict '${value}'`);
+    assert.equal(fromIndex.verdict, value, `index verdict must be '${value}'`);
+    assert.equal(fromJson.verdict, value, `canonical JSON verdict must be '${value}'`);
+  }
+
+  // All seven landed in the index with no drift — the CHECK accepted every
+  // enum value and the pre-write guard let them all through.
+  assert.equal(store.stats().drift_count, 0, "no valid verdict may trip the CHECK / cause drift");
+  assert.equal(store.stats().counts.verdicts, FULL_ENUM.length, "every valid verdict must be indexed");
+});

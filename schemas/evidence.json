@@ -40,10 +40,24 @@
       "type": "object",
       "required": ["value", "reviewer", "recorded_at"],
       "properties": {
-        "value":    { "type": "string", "enum": ["PASS", "FAIL", "PARTIAL", "INCONCLUSIVE", "N-A", "SKIP"] },
+        "value":    { "type": "string", "enum": ["PASS", "FAIL", "PARTIAL", "CONDITIONAL", "INCONCLUSIVE", "N-A", "SKIP"] },
         "reviewer": { "type": "string", "minLength": 1 },
         "reason":   { "type": "string" },
-        "recorded_at": { "type": "string", "format": "date-time" }
+        "recorded_at": { "type": "string", "format": "date-time" },
+        "equivalence": {
+          "type": "object",
+          "description": "Optional baseline-match facet. Present when a behavior-preserving change was judged against a captured baseline (golden-master / contract / data-reconciliation / perceptual). A green run is not sufficient evidence of a faithful reproduction — this names the baseline-match as a typed, queryable fact.",
+          "required": ["method", "matched"],
+          "properties": {
+            "baseline_ref":  { "type": "string", "minLength": 1, "description": "Path or identifier of the captured baseline artifact." },
+            "baseline_sha":  { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "Lowercase hex SHA-256 of the baseline, for provenance." },
+            "method":        { "type": "string", "enum": ["golden-master", "contract", "reconciliation", "perceptual"] },
+            "diff_count":    { "type": "integer", "minimum": 0, "description": "Number of differences found vs. the baseline." },
+            "tolerance":     { "type": "number", "minimum": 0, "description": "Allowed diff threshold; matched is true when diff_count <= tolerance." },
+            "matched":       { "type": "boolean", "description": "Whether the fresh output matched the baseline within tolerance." }
+          },
+          "additionalProperties": false
+        }
       },
       "additionalProperties": false
     },

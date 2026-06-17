@@ -274,6 +274,9 @@ flag as CONTEXT_CONTAMINATION and return INCONCLUSIVE.)
 3. Read evidence files from the evidence directory (including context.md if present)
 4. Evaluate each assertion against evidence
 5. Return verdict: PASS | FAIL | INCONCLUSIVE
+6. For any EQUIVALENT_TO_BASELINE assertion, also return the equivalence facet
+   { baseline_ref, baseline_sha, method, diff_count, tolerance, matched } so the
+   orchestrator can persist it on the verdict (see `verdict.equivalence`).
 
 DO NOT reference any execution context beyond the files above.
 """
@@ -299,7 +302,14 @@ Two writes and one manifest build, in order:
 //   PASS         → passed
 //   FAIL         → failed
 //   PARTIAL      → partial         (some criteria met, some need human review)
+//   CONDITIONAL  → partial         (approve with listed fixes — Tier-2 gate verdict)
 //   INCONCLUSIVE → inconclusive    (evidence missing / context contaminated)
+//
+// CONDITIONAL is emitted by Tier-2 aggregator/gate agents (release-readiness,
+// security, ai-feature, test-code-quality). It is a deliberate "ship with
+// conditions" outcome — distinct from a clean PASS and from a FAIL — so it
+// maps to the `partial` run status rather than the `?? 'inconclusive'`
+// fallback (which is reserved for "couldn't evaluate").
 //
 // `errored` and `skipped` remain reachable only via the run lifecycle
 // (executor crash / stale-run sweep, all-steps-skipped) — never from a verdict.
@@ -307,6 +317,7 @@ const VERDICT_TO_STATUS = {
   PASS: 'passed',
   FAIL: 'failed',
   PARTIAL: 'partial',
+  CONDITIONAL: 'partial',
   INCONCLUSIVE: 'inconclusive',
 };
 const runStatus = VERDICT_TO_STATUS[reviewerVerdict] ?? 'inconclusive';
@@ -317,12 +328,29 @@ store.update('runs', run.id, {
 });
 
 // 2. Record verdict (triggers wicked.verdict.recorded emit)
+//
+// Optional baseline-match facet (rec #5): when the reviewer rendered an
+// EQUIVALENT_TO_BASELINE assertion it reports a `verdict.equivalence` object
+// { baseline_ref, baseline_sha, method, diff_count, tolerance, matched }.
+// Extract it from the reviewer's response (alongside reviewerVerdict /
+// reviewerSummary) and persist it as the `equivalence_json` column (JSON
+// string) so it survives in the ledger and is surfaced by the
+// `baseline_matches_for_scenario` oracle query. Leave it null when the run had
+// no equivalence assertion — the facet is optional and backward-compatible.
+// (buildManifest below reads the same facet off the verdict record and lands
+// it in verdict.equivalence.)
+// Source the optional facet from the same reviewer response that yields
+// `reviewerVerdict` / `reviewerSummary` (the reviewer agent's parsed output).
+// Absent unless the reviewer evaluated an EQUIVALENT_TO_BASELINE assertion.
+const reviewerEquivalenceFacet = reviewerResponse.equivalence ?? null;
+const reviewerEquivalence = reviewerEquivalenceFacet ?? null;
 const verdictRecord = store.create('verdicts', {
   run_id: run.id,
-  verdict: reviewerVerdict,            // 'PASS' | 'FAIL' | 'PARTIAL' | 'INCONCLUSIVE'
+  verdict: reviewerVerdict,            // 'PASS' | 'FAIL' | 'PARTIAL' | 'CONDITIONAL' | 'INCONCLUSIVE'
   evidence_path: EVIDENCE_DIR,
   reviewer: 'acceptance-test-reviewer',
   reason: reviewerSummary,
+  ...(reviewerEquivalence ? { equivalence_json: JSON.stringify(reviewerEquivalence) } : {}),
 });
 
 // 3. Materialize the public manifest at the contract path
