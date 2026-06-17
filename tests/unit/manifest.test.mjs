@@ -139,3 +139,28 @@ test("an equivalence facet with an out-of-enum method is dropped before it can f
   );
   assert.equal("equivalence" in manifest.verdict, false, "bad-method facet must be dropped, manifest still valid");
 });
+
+// --- NIT-4: producer-enforced invariant matched === (diff_count <= tolerance) ---
+
+test("an equivalence facet whose matched contradicts diff_count<=tolerance is dropped", () => {
+  // diff_count(3) > tolerance(0) but matched:true — self-contradictory; the
+  // facet is the verdict-of-record for equivalence, so a misleading one is
+  // worse than none. normalizeEquivalence drops it (consistent with its other
+  // drop-malformed paths) rather than persisting the contradiction.
+  const { manifest } = buildManifest(
+    records({ verdict: "PASS", equivalence: { method: "golden-master", matched: true, diff_count: 3, tolerance: 0 } })
+  );
+  assert.equal("equivalence" in manifest.verdict, false, "contradictory facet must be dropped");
+});
+
+test("a consistent equivalence facet (matched === diff_count<=tolerance) is kept", () => {
+  // diff_count(2) <= tolerance(5) and matched:true — consistent; kept.
+  const { manifest } = buildManifest(
+    records({ verdict: "PASS", equivalence: { method: "perceptual", matched: true, diff_count: 2, tolerance: 5 } })
+  );
+  const eq = manifest.verdict.equivalence;
+  assert.ok(eq, "a consistent facet must be kept");
+  assert.equal(eq.matched, true);
+  assert.equal(eq.diff_count, 2);
+  assert.equal(eq.tolerance, 5);
+});

@@ -339,7 +339,11 @@ store.update('runs', run.id, {
 // no equivalence assertion — the facet is optional and backward-compatible.
 // (buildManifest below reads the same facet off the verdict record and lands
 // it in verdict.equivalence.)
-const reviewerEquivalence = reviewerEquivalenceFacet ?? null; // null unless an EQUIVALENT_TO_BASELINE assertion was evaluated
+// Source the optional facet from the same reviewer response that yields
+// `reviewerVerdict` / `reviewerSummary` (the reviewer agent's parsed output).
+// Absent unless the reviewer evaluated an EQUIVALENT_TO_BASELINE assertion.
+const reviewerEquivalenceFacet = reviewerResponse.equivalence ?? null;
+const reviewerEquivalence = reviewerEquivalenceFacet ?? null;
 const verdictRecord = store.create('verdicts', {
   run_id: run.id,
   verdict: reviewerVerdict,            // 'PASS' | 'FAIL' | 'PARTIAL' | 'CONDITIONAL' | 'INCONCLUSIVE'

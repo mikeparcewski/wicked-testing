@@ -15,8 +15,12 @@ All notable changes to `wicked-testing`. Format loosely follows
   `invalid verdict.value 'CONDITIONAL'`. Added to the enum, the prejudicial-
   content matcher, `docs/EVIDENCE.md`, and the acceptance-skill
   `VERDICT_TO_STATUS` map (`CONDITIONAL → partial`). Migration `002` adds a
-  `CHECK` constraint to `verdicts.verdict` covering the full enum so an
-  out-of-enum value now fails loudly at write time.
+  `CHECK` constraint to `verdicts.verdict` covering the full enum, and
+  `DomainStore.create()` now validates the verdict against the enum (the shared
+  `VERDICT_VALUES` source of truth) *before* the dual-write — so an out-of-enum
+  value fails loudly and atomically (throws `ERR_INVALID_VERDICT`, nothing
+  written to either store) instead of silently diverging the canonical JSON
+  from the SQLite index.
 
 ### Added
 - **Equivalence / baseline-match as a first-class verdict facet.** Optional

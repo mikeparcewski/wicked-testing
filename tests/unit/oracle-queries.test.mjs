@@ -286,3 +286,36 @@ test("routeQuestion sends baseline / equivalence questions to baseline_matches_f
     assert.equal(routeQuestion(q), "baseline_matches_for_scenario", `routing failed for: ${q}`);
   }
 });
+
+// --- MED-2 regression: a "last verdict" question must NOT misroute to the
+// equivalence query just because the SCENARIO NAME carries an equivalence noun
+// (baseline / golden-master / equivalence). The specific last-verdict route
+// wins; the equivalence route only fires on an explicit equivalence INTENT
+// (noun + verb). ---
+
+test("a 'last verdict' question for a baseline-named scenario routes to last_verdict_for_scenario", () => {
+  for (const q of [
+    "show me the last verdict for my golden master scenario",
+    "most recent verdict for baseline-cart",
+    "what is the latest verdict for the equivalence-cart scenario?",
+  ]) {
+    assert.equal(
+      routeQuestion(q),
+      "last_verdict_for_scenario",
+      `last-verdict intent must win even when the scenario name mentions equivalence: ${q}`
+    );
+  }
+});
+
+test("an explicit baseline/equivalence question (noun + verb) still routes to baseline_matches_for_scenario", () => {
+  for (const q of [
+    "did baseline-cart still match its baseline?",
+    "show the equivalence results — did checkout reproduce the golden master?",
+  ]) {
+    assert.equal(
+      routeQuestion(q),
+      "baseline_matches_for_scenario",
+      `explicit equivalence intent must route to the equivalence query: ${q}`
+    );
+  }
+});
