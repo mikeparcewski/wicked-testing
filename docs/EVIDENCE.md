@@ -201,3 +201,39 @@ internal index — consumers get stable answers without depending on the schema.
 - Readers should ignore unknown fields for forward compatibility.
 - The path structure (`<project-root>/.wicked-testing/evidence/<run-id>/`) is
   stable across minor versions.
+
+### Additive-field policy (and what strict consumers must expect)
+
+The manifest — including the nested `verdict` object — grows **additively**:
+
+- A **minor** `manifest_version` bump (e.g. `1.0.0` → `1.1.0`, which added the
+  optional `verdict.equivalence` facet) only ever **adds optional fields**. No
+  existing field is renamed, retyped, or removed.
+- Only a **major** bump may change or remove a field.
+
+`schemas/evidence.json` declares `additionalProperties: false` on the manifest
+and on `verdict`. That constraint is a **producer-integrity guard** — it keeps
+wicked-testing from silently emitting undocumented keys — **not** a contract
+that downstream validators should mirror unchanged. A strict external validator
+that vendors a copy of the schema and enforces `additionalProperties: false`
+will **falsely reject** a manifest from a newer producer the moment a new
+optional field is introduced (exactly what would happen to a `1.0.0`-schema
+consumer seeing a `1.1.0` payload carrying `equivalence`).
+
+**Minimum expectation for a strict / vendored-schema consumer:**
+
+1. **Gate on `manifest_version`.** Read the major version; accept any payload
+   whose major matches the schema you hold. A higher *minor* is forward-
+   compatible — process it, do not reject it.
+2. **Ignore unknown fields.** Either relax `additionalProperties` to `true`
+   (or remove it) in your vendored copy, or run your validator in a mode that
+   warns-but-passes on extra keys. Never hard-fail on an unrecognized field
+   below a matching major version.
+3. **Only fail closed on a major-version mismatch** or a missing/invalid
+   *required* field — never on the mere presence of an additive optional field.
+
+The internal producer validator (`lib/manifest.mjs` `validateShape`)
+deliberately checks required fields + known-field types and does **not** reject
+unknown keys, so it already follows this same additive contract; the published
+`additionalProperties: false` is retained purely to keep the producer's own
+output honest.
