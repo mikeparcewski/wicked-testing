@@ -99,6 +99,15 @@ the emit is a no-op; wicked-testing's own SQLite ledger is always written.
 | `wicked.evidence.captured`      | `evidence`            | Evidence artifacts written to disk for a run          |
 | `wicked.contract.published`     | `contract`            | plugin.json manifest synced; full agent/tier roster   |
 
+### QE Gate Events
+
+| Event | Trigger | Key fields |
+|-------|---------|------------|
+| `wicked.qe.gate.passed` | `wicked-qe gate` on PASS verdict | `run_id`, `context`, `gate_verdict`, `exit_code`, `verdict_summary`, `mode`, `completed_at`, `scenario_count` |
+| `wicked.qe.gate.failed` | `wicked-qe gate` on FAIL verdict | same |
+| `wicked.qe.gate.conditional` | `wicked-qe gate` on CONDITIONAL or SYSTEM_ERROR | same |
+| `wicked.qe.deploy.completed` | `wicked-qe gate` on PASS only | `run_id`, `project_id` |
+
 ### Payload shape (common fields)
 
 All events include:
