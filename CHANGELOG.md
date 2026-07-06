@@ -6,6 +6,13 @@ All notable changes to `wicked-testing`. Format loosely follows
 
 ## [Unreleased]
 
+### Added
+- **`wicked-qe gate` CLI** (`bin/wicked-qe.mjs`, `lib/gate.mjs`) — standalone command for recording QE gate verdicts from agent scripts and CI pipelines. Validates inputs, writes to the domain store, emits `wicked.qe.gate.passed`, `wicked.qe.gate.failed`, or `wicked.qe.gate.conditional` bus events with DEC-00010 idempotency keys (`qe:gate.result:{projectId}:{sha256(runId)[0:16]}:0`). On PASS also emits `wicked.qe.deploy.completed`. Exit codes: 0 PASS / 1 FAIL / 2 CONDITIONAL / 3 SYSTEM_ERROR.
+  ```bash
+  wicked-qe gate --project-id myproject --run-id sprint-42 --verdict PASS --verdict-summary "201/201 tests pass"
+  ```
+- **`--dry-run` flag for `wicked-qe gate`** — validate and print JSON without store writes or bus emissions.
+
 ### Fixed
 - **`CONDITIONAL` is now a legal verdict value (latent contract bug).** Four
   Tier-2 agents (`release-readiness`, `security`, `ai-feature`,

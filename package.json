@@ -30,13 +30,15 @@
   "main": "install.mjs",
   "bin": {
     "wicked-testing": "install.mjs",
-    "wicked-testing-install": "install.mjs"
+    "wicked-testing-install": "install.mjs",
+    "wicked-qe": "bin/wicked-qe.mjs"
   },
   "dependencies": {
     "better-sqlite3": "^12.0.0"
   },
   "files": [
     "install.mjs",
+    "bin/",
     "skills/",
     "agents/",
     "commands/",
