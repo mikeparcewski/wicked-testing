@@ -44,10 +44,11 @@ const LEGACY_BARE_SKILL_DIRS = [
 // hosts know the reviewer isolation is backed by prompt discipline, not
 // tool-restriction.
 //
-// Copilot was formerly targeted at `~/.github/skills` — wrong and dangerous
-// (collides with common GitHub dotfiles, and `gh copilot` does not read
-// that path). Removed until a real integration point exists; tracked in
-// #59.
+// Copilot: previously targeted at `~/.github/skills` — wrong path (collides
+// with gh CLI auth/config dotfiles). Correct personal-skills path is
+// ~/.copilot/skills/ per GitHub Copilot docs (added April 2026 agent mode).
+// First install requires --assume-cli=copilot since ~/.copilot/ won't exist
+// until skills are first written; subsequent installs detect via "skills" dir.
 //
 // Gemini CLI removed — superseded by Antigravity (Google's next-gen terminal
 // coding agent). Antigravity lives under ~/.gemini/antigravity-cli/, a
@@ -142,6 +143,19 @@ const CLI_TARGETS = [
     commandDir: join(home, ".pi", "agent", "commands"),
     platform: "pi",
     identityMarkers: ["settings.json", "sessions"],
+    isolationTier: "advisory",
+  },
+  {
+    name: "copilot",
+    // GitHub Copilot agent skills (added April 2026). Personal skills live at
+    // ~/.copilot/skills/. First install requires --assume-cli=copilot since
+    // the directory doesn't exist until skills are first written.
+    rootDir: join(home, ".copilot"),
+    dir: join(home, ".copilot", "skills"),
+    agentDir: join(home, ".copilot", "agents"),
+    commandDir: join(home, ".copilot", "commands"),
+    platform: "copilot",
+    identityMarkers: ["skills", "config.json"],
     isolationTier: "advisory",
   },
 ];
@@ -473,7 +487,7 @@ Commands:
   help          This message
 
 Options:
-  --cli=<list>        Comma-separated CLI names (claude, antigravity, codex, cursor, kiro, opencode, pi)
+  --cli=<list>        Comma-separated CLI names (claude, antigravity, codex, copilot, cursor, kiro, opencode, pi)
   --path=<dir>        Custom target path (e.g. --path=~/.claude). Also accepts --path <dir>.
   --assume-cli=<list> Force-detect a CLI even if its identity markers are missing
   --force             Overwrite even if versions match
@@ -573,7 +587,7 @@ async function cmdDoctor() {
         const suffix = d.source && d.source !== "default" ? ` @ ${d.rootDir} [${d.source}]` : "";
         return `${d.name}${suffix} (${d.isolationTier})`;
       }).join(", ") }
-    : { name: "cli-detection", status: "fail", message: "no AI CLIs detected in home directory", fix: "install Claude Code / Antigravity / Codex / Cursor / Kiro / opencode / pi, or use --path=<dir>" });
+    : { name: "cli-detection", status: "fail", message: "no AI CLIs detected in home directory", fix: "install Claude Code / Antigravity / Codex / Copilot / Cursor / Kiro / opencode / pi, or use --path=<dir>" });
 
   // better-sqlite3 native module
   let sqliteOk = false;
