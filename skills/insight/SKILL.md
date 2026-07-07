@@ -105,5 +105,5 @@ state.
 ## References
 
 - [`docs/INTEGRATION.md`](../../docs/INTEGRATION.md)
-- `agents/test-oracle.md`
+- `skills/test-oracle/SKILL.md`
 - `lib/oracle-queries.mjs` (internal — query catalog)

@@ -101,5 +101,5 @@ bus when present.
 
 - [`docs/INTEGRATION.md`](../../docs/INTEGRATION.md)
 - [`SCENARIO-FORMAT.md`](../../SCENARIO-FORMAT.md)
-- `agents/test-automation-engineer.md`, `agents/acceptance-test-writer.md`,
-  `agents/contract-testing-engineer.md`
+- `skills/test-automation-engineer/SKILL.md`, `skills/acceptance-test-writer/SKILL.md`,
+  `skills/contract-testing-engineer/SKILL.md`

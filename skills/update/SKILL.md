@@ -195,7 +195,7 @@ Tell the user what changed:
 
 ```
 wicked-testing: v{old} -> v{new}
-Skills/agents/commands refreshed in: {list of CLI names}
+Skills refreshed in: {list of CLI names}
 Doctor: {healthy|N warnings}
 ```
 

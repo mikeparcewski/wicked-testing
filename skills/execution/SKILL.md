@@ -37,7 +37,7 @@ writes the ledger entry. Evidence lives under
 **Default posture:** verdict requests go to the 3-agent pipeline. `test-designer`
 is the dev-loop fast path with known self-grading risk; it is never the default
 and never used for audit / CI / crew-phase sign-off evidence. See the warning
-in `agents/test-designer.md`.
+in `skills/test-designer/SKILL.md`.
 
 ### Dispatch block (executable)
 
@@ -116,5 +116,5 @@ SKIP with reason `trust-level-insufficient`.
 
 - [`docs/INTEGRATION.md`](../../docs/INTEGRATION.md)
 - [`docs/EVIDENCE.md`](../../docs/EVIDENCE.md)
-- `agents/scenario-executor.md`, `agents/test-designer.md`,
-  `agents/acceptance-test-executor.md`
+- `skills/scenario-executor/SKILL.md`, `skills/test-designer/SKILL.md`,
+  `skills/acceptance-test-executor/SKILL.md`

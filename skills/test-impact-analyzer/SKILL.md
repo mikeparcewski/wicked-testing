@@ -13,7 +13,7 @@ description: |
   test runs, smart test selection.
 
   <example>
-  Context: A PR touched lib/domain-store.mjs and agents/acceptance-test-reviewer.md.
+  Context: A PR touched lib/domain-store.mjs and skills/acceptance-test-reviewer/SKILL.md.
   user: "Which tests are affected by this diff?"
   <commentary>Use test-impact-analyzer — it grepped the diff, ran
   call-graph discovery to find dependent scenarios, queried the ledger for
@@ -200,4 +200,4 @@ the top N and the scenario-executor / acceptance pipeline produces verdicts.
 - [`lib/domain-store.mjs`](../../lib/domain-store.mjs) — table allowlist, parameter binding
 - [`lib/oracle-queries.mjs`](../../lib/oracle-queries.mjs) — query catalog
 - [`skills/execution/SKILL.md`](../../skills/execution/SKILL.md) — `--selective` flag
-- [`agents/specialists/coverage-archaeologist.md`](./coverage-archaeologist.md) — sibling; covers the inverse (untested code), not affected tests
+- [`skills/coverage-archaeologist/SKILL.md`](./coverage-archaeologist.md) — sibling; covers the inverse (untested code), not affected tests

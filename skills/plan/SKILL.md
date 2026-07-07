@@ -108,5 +108,5 @@ Emits `wicked.teststrategy.authored` on the bus when present.
 
 - [`docs/INTEGRATION.md`](../../docs/INTEGRATION.md)
 - [`docs/NAMESPACE.md`](../../docs/NAMESPACE.md)
-- `agents/test-strategist.md`, `agents/risk-assessor.md`,
-  `agents/testability-reviewer.md`, `agents/requirements-quality-analyst.md`
+- `skills/test-strategist/SKILL.md`, `skills/risk-assessor/SKILL.md`,
+  `skills/testability-reviewer/SKILL.md`, `skills/requirements-quality-analyst/SKILL.md`

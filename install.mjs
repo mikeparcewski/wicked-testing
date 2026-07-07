@@ -596,7 +596,7 @@ function cmdContract() {
   const plugin = JSON.parse(readFileSync(join(__dirname, ".claude-plugin", "plugin.json"), "utf8"));
   const out = {
     version: plugin.version,
-    agents: (plugin.agents || []).map(a => ({ subagent_type: `wicked-testing:${a.name}`, tier: a.tier })),
+    skills: (plugin.skills || []).map(s => ({ name: s.name, path: s.path })),
   };
   process.stdout.write(JSON.stringify(out));
   process.exit(0);

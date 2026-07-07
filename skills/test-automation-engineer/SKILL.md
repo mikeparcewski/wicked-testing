@@ -56,5 +56,5 @@ Match what's there. Do not introduce a new framework unless asked.
 
 ## References
 
-- [`agents/test-strategist.md`](test-strategist.md) — strategist produces the
+- [`skills/test-strategist/SKILL.md`](test-strategist.md) — strategist produces the
   scenarios you turn into code

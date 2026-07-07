@@ -111,5 +111,5 @@ Emits `wicked.verdict.recorded` on the bus when present.
 
 - [`docs/INTEGRATION.md`](../../docs/INTEGRATION.md)
 - [`docs/EVIDENCE.md`](../../docs/EVIDENCE.md)
-- `agents/acceptance-test-reviewer.md`, `agents/semantic-reviewer.md`,
-  `agents/code-analyzer.md`, `agents/production-quality-engineer.md`
+- `skills/acceptance-test-reviewer/SKILL.md`, `skills/semantic-reviewer/SKILL.md`,
+  `skills/code-analyzer/SKILL.md`, `skills/production-quality-engineer/SKILL.md`

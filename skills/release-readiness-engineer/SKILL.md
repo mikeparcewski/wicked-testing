@@ -211,6 +211,6 @@ emitBusEvent("wicked.release.assessed", {
 
 - [`lib/domain-store.mjs`](../../lib/domain-store.mjs) — verdicts / tasks schema
 - [`lib/bus-emit.mjs`](../../lib/bus-emit.mjs) — `wicked.release.assessed` producer
-- [`agents/specialists/flaky-test-hunter.md`](./flaky-test-hunter.md) — source of quarantine tasks
-- [`agents/specialists/coverage-archaeologist.md`](./coverage-archaeologist.md) — coverage-delta reference
-- [`agents/production-quality-engineer.md`](../production-quality-engineer.md) — prod SLO state source
+- [`skills/flaky-test-hunter/SKILL.md`](./flaky-test-hunter.md) — source of quarantine tasks
+- [`skills/coverage-archaeologist/SKILL.md`](./coverage-archaeologist.md) — coverage-delta reference
+- [`skills/production-quality-engineer/SKILL.md`](../production-quality-engineer.md) — prod SLO state source
