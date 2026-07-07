@@ -14,7 +14,7 @@
 //   1 — drift detected and --check was passed, or write failed
 //   2 — inputs could not be read / parsed
 
-import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { emitBusEvent } from "../../lib/bus-emit.mjs";
@@ -22,14 +22,6 @@ import { emitBusEvent } from "../../lib/bus-emit.mjs";
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO = resolve(__dirname, "..", "..");
 
-function tierOf(absPath) {
-  try {
-    const c = readFileSync(absPath, "utf8");
-    const fm = c.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-    const m = fm && fm[1].match(/^tier:\s*([12])\s*$/m);
-    return m ? Number(m[1]) : null;
-  } catch { return null; }
-}
 
 const pkgPath    = join(REPO, "package.json");
 const pluginPath = join(REPO, ".claude-plugin", "plugin.json");
@@ -65,76 +57,28 @@ if (existsSync(marketplacePath)) {
   mpEntry = (marketplace.plugins ?? []).find(p => p.name === plugin.name) ?? null;
 }
 
-// --- Derive the canonical manifest shape from disk -------------------------
-
-function listSkills() {
-  const dir = join(REPO, "skills");
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter(d => {
-      try { return statSync(join(dir, d)).isDirectory() && existsSync(join(dir, d, "SKILL.md")); }
-      catch { return false; }
-    })
-    .sort()
-    .map(d => ({
-      name:    `wicked-testing:${d}`,
-      path:    `skills/${d}/SKILL.md`,
-      command: `/wicked-testing:${d}`,
-    }));
-}
-
-function listAgents() {
-  const dir = join(REPO, "agents");
-  if (!existsSync(dir)) return [];
-  const direct = readdirSync(dir)
-    .filter(f => f.endsWith(".md"))
-    .sort()
-    .map(f => ({ name: f.replace(/\.md$/, ""), path: `agents/${f}`, tier: tierOf(join(dir, f)) }));
-  const specDir = join(dir, "specialists");
-  const specialists = existsSync(specDir)
-    ? readdirSync(specDir)
-        .filter(f => f.endsWith(".md"))
-        .sort()
-        .map(f => ({ name: f.replace(/\.md$/, ""), path: `agents/specialists/${f}`, tier: tierOf(join(specDir, f)) }))
-    : [];
-  return [...direct, ...specialists];
-}
-
-function listCommands() {
-  const dir = join(REPO, "commands");
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter(f => f.endsWith(".md"))
-    .sort()
-    .map(f => {
-      const name = f.replace(/\.md$/, "");
-      return { name, path: `commands/${f}`, slash: `/wicked-testing:${name}` };
-    });
-}
+// --- Desired state: version only -------------------------------------------
+// plugin.json's skills list is manually maintained (7 Tier-1 user-invokeable
+// skills). install.mjs distributes all 47 skills by reading the skills/
+// directory directly — plugin.json is not the source of truth for skill
+// discovery. agents/ and commands/ are legacy directories that are no longer
+// distributed. Only the version field is derived from package.json.
 
 const desired = {
-  version:     pkg.version,
-  skills:      listSkills(),
-  agents:      listAgents(),
-  commands:    listCommands(),
+  version: pkg.version,
 };
 
 // --- Diff each section against the current manifest ------------------------
 
-function jsonEqual(a, b) {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
 
 const drifts = [];
-if (plugin.version !== desired.version)       drifts.push(`version: ${plugin.version} -> ${desired.version}`);
-if (!jsonEqual(plugin.skills,   desired.skills))   drifts.push(`skills (${plugin.skills?.length ?? 0} -> ${desired.skills.length})`);
-if (!jsonEqual(plugin.agents,   desired.agents))   drifts.push(`agents (${plugin.agents?.length ?? 0} -> ${desired.agents.length})`);
-if (!jsonEqual(plugin.commands, desired.commands)) drifts.push(`commands (${plugin.commands?.length ?? 0} -> ${desired.commands.length})`);
+if (plugin.version !== desired.version)
+  drifts.push(`version: ${plugin.version} -> ${desired.version}`);
 if (mpEntry && mpEntry.version !== desired.version)
   drifts.push(`marketplace.json entry: ${mpEntry.version} -> ${desired.version}`);
 
 if (drifts.length === 0) {
-  log(`plugin.json in sync (v${pkg.version}, ${desired.skills.length} skills, ${desired.agents.length} agents, ${desired.commands.length} commands)`);
+  log(`plugin.json in sync (v${pkg.version})`);
   process.exit(0);
 }
 
@@ -147,7 +91,7 @@ if (checkOnly) {
 
 // --- Apply changes ---------------------------------------------------------
 
-const merged = { ...plugin, ...desired };
+const merged = { ...plugin, version: desired.version };
 writeFileSync(pluginPath, JSON.stringify(merged, null, 2) + "\n");
 
 // Keep the marketplace plugin entry's version in lockstep too. Only the
@@ -162,5 +106,5 @@ for (const d of drifts) log(`  - ${d}`);
 
 emitBusEvent("wicked.contract.published", {
   version: desired.version,
-  agents: desired.agents.map(a => ({ subagent_type: `wicked-testing:${a.name}`, tier: a.tier })),
+  skills: (plugin.skills ?? []).map(s => ({ name: s.name })),
 });

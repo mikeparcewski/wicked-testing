@@ -6,7 +6,7 @@ import {
   existsSync, mkdirSync, mkdtempSync, cpSync, readdirSync, rmSync,
   readFileSync, writeFileSync, accessSync, constants as FS_CONST,
 } from "node:fs";
-import { join, resolve, basename } from "node:path";
+import { join, resolve, basename, dirname } from "node:path";
 import { homedir, tmpdir } from "node:os";
 import { argv, exit } from "node:process";
 import { fileURLToPath } from "node:url";
@@ -147,6 +147,9 @@ const CLI_TARGETS = [
 
 
     hookPath: null,  // TS plugin system only — not installable via hooks.json
+    pluginSrcFile: join(__dirname, "hooks", "opencode-plugin.ts"),
+    pluginPath: join(home, ".config", "opencode", "plugins", "wicked-testing.ts"),
+    pluginHooksDir: join(home, ".config", "opencode", "plugins", "wicked-testing-hooks"),
     platform: "opencode",
     identityMarkers: ["opencode.json"],
     isolationTier: "advisory",
@@ -162,6 +165,9 @@ const CLI_TARGETS = [
 
 
     hookPath: null,  // TS extension system only — not installable via hooks.json
+    pluginSrcFile: join(__dirname, "hooks", "pi-extension.ts"),
+    pluginPath: join(home, ".pi", "agent", "extensions", "wicked-testing.ts"),
+    pluginHooksDir: join(home, ".pi", "agent", "extensions", "wicked-testing-hooks"),
     platform: "pi",
     identityMarkers: ["settings.json", "auth.json"],
     isolationTier: "advisory",
@@ -922,6 +928,22 @@ async function cmdInstall({ mode }) {
         }
       }
 
+      // Install TypeScript plugin (opencode/pi only — JSON hook CLIs skip this).
+      if (target.pluginPath) {
+        try {
+          mkdirSync(dirname(target.pluginPath), { recursive: true });
+          writeFileSync(target.pluginPath, readFileSync(target.pluginSrcFile, "utf8"));
+          mkdirSync(target.pluginHooksDir, { recursive: true });
+          const hooksDir = join(__dirname, "hooks");
+          for (const f of ["claim-nudge.mjs", "claim-nudge.decision.mjs", "session-start.mjs", "subagent-verdict.mjs"]) {
+            writeFileSync(join(target.pluginHooksDir, f), readFileSync(join(hooksDir, f), "utf8"));
+          }
+          console.log(`[${target.name}] plugin installed (session-start, claim-nudge, subagent-verdict)`);
+        } catch (err) {
+          console.warn(`[${target.name}] plugin skipped — could not write to ${target.pluginPath}: ${err?.code || err?.message}`);
+        }
+      }
+
       writeMarker(target);
       console.log(`[${target.name}] installed ${VERSION} — ${skillDirs.length} skills`);
 
@@ -999,6 +1021,12 @@ function cmdUninstall() {
           }
         }
       } catch { /* leave hook file if we can't modify it */ }
+    }
+    if (target.pluginPath) {
+      try {
+        if (existsSync(target.pluginPath)) { rmSync(target.pluginPath, { force: true }); removed++; }
+        if (existsSync(target.pluginHooksDir)) { rmSync(target.pluginHooksDir, { recursive: true, force: true }); removed++; }
+      } catch { /* leave plugin files if we can't remove them */ }
     }
     const marker = join(target.dir, INSTALLED_MARKER);
     if (existsSync(marker)) rmSync(marker, { force: true });

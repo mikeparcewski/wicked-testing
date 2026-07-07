@@ -198,7 +198,7 @@ When wicked-brain is present, wicked-testing writes memories on high-signal even
 npx wicked-testing install
 ```
 
-Detects which AI CLIs are present via identity markers (`config.json`, `settings.json`, `plugins/`, etc.), copies 47 skills (all with `context: fork`) into each CLI's skill directory, and runs a bootstrap self-test. Idempotent — safe to run multiple times.
+Detects which AI CLIs are present via identity markers (`config.json`, `settings.json`, `plugins/`, etc.), copies 47 skills (all with `context: fork`) into each CLI's skill directory, installs lifecycle hooks (JSON hooks for Claude Code, Antigravity, Codex, Cursor, Kiro, and Copilot; TypeScript plugins for OpenCode and Pi), and runs a bootstrap self-test. Idempotent — safe to run multiple times.
 
 **Claude Code users:** `npx wicked-testing install` is the preferred path and drops everything where Claude Code's skill resolver already looks. A `.claude-plugin/marketplace.json` also ships so you can register via the plugin-system install if you prefer:
 
@@ -291,7 +291,7 @@ See [SCENARIO-FORMAT.md](SCENARIO-FORMAT.md) for the full spec. Working examples
 ## Requirements
 
 - Node.js ≥ 20
-- One of: Claude Code, Gemini CLI, Codex, Cursor, Kiro (Copilot support removed — no verified integration point; see [#59](https://github.com/mikeparcewski/wicked-testing/issues/59))
+- One of: Claude Code, Antigravity, Codex, Cursor, Kiro, Copilot, OpenCode, or Pi
 - `better-sqlite3` — installed via `npm install`, pre-built binaries for macOS x64/arm64, Linux x64/arm64, Windows x64. On unsupported platforms, `npm install` falls back to `node-gyp rebuild` which requires a C++ toolchain.
 
 Windows (Git Bash / WSL) is fully supported. Native PowerShell hook support is planned for v2.

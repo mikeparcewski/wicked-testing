@@ -165,17 +165,9 @@ function checkPluginJson() {
     }
   }
 
-  const skillPaths = new Set((data.skills || []).map(s => s.path));
-  const skillDirs = existsSync(join(REPO, "skills"))
-    ? readdirSync(join(REPO, "skills"))
-        .filter(d => {
-          try { return statSync(join(REPO, "skills", d)).isDirectory(); } catch { return false; }
-        })
-        .map(d => `skills/${d}/SKILL.md`)
-    : [];
-  for (const p of skillDirs) {
-    if (!skillPaths.has(p)) warn("plugin.json", rel, `skill present on disk but not registered: ${p}`);
-  }
+  // Note: Tier-2 specialist skills are intentionally absent from plugin.json.
+  // install.mjs distributes all 47 skills by scanning skills/ directly.
+  // Only check that skills already registered in plugin.json still exist.
 }
 
 function checkEvidenceSchema() {

@@ -6,41 +6,58 @@ All notable changes to `wicked-testing`. Format loosely follows
 
 ## [Unreleased]
 
+## [0.7.0] — 2026-07-06
+
+**Skills-only architecture.** Everything is now a skill — agents and commands
+are fully replaced. All 47 skills carry `context: fork` for cross-CLI isolation.
+Lifecycle hooks now fire on all 8 supported CLIs.
+
+### Changed
+- **Skills-only distribution.** `agents/` and `commands/` are no longer
+  installed. `install.mjs` distributes all 47 skills by scanning `skills/`
+  directly. `plugin.json` registers only the 7 Tier-1 user-invokeable
+  orchestrators; Tier-2 specialists are auto-discovered by the host CLI.
+- **`context: fork` on all 47 skills** — the isolation boundary that makes
+  skills behave like subagents in every supported CLI.
+- **`allowed-tools` is advisory, not hard-enforcement** — isolation comes from
+  the `context: fork` boundary, not from tool restriction. All skills updated.
+- **All 40 Tier-2 specialist skills rewritten to minimal playbooks** (40–80 lines).
+  Removed role-assignment framing, tool command sequences, reference tables,
+  and "Non-negotiable rules" sections. Skills now read as neutral process docs.
+
 ### Added
-- **`wicked-qe gate` CLI** (`bin/wicked-qe.mjs`, `lib/gate.mjs`) — standalone command for recording QE gate verdicts from agent scripts and CI pipelines. Validates inputs, writes to the domain store, emits `wicked.qe.gate.passed`, `wicked.qe.gate.failed`, or `wicked.qe.gate.conditional` bus events with DEC-00010 idempotency keys (`qe:gate.result:{projectId}:{sha256(runId)[0:16]}:0`). On PASS also emits `wicked.qe.deploy.completed`. Exit codes: 0 PASS / 1 FAIL / 2 CONDITIONAL / 3 SYSTEM_ERROR.
-  ```bash
-  wicked-qe gate --project-id myproject --run-id sprint-42 --verdict PASS --verdict-summary "201/201 tests pass"
-  ```
-- **`--dry-run` flag for `wicked-qe gate`** — validate and print JSON without store writes or bus emissions.
+- **SessionStart + SubagentStop hooks** on all 6 JSON-hook CLIs (Claude Code,
+  Antigravity, Codex, Cursor, Kiro, Copilot). `session-start.mjs` shows QE
+  project status at session open; `subagent-verdict.mjs` surfaces reviewer
+  verdict when evidence landed in the last 60 seconds.
+- **TypeScript plugins for OpenCode and Pi.** `hooks/opencode-plugin.ts`
+  (`session.created` → session-start, `session.idle` → claim-nudge + verdict)
+  and `hooks/pi-extension.ts` (`session_start` → session-start, `agent_end` →
+  claim-nudge + verdict). Both are installed to the CLI's plugin/extensions dir
+  alongside the hook scripts they delegate to. Loaded via Bun (opencode) and
+  jiti (pi) — no compilation step.
+- **`wicked-qe gate` CLI** (`bin/wicked-qe.mjs`, `lib/gate.mjs`) — standalone
+  command for recording QE gate verdicts from agent scripts and CI pipelines.
+  Emits `wicked.qe.gate.passed/failed/conditional` bus events. Exit codes:
+  0 PASS / 1 FAIL / 2 CONDITIONAL / 3 SYSTEM_ERROR. `--dry-run` flag available.
+- **Equivalence / baseline-match as a first-class verdict facet.** Optional
+  `verdict.equivalence` block in the evidence schema (manifest `1.0.0 → 1.1.0`);
+  `EQUIVALENT_TO_BASELINE` reviewer operator; `baseline_matches_for_scenario`
+  oracle query. Backward-compatible — existing rows and manifests unaffected.
+- **Versioned migration `002`** — adds `CHECK` constraint on `verdicts.verdict`
+  and `equivalence_json` column. `SCHEMA_VERSION` bumped `1 → 2`.
 
 ### Fixed
-- **`CONDITIONAL` is now a legal verdict value (latent contract bug).** Four
-  Tier-2 agents (`release-readiness`, `security`, `ai-feature`,
-  `test-code-quality`) already emit `CONDITIONAL`, but it was absent from the
-  manifest verdict enum (`schemas/evidence.json`, `lib/manifest.mjs`
-  `validateShape`) — so the first manifest built off such a run threw
-  `invalid verdict.value 'CONDITIONAL'`. Added to the enum, the prejudicial-
-  content matcher, `docs/EVIDENCE.md`, and the acceptance-skill
-  `VERDICT_TO_STATUS` map (`CONDITIONAL → partial`). Migration `002` adds a
-  `CHECK` constraint to `verdicts.verdict` covering the full enum, and
-  `DomainStore.create()` now validates the verdict against the enum (the shared
-  `VERDICT_VALUES` source of truth) *before* the dual-write — so an out-of-enum
-  value fails loudly and atomically (throws `ERR_INVALID_VERDICT`, nothing
-  written to either store) instead of silently diverging the canonical JSON
-  from the SQLite index.
-
-### Added
-- **Equivalence / baseline-match as a first-class verdict facet.** Optional
-  `verdict.equivalence` block `{ baseline_ref, baseline_sha, method, diff_count,
-  tolerance, matched }` in the evidence schema (manifest minor bump
-  `1.0.0 → 1.1.0`); an `EQUIVALENT_TO_BASELINE` reviewer operator; scenario
-  `assertions[].baseline` / `method` / `tolerance` support + `equivalence`
-  category; a nullable `verdicts.equivalence_json` column (migration `002`); and
-  the fixed oracle query `baseline_matches_for_scenario`. All optional and
-  backward-compatible — existing rows, readers, and manifests are unaffected.
-- **Versioned migration `002_verdict_check_and_equivalence.sql`** — the first
-  follow-on migration; applies in numeric order via `lib/migrate.mjs` on both
-  fresh and pre-existing v1 databases. `SCHEMA_VERSION` bumped `1 → 2`.
+- **`CONDITIONAL` verdict was missing from the manifest enum (latent contract
+  bug).** Four Tier-2 skills already emit `CONDITIONAL` but it was absent from
+  `schemas/evidence.json` and `lib/manifest.mjs` `validateShape`. Now added to
+  the enum, the prejudicial-content matcher, `docs/EVIDENCE.md`, and
+  `VERDICT_TO_STATUS` map. `DomainStore.create()` validates verdict before the
+  dual-write — out-of-enum values throw `ERR_INVALID_VERDICT` atomically.
+- **Requirements section in README** listed Copilot as removed; it is supported.
+  Updated to list all 8 CLIs.
+- **`sync-plugin-version.mjs`** no longer drifts on agents/commands (legacy dirs)
+  or Tier-2 skills (intentionally absent from `plugin.json`). Now version-only.
 
 ## [0.4.1] — 2026-06-10
 
