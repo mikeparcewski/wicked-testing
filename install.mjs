@@ -49,6 +49,16 @@ const LEGACY_BARE_SKILL_DIRS = [
 // that path). Removed until a real integration point exists; tracked in
 // #59.
 //
+// Gemini CLI removed — superseded by Antigravity (Google's next-gen terminal
+// coding agent). Antigravity lives under ~/.gemini/antigravity-cli/, a
+// subdirectory of the same root, so the two never conflicted at the file
+// level — but maintaining a dead target creates confusion.
+//
+// pi (pi-mono) note: skills are installed to ~/.pi/agent/skills/. pi resolves
+// skill paths from ~/.pi/agent/settings.json; if auto-discovery of that dir
+// is not enabled by default the user may need to add `"skills": ["skills/"]`
+// to their global settings.json. Tracked in #61.
+//
 // Claude Code is special: its config root is redirectable via
 // $CLAUDE_CONFIG_DIR (used for multi-tenant setups, alt-config layouts
 // like ~/alt-configs/.claude, and corporate-policy home overrides). The
@@ -66,13 +76,15 @@ const CLI_TARGETS = [
     isolationTier: "hard", // allowed-tools is host-enforced
   },
   {
-    name: "gemini",
-    rootDir: join(home, ".gemini"),
-    dir: join(home, ".gemini", "skills"),
-    agentDir: join(home, ".gemini", "agents"),
-    commandDir: join(home, ".gemini", "commands"),
-    platform: "gemini",
-    identityMarkers: ["config.json", "auth", "settings.json"],
+    name: "antigravity",
+    // Google's terminal coding agent. Lives under ~/.gemini/antigravity-cli/,
+    // a subdirectory of the Gemini CLI root — separate product, separate path.
+    rootDir: join(home, ".gemini", "antigravity-cli"),
+    dir: join(home, ".gemini", "antigravity-cli", "skills"),
+    agentDir: join(home, ".gemini", "antigravity-cli", "agents"),
+    commandDir: join(home, ".gemini", "antigravity-cli", "commands"),
+    platform: "antigravity",
+    identityMarkers: ["plugins", "config.json", "settings.json"],
     isolationTier: "advisory",
   },
   {
@@ -105,6 +117,31 @@ const CLI_TARGETS = [
     commandDir: join(home, ".kiro", "commands"),
     platform: "kiro",
     identityMarkers: ["config.json", "settings.json"],
+    isolationTier: "advisory",
+  },
+  {
+    name: "opencode",
+    // SST's open-source terminal coding agent. Uses ~/.config/opencode/ as
+    // its global config root (npm-package-based plugin install); skills/agents/
+    // commands load from subdirs of that root alongside the npm package.
+    rootDir: join(home, ".config", "opencode"),
+    dir: join(home, ".config", "opencode", "skills"),
+    agentDir: join(home, ".config", "opencode", "agents"),
+    commandDir: join(home, ".config", "opencode", "commands"),
+    platform: "opencode",
+    identityMarkers: ["package.json", "node_modules"],
+    isolationTier: "advisory",
+  },
+  {
+    name: "pi",
+    // pi-mono coding agent CLI (earendil-works/pi). Global config at
+    // ~/.pi/agent/; skills discovered via settings.json paths (see note above).
+    rootDir: join(home, ".pi", "agent"),
+    dir: join(home, ".pi", "agent", "skills"),
+    agentDir: join(home, ".pi", "agent", "agents"),
+    commandDir: join(home, ".pi", "agent", "commands"),
+    platform: "pi",
+    identityMarkers: ["settings.json", "sessions"],
     isolationTier: "advisory",
   },
 ];
@@ -436,7 +473,7 @@ Commands:
   help          This message
 
 Options:
-  --cli=<list>        Comma-separated CLI names (claude, gemini, codex, cursor, kiro)
+  --cli=<list>        Comma-separated CLI names (claude, antigravity, codex, cursor, kiro, opencode, pi)
   --path=<dir>        Custom target path (e.g. --path=~/.claude). Also accepts --path <dir>.
   --assume-cli=<list> Force-detect a CLI even if its identity markers are missing
   --force             Overwrite even if versions match
@@ -536,7 +573,7 @@ async function cmdDoctor() {
         const suffix = d.source && d.source !== "default" ? ` @ ${d.rootDir} [${d.source}]` : "";
         return `${d.name}${suffix} (${d.isolationTier})`;
       }).join(", ") }
-    : { name: "cli-detection", status: "fail", message: "no AI CLIs detected in home directory", fix: "install Claude Code / Gemini / Codex / Cursor / Kiro, or use --path=<dir>" });
+    : { name: "cli-detection", status: "fail", message: "no AI CLIs detected in home directory", fix: "install Claude Code / Antigravity / Codex / Cursor / Kiro / opencode / pi, or use --path=<dir>" });
 
   // better-sqlite3 native module
   let sqliteOk = false;
