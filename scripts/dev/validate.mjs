@@ -92,8 +92,8 @@ function checkAgents() {
       for (const k of requiredFields) {
         if (!(k in fm)) err("agents", rel, `missing required frontmatter key: ${k}`);
       }
-      if (fm.subagent_type && !fm.subagent_type.startsWith("wicked-testing:")) {
-        err("agents", rel, `subagent_type must start with 'wicked-testing:' (got: ${fm.subagent_type})`);
+      if (fm.subagent_type && !fm.subagent_type.startsWith("wicked-testing-") && !fm.subagent_type.startsWith("wicked-testing:")) {
+        err("agents", rel, `subagent_type must start with 'wicked-testing-' (got: ${fm.subagent_type})`);
       }
       const tier = fm.tier;
       if (tier !== "1" && tier !== "2") {
@@ -127,13 +127,15 @@ function checkSkills() {
     for (const k of requiredFields) {
       if (!(k in fm)) err("skills", rel, `missing required frontmatter key: ${k}`);
     }
-    // Frontmatter `name:` MUST be `wicked-testing:<dir>`. When it's just
-    // `<dir>` (unprefixed), Claude Code's skill resolver silently drops
-    // the skill — and if enough skills in the batch are broken, it drops
-    // the whole plugin. This was the v0.3.1 regression caught in dogfood:
-    // 6 of 12 skills had unprefixed names and all 12 became invisible.
-    // Keep this gate strict so we never re-ship that.
-    const expectedName = `wicked-testing:${d}`;
+    // Frontmatter `name:` MUST be `wicked-testing-<dir>` (dash separator).
+    // When it's just `<dir>` (unprefixed), Claude Code's skill resolver
+    // silently drops the skill — and if enough skills in the batch are
+    // broken, it drops the whole plugin. This was the v0.3.1 regression
+    // caught in dogfood: 6 of 12 skills had unprefixed names and all 12
+    // became invisible. Keep this gate strict so we never re-ship that.
+    // Dash separator (not colon) required for cross-CLI compatibility —
+    // clients outside Claude Code reject colons in skill names.
+    const expectedName = `wicked-testing-${d}`;
     // Strict equality — empty string must also fail here. The required-
     // fields loop above catches a missing `name:` key; this check catches
     // the wrong value, including "". If we short-circuited on falsy fm.name
@@ -141,7 +143,7 @@ function checkSkills() {
     if (fm.name !== expectedName) {
       err("skills", rel,
         `frontmatter name '${fm.name}' must equal '${expectedName}' — ` +
-        `Claude Code's skill resolver requires the plugin-namespaced form.`);
+        `dash separator required for cross-CLI compatibility.`);
     }
   }
 }

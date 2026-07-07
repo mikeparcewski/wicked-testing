@@ -6,6 +6,14 @@ All notable changes to `wicked-testing`. Format loosely follows
 
 ## [Unreleased]
 
+## [0.7.2] — 2026-07-07
+
+### Fixed
+- Skill name separator changed from colon to dash across all 47 skills (`wicked-testing-X` not `wicked-testing:X`) — colons are rejected by CLIs outside Claude Code
+- `validate.mjs` updated to enforce dash format and updated `subagent_type` prefix check
+
+---
+
 ## [0.7.1] — 2026-07-07
 
 ### Changed

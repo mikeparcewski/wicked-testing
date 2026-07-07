@@ -1,5 +1,5 @@
 {
   "name": "wicked-testing",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "description": "Standalone QE library — 47 skills auto-discovered from skills/ directory. 7 Tier-1 orchestrators for user invocation; 40 Tier-2 specialists dispatched internally via context:fork."
 }
