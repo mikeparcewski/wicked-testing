@@ -7,13 +7,13 @@
                                                                  |___/ 
 ```
 
-**40 specialist agents. 5 coordinating skills. A 3-agent acceptance pipeline that eliminates self-grading.**
+**47 skills (5 Tier-1 orchestrators + 42 specialists). A 3-skill acceptance pipeline that eliminates self-grading.**
 
 ```bash
 npx wicked-testing install
 ```
 
-Works with **Claude Code**, **Gemini CLI**, **Cursor**, **Codex**, and **Kiro**.
+Works with **Claude Code**, **Antigravity**, **Cursor**, **Codex**, **Kiro**, **Copilot**, **OpenCode**, and **Pi**.
 
 ---
 
@@ -69,13 +69,13 @@ The 15 Tier-1 agents form the stable integration surface. wicked-garden and othe
 | `code-analyzer` | `authoring` | Static quality + testability signals, ship/fix/refactor verdict |
 | `acceptance-test-writer` | `execution` | Evidence-gated test plan — every step declares expected evidence and an assertion |
 | `acceptance-test-executor` | `execution` | Executes plan mechanically, captures artifacts, makes no judgment |
-| `acceptance-test-reviewer` | `review` | Reads cold evidence only (`allowed-tools: Read`) — never sees executor context |
+| `acceptance-test-reviewer` | `review` | Reads cold evidence only (advisory `allowed-tools: Read`) — never sees executor context |
 | `scenario-executor` | `execution` | Runs a scenario markdown file step-by-step |
 | `semantic-reviewer` | `review` | Gap Report per AC: aligned / divergent / missing |
 | `production-quality-engineer` | `insight` | Post-deploy health: healthy / degraded / unhealthy + next action |
 | `test-oracle` | `insight` | Plain-English questions → 12 named parameterized SQL queries. No ad-hoc SQL. |
 
-### Tier-2 Specialist Agents — Internal
+### Tier-2 Specialist Skills — Internal
 
 25 domain specialists routed by the Tier-1 skills. Never break downstream consumers because they are not part of the public contract.
 
@@ -125,23 +125,25 @@ Writer ──→ Test Plan ──→ Executor ──→ Evidence ──→ [cont
 
 **Cold context injection**: before dispatching Reviewer, the orchestrator may materialize a `context.md` in the evidence directory with non-prejudicial domain knowledge from wicked-brain (WCAG thresholds, tool quirks). Prior verdicts, pass/fail rates, and anything run-specific are strictly excluded — if Reviewer sees prejudicial content it returns `INCONCLUSIVE` with `CONTEXT_CONTAMINATION`.
 
-Reviewer isolation is hard-enforced on Claude Code via `allowed-tools` frontmatter, advisory on other CLIs. The separation is what makes the verdict trustworthy.
+Reviewer isolation is enforced by the `context: fork` skill boundary and the `allowed-tools` advisory in the reviewer skill's frontmatter. The separation is what makes the verdict trustworthy.
 
 ---
 
-## Commands
+## Skills (Tier-1)
 
-| Command | Description |
-|---------|-------------|
+Invoke as slash commands — each maps to the installed `wicked-testing:<name>` skill:
+
+| Skill | Description |
+|-------|-------------|
 | `/wicked-testing:setup` | Initialize for this project — detect CLI tools, create config |
 | `/wicked-testing:plan` | Shift-left test strategy from code or feature description |
 | `/wicked-testing:authoring` | Author scenario files and test code |
 | `/wicked-testing:execution` | Run a scenario and capture evidence |
-| `/wicked-testing:acceptance` | Full 3-agent pipeline: Writer → Executor → Reviewer |
+| `/wicked-testing:acceptance-testing` | Full 3-skill pipeline: Writer → Executor → Reviewer |
 | `/wicked-testing:review` | Evaluate captured evidence |
 | `/wicked-testing:insight` | Domain health, run history, oracle queries, stats, reports |
 
-Most commands support `--json` for machine-readable output. Exceptions are `/wicked-testing:review` and `/wicked-testing:authoring`, which are narrative-heavy and route through their skill orchestrators instead of emitting a single envelope.
+Most skills support `--json` for machine-readable output. `/wicked-testing:review` and `/wicked-testing:authoring` are narrative-heavy and route through their orchestrators.
 
 ---
 
@@ -196,7 +198,7 @@ When wicked-brain is present, wicked-testing writes memories on high-signal even
 npx wicked-testing install
 ```
 
-Detects which AI CLIs are present via identity markers (`config.json`, `settings.json`, `plugins/`, etc.), copies skills / agents / commands into each CLI's home-relative skill directory (`~/.claude/skills/`, `~/.gemini/skills/`, `~/.codex/skills/`, `~/.cursor/skills/`, `~/.kiro/skills/`), runs a bootstrap self-test, and prints a per-target isolation-tier note (hard-enforced on Claude Code, advisory on everyone else). Idempotent — safe to run multiple times.
+Detects which AI CLIs are present via identity markers (`config.json`, `settings.json`, `plugins/`, etc.), copies 47 skills (all with `context: fork`) into each CLI's skill directory, and runs a bootstrap self-test. Idempotent — safe to run multiple times.
 
 **Claude Code users:** `npx wicked-testing install` is the preferred path and drops everything where Claude Code's skill resolver already looks. A `.claude-plugin/marketplace.json` also ships so you can register via the plugin-system install if you prefer:
 

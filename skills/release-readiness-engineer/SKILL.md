@@ -201,8 +201,8 @@ emitBusEvent("wicked.release.assessed", {
 
 ## 7. Integration
 
-- New `/wicked-testing:release` command dispatches this agent (see
-  `commands/release.md` — added in a follow-up once the gate code stabilizes).
+- Invoke via `/wicked-testing:review --release` or dispatch this skill directly
+  (a dedicated `wicked-testing:release` skill is planned for a follow-up).
 - `/wicked-testing:insight "release readiness for HEAD"` answers from the
   most recent verdicts row with `reviewer: wicked-testing:release-readiness-engineer`.
 - Crew phase `cutover` can require a GO verdict before advancing.

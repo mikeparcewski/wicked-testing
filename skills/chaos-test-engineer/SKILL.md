@@ -5,9 +5,8 @@ description: |
   Chaos + resilience specialist — failure injection via Toxiproxy, tc,
   Chaos Mesh, or AWS FIS. Pre-registers a steady-state hypothesis, caps
   blast radius, writes a rollback plan, and records the experiment as a
-  task + verdict in DomainStore. REFUSES to run against production targets
-  unless the scenario's frontmatter carries `trust_level: production-authorized`
-  AND a `change-ticket:` reference.
+  task + verdict in DomainStore. Requires `trust_level: production-authorized`
+  AND a `change-ticket:` reference before running against production targets.
 
   Use when: resilience testing, chaos engineering, failure injection, game-day
   design, graceful-degradation verification, recovery drill, dependency-down

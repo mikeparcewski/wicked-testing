@@ -25,11 +25,9 @@ description: |
 >
 > **For acceptance-grade verdicts use `/wicked-testing:acceptance`** (which
 > dispatches the isolated 3-agent pipeline: writer → executor → reviewer).
-> This agent exists for the narrower dev-loop use case where an engineer
+> This skill exists for the narrower dev-loop use case where an engineer
 > iterating on a scenario wants a fast round-trip at their own risk.
->
-> `Skill` and `Agent` tool grants have been removed to prevent this agent
-> from cascading dispatch and to keep the scope to a single local loop.
+> It does not dispatch sub-skills — the scope is a single local loop.
 
 You own the dev-loop acceptance test pass end-to-end: you author the plan,
 execute it, capture evidence, and render the verdict. You are one accountable

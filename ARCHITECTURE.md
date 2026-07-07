@@ -1,8 +1,8 @@
 # Architecture — wicked-testing
 
 Standalone QE library for AI coding CLIs. Ships as an npm package; installs
-skills, agents, and commands into the host CLI's plugin directory. Optional
-integration with wicked-bus (events) and wicked-brain (knowledge memory).
+47 skills into the host CLI's skills directory. Optional integration with
+wicked-bus (events) and wicked-brain (knowledge memory).
 
 See [docs/INTEGRATION.md](docs/INTEGRATION.md) for the public contract,
 [docs/EVIDENCE.md](docs/EVIDENCE.md) for the evidence manifest schema, and
@@ -23,12 +23,12 @@ what a user actually wants to do:
 | `wicked-testing:review`     | Judge the evidence                             |
 | `wicked-testing:insight`    | Is my suite healthy? What happened last week?  |
 
-Behind the five Tier-1 skills sit specialist agents. **Tier 1** (stable,
-public contract) covers strategy, testability, risk, automation, execution,
-review, oracle. **Tier 2** (internal, grows freely) covers domain specialists:
-integration, ui-component, e2e, visual, a11y, load, chaos, fuzz, mutation,
-i18n, data-quality, observability, flaky-hunter, exploratory,
-coverage-archaeologist.
+Behind the 7 Tier-1 skills sit 40 specialist skills, all with `context: fork`.
+**Tier 1** (stable, public contract) covers plan, authoring, execution, review,
+insight, acceptance-testing, and update. **Tier 2** (internal, grows freely)
+covers domain specialists: integration, ui-component, e2e, visual, a11y, load,
+chaos, fuzz, mutation, i18n, data-quality, observability, flaky-hunter,
+exploratory, coverage-archaeologist.
 
 Consumers (notably wicked-garden) only depend on Tier 1. Adding Tier-2
 specialists never breaks downstream.
@@ -38,26 +38,22 @@ specialists never breaks downstream.
 ## Component Diagram
 
 ```
-User --> AI CLI (Claude / Gemini / Codex / Cursor / Kiro)
+User --> AI CLI (Claude / Antigravity / Codex / Cursor / Kiro / Copilot / OpenCode / Pi)
               |
               v
          wicked-testing plugin
               |
-              +-- 5 Tier-1 skills (SKILL.md files)
-              |     plan, authoring, execution, review, insight
+              +-- 7 Tier-1 skills (SKILL.md, context: fork)
+              |     plan, authoring, execution, review, insight,
+              |     acceptance-testing, update
               |
-              +-- 15 Tier-1 agents (public contract)
+              +-- 40 Tier-2 specialist skills (context: fork)
               |     test-strategist, test-designer, test-automation-engineer,
               |     testability-reviewer, requirements-quality-analyst,
               |     risk-assessor, code-analyzer, semantic-reviewer,
-              |     contract-testing-engineer,
-              |     production-quality-engineer, acceptance-test-writer,
-              |     acceptance-test-executor, acceptance-test-reviewer,
-              |     scenario-executor, test-oracle
-              |
-              +-- 10 commands (/wicked-testing:*)
-              |     plan, authoring, execution, review, insight,
-              |     setup, oracle, tasks, stats, report
+              |     acceptance-test-writer, acceptance-test-executor,
+              |     acceptance-test-reviewer, scenario-executor, test-oracle,
+              |     + 27 domain specialists
               |
               +-- lib/
               |     domain-store.mjs  -- SQLite ledger + JSON canonical
@@ -82,8 +78,8 @@ Mirrors [wicked-bus](https://github.com/mikeparcewski/wicked-bus):
 
 1. wicked-testing is published to npm with `bin` entries (`wicked-testing`,
    `wicked-testing-install`).
-2. `npx wicked-testing install` copies skills, agents, and commands into
-   the detected AI CLI directories (`~/.claude/`, `~/.gemini/`, etc.).
+2. `npx wicked-testing install` copies 47 skills into the detected AI CLI
+   directories (`~/.claude/`, `~/.gemini/antigravity-cli/`, etc.).
 3. Once copied, everything runs native in the host CLI — no per-call `npx`.
 4. `npx wicked-testing update` refreshes. `npx wicked-testing uninstall`
    removes.
@@ -127,13 +123,13 @@ Consumers read `evidence/<run-id>/manifest.json`, never the database.
 
 The public contract for consumers is three things:
 
-1. **Tier-1 skill and agent names** — see [docs/INTEGRATION.md](docs/INTEGRATION.md) § 2–3.
+1. **Tier-1 skill names** — see [docs/INTEGRATION.md](docs/INTEGRATION.md) § 2–3.
 2. **Bus events** — `wicked.testrun.*`, `wicked.verdict.recorded`,
    `wicked.evidence.captured` — see [docs/INTEGRATION.md](docs/INTEGRATION.md) § 4.
 3. **Evidence manifest schema** — `schemas/evidence.json`.
 
 Consumers should not read the SQLite database, anything under `lib/`, or
-Tier-2 agent names directly.
+Tier-2 skill names directly.
 
 ### Graceful Degradation
 
@@ -158,9 +154,9 @@ written first. Test data survives SQLite issues.
 
 ### 3. Reviewer Isolation (3-Layer)
 `acceptance-test-reviewer` is the integrity boundary:
-- `allowed-tools: [Read]` only (hard on Claude Code; advisory on others)
+- `allowed-tools: [Read]` — advisory; isolation enforced by `context: fork` skill boundary
 - Evidence-only dispatch — no shared executor context
-- Separate subagent invocation
+- Separate `context: fork` skill dispatch
 
 ### 4. Fixed-SQL Oracle (No LLM-Generated SQL)
 The `test-oracle` maps questions to 12 named parameterized queries by
@@ -184,7 +180,7 @@ to refactor internals without breaking downstream.
 | ARCHITECTURE.md (this file)          | library maintainers, reviewers  |
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) | consumers of the library  |
 | [docs/EVIDENCE.md](docs/EVIDENCE.md) | consumers reading manifests     |
-| [docs/NAMESPACE.md](docs/NAMESPACE.md) | anyone adding skills / agents |
+| [docs/NAMESPACE.md](docs/NAMESPACE.md) | anyone adding skills           |
 | [docs/STANDALONE.md](docs/STANDALONE.md) | users without wicked-garden |
 | [docs/WICKED-GARDEN.md](docs/WICKED-GARDEN.md) | wicked-garden users   |
 | [HOW-IT-WORKS.md](HOW-IT-WORKS.md)   | internal walkthrough            |

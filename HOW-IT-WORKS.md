@@ -18,7 +18,7 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
         - Creates run record: status = 'running'
         |
         v
-[2] Dispatches acceptance-test-writer (subagent)
+[2] Dispatches acceptance-test-writer (skill, context: fork)
         allowed-tools: Read, Grep, Glob
         - Reads scenario.md + implementation code
         - Produces structured test plan:
@@ -27,7 +27,7 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
         - Returns test plan to parent skill
         |
         v
-[3] Dispatches acceptance-test-executor (subagent)
+[3] Dispatches acceptance-test-executor (skill, context: fork)
         allowed-tools: Read, Write, Bash
         - Receives: scenario path + test plan
         - Creates run directory: .wicked-testing/evidence/{run-id}/
@@ -39,8 +39,8 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
         - Does NOT judge results — only records what happened
         |
         v
-[4] Dispatches acceptance-test-reviewer (subagent)
-        allowed-tools: Read        <-- READ ONLY. Hard-enforced on Claude Code.
+[4] Dispatches acceptance-test-reviewer (skill, context: fork)
+        allowed-tools: Read        <-- advisory; isolation enforced by context: fork
         - Receives ONLY:
             * scenario.md path (for assertion reference)
             * evidence directory path
@@ -101,7 +101,7 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
 
 ### install.mjs
 
-Runs `node install.mjs`. Detects installed AI CLIs (claude, gemini, codex, kiro, cursor). Copies `skills/`, `agents/`, and `commands/` into each CLI's plugin directory. Runs the bootstrap self-test: initializes the SQLite store, creates a bootstrap project/scenario/run/verdict, verifies the schema. Exits 0 on success.
+Runs `node install.mjs`. Detects installed AI CLIs (claude, antigravity, codex, kiro, cursor, copilot, opencode, pi). Copies 47 skills (all `context: fork`) into each CLI's skills directory. Runs the bootstrap self-test: initializes the SQLite store, creates a bootstrap project/scenario/run/verdict, verifies the schema. Exits 0 on success.
 
 ### .wicked-testing/config.json
 

@@ -5,7 +5,7 @@ consumer) depends on. Everything here is stable across minor versions — breaki
 changes require a major bump.
 
 Anything **not** listed here is an internal implementation detail. Consumers must
-not depend on SQL schema, file paths inside `lib/`, or agent definition contents.
+not depend on SQL schema, file paths inside `lib/`, or skill definition contents.
 
 ---
 
@@ -13,9 +13,7 @@ not depend on SQL schema, file paths inside `lib/`, or agent definition contents
 
 All user-facing surface lives under the `wicked-testing:` namespace.
 
-- Skills: `wicked-testing:<name>`
-- Agents: `subagent_type: wicked-testing:<name>`
-- Commands: `/wicked-testing:<name>`
+- Skills: `wicked-testing:<name>` (invoked as `/wicked-testing:<name>` in the host CLI)
 
 The `qe:` prefix is **retired**. It appears only in wicked-garden backward-compat
 aliases for one minor version.
@@ -34,9 +32,9 @@ Five skills form the public surface. Consumers may reference these by name.
 | `wicked-testing:review`   | Independent verdict, semantic review, test-quality audit       |
 | `wicked-testing:insight`  | Stats, reports, flaky detection, coverage archaeology          |
 
-Each Tier-1 skill **internally** dispatches Tier-2 specialist agents
+Each Tier-1 skill **internally** dispatches Tier-2 specialist skills
 (ui-component-test-engineer, load-performance-engineer, etc.) based on the
-nature of the work. Consumers do not invoke Tier-2 agents directly — they
+nature of the work. Consumers do not invoke Tier-2 skills directly — they
 always go through Tier-1.
 
 This keeps the integration contract narrow. Adding a new Tier-2 specialist
@@ -44,12 +42,12 @@ is not a breaking change.
 
 ---
 
-## 3. Core Agents (Tier 1 — stable dispatch names)
+## 3. Core Skills — Tier-1 Internal (stable dispatch names)
 
-Consumers (notably wicked-garden's crew gate) may dispatch these agents by
-subagent_type. This list is frozen; renames require a major version.
+Consumers (notably wicked-garden's crew gate) may dispatch these skills by
+name. This list is frozen; renames require a major version.
 
-| Agent subagent_type                                | Owning Skill   |
+| Skill name                                         | Owning Tier-1  |
 |----------------------------------------------------|----------------|
 | `wicked-testing:test-strategist`                   | plan           |
 | `wicked-testing:testability-reviewer`              | plan           |
@@ -97,7 +95,7 @@ the emit is a no-op; wicked-testing's own SQLite ledger is always written.
 | `wicked.testrun.finished`       | `testrun`             | A test run completed (any terminal status)            |
 | `wicked.verdict.recorded`       | `verdict`             | A reviewer emitted a verdict (PASS / FAIL / N-A / SKIP)|
 | `wicked.evidence.captured`      | `evidence`            | Evidence artifacts written to disk for a run          |
-| `wicked.contract.published`     | `contract`            | plugin.json manifest synced; full agent/tier roster   |
+| `wicked.contract.published`     | `contract`            | plugin.json manifest synced; full skill roster        |
 
 ### QE Gate Events
 
@@ -132,7 +130,7 @@ All events include:
 **`wicked.testrun.finished`** — `{ run_id, scenario_id, status, started_at, finished_at, evidence_path }`
 **`wicked.verdict.recorded`** — `{ verdict_id, run_id, verdict: "PASS|FAIL|N-A|SKIP", reviewer, evidence_path }`
 **`wicked.evidence.captured`** — `{ run_id, evidence_path, artifact_count }`
-**`wicked.contract.published`** — `{ version: "<semver>", agents: [{ subagent_type: "wicked-testing:<name>", tier: 1|2 }] }`
+**`wicked.contract.published`** — `{ version: "<semver>", skills: [{ name: "wicked-testing:<name>", path: "skills/<name>/SKILL.md" }] }`
 
 Status values for `wicked.testrun.finished`: `passed | failed | errored | skipped`.
 
@@ -217,7 +215,7 @@ Bus + brain integration is pure upside when the ecosystem is present.
 
 - wicked-testing uses semver.
 - The surface in this document is stable across **minor** versions.
-- Breaking changes to namespace, agent names, event types, evidence manifest
+- Breaking changes to namespace, skill names, event types, evidence manifest
   schema, or degradation rules require a **major** version.
 - wicked-garden pins a minor-version range (`^X.Y`) of wicked-testing in its
   plugin.json `wicked_testing_version` field.
@@ -232,7 +230,7 @@ To prevent coupling rot, these are explicitly internal:
 
 - SQL schema in `lib/schema.sql`
 - Any path inside `lib/`, `scripts/`, or `node_modules/`
-- Tier-2 specialist agent names
+- Tier-2 specialist skill names
 - Internal event payload fields not listed above
 - Ledger JSON file format under `.wicked-testing/` (except `evidence/<run>/manifest.json`)
 - Oracle query set in `lib/oracle-queries.mjs`

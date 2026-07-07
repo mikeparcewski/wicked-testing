@@ -38,11 +38,10 @@ const LEGACY_BARE_SKILL_DIRS = [
 // Per-CLI target spec. `identityMarkers` is any of-list of filenames/dirs
 // that must exist inside the CLI's home-relative root before we'll install
 // — prevents us writing into an unrelated `~/.claude/` that a different
-// tool created. `isolationTier` tracks whether the host hard-enforces the
-// `allowed-tools` frontmatter on agents (Claude Code) or leaves it advisory
-// (everyone else); we surface that at install time so users of non-Claude
-// hosts know the reviewer isolation is backed by prompt discipline, not
-// tool-restriction.
+// tool created. `isolationTier` tracks whether the host reads `allowed-tools`
+// frontmatter (Claude Code) or ignores it (everyone else). Reviewer isolation
+// is enforced by the `context: fork` boundary and evidence-only dispatch on
+// all CLIs; `allowed-tools` is advisory everywhere.
 //
 // Copilot: previously targeted at `~/.github/skills` — wrong path (collides
 // with gh CLI auth/config dotfiles). Correct personal-skills path is
@@ -72,7 +71,7 @@ const CLI_TARGETS = [
     dir: join(home, ".claude", "skills"),
     platform: "claude",
     identityMarkers: ["settings.json", "plugins", "projects"],
-    isolationTier: "hard", // allowed-tools is host-enforced
+    isolationTier: "hard", // Claude Code reads allowed-tools; all CLIs rely on context:fork
   },
   {
     name: "antigravity",
@@ -231,22 +230,24 @@ function buildHookJson(targetName, scriptPath, timeout = 5000) {
         hooks: { stop: [{ command: cmd, timeout, matcher: "*" }] },
       };
     case "kiro":
-      // Kiro: version:1, array of hook objects with trigger + action fields.
+      // Kiro: version:"v1" (string), array of hook objects with trigger + action.
+      // Kiro timeout is in seconds; convert from the millisecond default.
       return {
-        version: 1,
+        version: "v1",
         hooks: [{
           name: "wicked-testing-claim-nudge",
           trigger: "Stop",
           action: { type: "command", command: cmd },
-          timeout,
+          timeout: Math.ceil(timeout / 1000),
           enabled: true,
         }],
       };
     case "copilot":
       // Copilot: version:1, Stop event is named "agentStop", no matcher needed.
+      // bash + powershell + command for proper cross-platform per Copilot docs.
       return {
         version: 1,
-        hooks: { agentStop: [{ type: "command", command: cmd }] },
+        hooks: { agentStop: [{ type: "command", bash: cmd, powershell: cmd, command: cmd }] },
       };
     case "antigravity":
       // Antigravity: outer key = hook name (not event). Inner key = event name.

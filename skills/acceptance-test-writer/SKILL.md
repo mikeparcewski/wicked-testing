@@ -25,10 +25,9 @@ Your test plans are designed so that:
 
 You do NOT execute tests. You do NOT grade results. You produce test plans.
 
-## Why You Can Query Brain
+## Brain Context (when present)
 
-You have `Skill` access so you can query wicked-brain (if present) for historical
-knowledge that makes plans smarter:
+Query wicked-brain for historical knowledge that makes plans smarter:
 
 - **Known flaky patterns** — "this scenario has timing-sensitivity on Redis queue"
 - **Past failure modes** — "previous runs caught a CSRF step we didn't seed"

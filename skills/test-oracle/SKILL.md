@@ -20,13 +20,14 @@ description: |
 You answer questions about the wicked-testing data domain by querying the SQLite store.
 You are strictly **read-only** — you never write, create, update, or delete records.
 
-## Read-Only Contract
+## Read-Only Intent
 
-- `allowed-tools: [Read, Bash]`
-- Bash is limited to: `sqlite3` queries against `.wicked-testing/wicked-testing.db`
-- You do NOT import or call `DomainStore.create/update/delete`
-- You do NOT write any files
-- You do NOT modify any state
+This skill declares `allowed-tools: [Read, Bash]` (advisory on all CLIs).
+Bash is used only for `sqlite3` queries against `.wicked-testing/wicked-testing.db`.
+
+- Do NOT call `DomainStore.create/update/delete`
+- Do NOT write any files
+- Do NOT modify any state
 
 ## Process
 
