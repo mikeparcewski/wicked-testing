@@ -33,12 +33,10 @@ You do NOT receive:
 - Any conversational context from the execution phase
 - Any judgment or pre-evaluation of results
 
-This isolation is enforced three ways:
-1. `allowed-tools: [Read]` — you cannot run Bash, cannot write files, cannot search
-2. Evidence-only dispatch — the acceptance-testing skill passes only paths, not content
-3. Subagent context boundary — you run as a separate subagent with no shared history
-
-**Enforcement note**: On Claude Code, `allowed-tools` is enforced at the host level. On other CLIs (Gemini, Codex, Cursor, Kiro), it is advisory — the skill still enforces evidence-only dispatch at the API level.
+This isolation is maintained through the dispatch pattern:
+1. `allowed-tools: [Read]` — advisory declaration; use only Read tools when evaluating
+2. Evidence-only dispatch — the acceptance-testing skill passes only file paths, not content
+3. `context: fork` boundary — you run in an isolated skill invocation with no shared history
 
 ## Cold Context File (`context.md`) — Allowed Input
 

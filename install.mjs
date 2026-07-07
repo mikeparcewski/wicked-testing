@@ -4,7 +4,7 @@
 
 import {
   existsSync, mkdirSync, mkdtempSync, cpSync, readdirSync, rmSync,
-  readFileSync, writeFileSync, accessSync, statSync, constants as FS_CONST,
+  readFileSync, writeFileSync, accessSync, constants as FS_CONST,
 } from "node:fs";
 import { join, resolve, basename } from "node:path";
 import { homedir, tmpdir } from "node:os";
@@ -70,7 +70,6 @@ const CLI_TARGETS = [
     name: "claude",
     rootDir: join(home, ".claude"),
     dir: join(home, ".claude", "skills"),
-    agentDir: join(home, ".claude", "agents"),
     platform: "claude",
     identityMarkers: ["settings.json", "plugins", "projects"],
     isolationTier: "hard", // allowed-tools is host-enforced
@@ -85,7 +84,7 @@ const CLI_TARGETS = [
     // Hooks: single ~/.gemini/antigravity-cli/hooks.json with outer key = hook name.
     rootDir: join(home, ".gemini", "antigravity-cli"),
     dir: join(home, ".gemini", "antigravity-cli", "plugins", "wicked-testing", "skills"),
-    agentDir: null,
+
 
     hookPath: join(home, ".gemini", "antigravity-cli", "hooks.json"),
     hookMode: "merge",
@@ -99,7 +98,7 @@ const CLI_TARGETS = [
     // Hooks: single ~/.codex/hooks.json, same schema as Claude Code.
     rootDir: join(home, ".codex"),
     dir: join(home, ".codex", "skills"),
-    agentDir: null,
+
 
     hookPath: join(home, ".codex", "hooks.json"),
     hookMode: "merge",
@@ -113,7 +112,7 @@ const CLI_TARGETS = [
     // Hooks: single ~/.cursor/hooks.json, version:1 schema, lowercase event names.
     rootDir: join(home, ".cursor"),
     dir: join(home, ".cursor", "skills"),
-    agentDir: null,
+
 
     hookPath: join(home, ".cursor", "hooks.json"),
     hookMode: "merge",
@@ -127,7 +126,7 @@ const CLI_TARGETS = [
     // Hooks: ~/.kiro/hooks/ directory — drop wicked-testing.json there.
     rootDir: join(home, ".kiro"),
     dir: join(home, ".kiro", "skills"),
-    agentDir: null,
+
 
     hookPath: join(home, ".kiro", "hooks"),
     hookMode: "dir",
@@ -146,7 +145,7 @@ const CLI_TARGETS = [
     // Hooks: opencode uses TypeScript plugins only — no JSON hook format.
     rootDir: join(home, ".config", "opencode"),
     dir: join(home, ".config", "opencode", "skills"),
-    agentDir: null,
+
 
     hookPath: null,  // TS plugin system only — not installable via hooks.json
     platform: "opencode",
@@ -161,7 +160,7 @@ const CLI_TARGETS = [
     // Hooks: pi uses TypeScript extensions only — no JSON hook format.
     rootDir: join(home, ".pi", "agent"),
     dir: join(home, ".pi", "agent", "skills"),
-    agentDir: null,
+
 
     hookPath: null,  // TS extension system only — not installable via hooks.json
     platform: "pi",
@@ -179,7 +178,7 @@ const CLI_TARGETS = [
     // exist until files are first written there.
     rootDir: join(home, ".copilot"),
     dir: join(home, ".copilot", "skills"),
-    agentDir: null,
+
 
     hookPath: join(home, ".copilot", "hooks"),
     hookMode: "dir",
@@ -207,7 +206,6 @@ function buildClaudeTarget(rootDir, source, { trusted = false } = {}) {
     name: "claude",
     rootDir,
     dir: join(rootDir, "skills"),
-    agentDir: join(rootDir, "agents"),
     platform: "claude",
     identityMarkers: ["settings.json", "plugins", "projects"],
     isolationTier: "hard",
@@ -425,7 +423,6 @@ function resolveTargets() {
       name: dirName,
       rootDir: customPath,
       dir: join(customPath, "skills"),
-      agentDir: join(customPath, "agents"),
       platform: known?.platform ?? dirName,
       identityMarkers: known?.identityMarkers ?? [],
       isolationTier: known?.isolationTier ?? "advisory",
@@ -611,13 +608,13 @@ function cmdHelp() {
 Usage: wicked-testing <command> [options]
 
 Commands:
-  install       Copy skills and agents into detected AI CLI dirs (default)
+  install       Copy skills into detected AI CLI dirs (default)
   update        Re-install over the existing deployment (idempotent)
   uninstall     Remove all wicked-testing files from detected AI CLI dirs
   status        Show installed version per CLI target
   doctor        Diagnose environment (Node version, detected CLIs, SQLite binding)
   check         Exit 0 if installed version satisfies --require=<spec>, else 1 (non-zero)
-  contract      Print the published agent/tier contract from plugin.json (JSON)
+  contract      Print the published skill contract from plugin.json (JSON)
   version       Print package version
   help          This message
 
@@ -750,21 +747,8 @@ async function cmdDoctor() {
       checks.push({ name: checkName, status: "warn", message: `not installed yet at ${t.rootDir}`, fix: `run \`npx wicked-testing install --cli=${t.name}\`` });
     } else if (installed !== VERSION) {
       checks.push({ name: checkName, status: "warn", message: `installed ${installed} at ${t.rootDir}, code is ${VERSION}`, fix: `run \`npx wicked-testing update --cli=${t.name}\`` });
-    } else if (t.agentDir) {
-      // Spot-check agent files only when this target installs agents (Claude Code).
-      const agentExt = t.agentExt || ".md";
-      const expected = ["acceptance-test-reviewer", "test-oracle"].map(n => `wicked-testing-${n}${agentExt}`);
-      const missing = expected.filter(f => {
-        const p = join(t.agentDir, f);
-        if (!existsSync(p)) return true;
-        try { return statSync(p).size === 0; } catch { return true; }
-      });
-      checks.push(missing.length === 0
-        ? { name: checkName, status: "ok",   message: `${VERSION} integrity verified (${t.isolationTier})` }
-        : { name: checkName, status: "fail", message: `missing/empty agent files: ${missing.join(", ")}`, fix: `run \`npx wicked-testing install --force --cli=${t.name}\`` });
     } else {
-      // Skills-only CLIs: just confirm the marker version (no agent spot-check).
-      checks.push({ name: checkName, status: "ok", message: `${VERSION} installed (skills-only, ${t.isolationTier})` });
+      checks.push({ name: checkName, status: "ok", message: `${VERSION} installed (${t.isolationTier})` });
     }
   }
 
@@ -847,13 +831,9 @@ async function cmdInstall({ mode }) {
   }
 
   const skillsSrc = join(__dirname, "skills");
-  const agentsSrc = join(__dirname, "agents");
   const skillDirs = readdirSafe(skillsSrc).filter(d => !d.startsWith("."));
-  const agentFiles = readdirSafe(agentsSrc).filter(f => f.endsWith(".md"));
-  const specialistsSrc = join(agentsSrc, "specialists");
-  const specialistFiles = readdirSafe(specialistsSrc).filter(f => f.endsWith(".md"));
 
-  let totalSkills = 0, totalAgents = 0;
+  let totalSkills = 0;
   const perTargetReport = [];
 
   // Clean the pre-0.3 layout (bare-name skill dirs) before we write the
@@ -890,14 +870,6 @@ async function cmdInstall({ mode }) {
       for (const skill of skillDirs) copyTree(join(skillsSrc, skill), join(target.dir, `wicked-testing-${skill}`));
       totalSkills += skillDirs.length;
 
-      if (target.agentDir) {
-        mkdirSync(target.agentDir, { recursive: true });
-        const agentExt = target.agentExt || ".md";
-        for (const f of agentFiles) cpSync(join(agentsSrc, f), join(target.agentDir, `wicked-testing-${f.replace(/\.md$/, agentExt)}`), { force: true });
-        for (const f of specialistFiles) cpSync(join(specialistsSrc, f), join(target.agentDir, `wicked-testing-${f.replace(/\.md$/, agentExt)}`), { force: true });
-        totalAgents += agentFiles.length + specialistFiles.length;
-      }
-
       // Install hooks (opt-in claim-nudge). Claude Code uses the plugin's
       // hooks/hooks.json (auto-registered by the plugin system — no action
       // needed here). Other CLIs get a per-CLI hook config written to
@@ -922,14 +894,7 @@ async function cmdInstall({ mode }) {
       }
 
       writeMarker(target);
-      console.log(`[${target.name}] installed ${VERSION} (skills=${skillDirs.length} agents=${agentFiles.length}+${specialistFiles.length})`);
-
-      // Surface the isolation tier so users of non-Claude hosts know the
-      // reviewer's `allowed-tools: [Read]` is prompt-enforced, not
-      // host-enforced. See #73 / docs/INTEGRATION.md.
-      if (target.isolationTier === "advisory") {
-        console.log(`[${target.name}] note: allowed-tools isolation is ADVISORY on this CLI (prompt-enforced, not host-enforced). For hard isolation use Claude Code.`);
-      }
+      console.log(`[${target.name}] installed ${VERSION} — ${skillDirs.length} skills`);
 
       perTargetReport.push({
         target: target.name,
@@ -958,7 +923,6 @@ async function cmdInstall({ mode }) {
       version: VERSION,
       targets: perTargetReport,
       skills: totalSkills,
-      agents: totalAgents,
       legacy_layout_removed: migrated,
     }));
   }
@@ -975,10 +939,7 @@ function cmdUninstall() {
     console.error("No AI CLIs detected.");
     exit(1);
   }
-  const agentsSrc = join(__dirname, "agents");
   const skillDirs = readdirSafe(join(__dirname, "skills")).filter(d => !d.startsWith("."));
-  const agentFiles = readdirSafe(agentsSrc).filter(f => f.endsWith(".md"));
-  const specialistFiles = readdirSafe(join(agentsSrc, "specialists")).filter(f => f.endsWith(".md"));
 
   for (const target of targets) {
     let removed = 0;
@@ -990,17 +951,6 @@ function cmdUninstall() {
     // (signature-checked — see migrateOneLegacyDir).
     for (const bare of LEGACY_BARE_SKILL_DIRS) {
       if (migrateOneLegacyDir(target.dir, bare)) removed++;
-    }
-    if (target.agentDir) {
-      const agentExt = target.agentExt || ".md";
-      for (const f of agentFiles) {
-        const p = join(target.agentDir, `wicked-testing-${f.replace(/\.md$/, agentExt)}`);
-        if (existsSync(p)) { rmSync(p, { force: true }); removed++; }
-      }
-      for (const f of specialistFiles) {
-        const p = join(target.agentDir, `wicked-testing-${f.replace(/\.md$/, agentExt)}`);
-        if (existsSync(p)) { rmSync(p, { force: true }); removed++; }
-      }
     }
     if (target.hookPath) {
       try {
