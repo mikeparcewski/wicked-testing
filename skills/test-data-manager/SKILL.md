@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:test-data-manager
+name: wicked-testing-test-data-manager
 context: fork
 description: |
   Fixtures, factories, anonymized production snapshots. factory_boy / fishery

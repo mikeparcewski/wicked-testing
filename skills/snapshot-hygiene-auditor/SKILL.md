@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:snapshot-hygiene-auditor
+name: wicked-testing-snapshot-hygiene-auditor
 context: fork
 description: |
   Snapshot-rot detector. Scans `__snapshots__/`, `*.snap`, `*.golden`,

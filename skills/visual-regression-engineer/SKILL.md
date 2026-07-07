@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:visual-regression-engineer
+name: wicked-testing-visual-regression-engineer
 context: fork
 description: |
   Snapshot + perceptual-diff specialist. Playwright for capture, pixelmatch /

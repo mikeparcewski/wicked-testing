@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:authoring
+name: wicked-testing-authoring
 context: fork
 description: |
   Tier-1 orchestrator for producing tests. Writes scenario files, generates

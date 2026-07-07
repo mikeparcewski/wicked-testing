@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:mutation-test-engineer
+name: wicked-testing-mutation-test-engineer
 context: fork
 description: |
   Mutation-testing specialist — Stryker (JS/TS), Mutmut (Python), Pitest (Java),

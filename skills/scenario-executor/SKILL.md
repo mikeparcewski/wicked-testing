@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:scenario-executor
+name: wicked-testing-scenario-executor
 context: fork
 description: |
   Runs wicked-testing scenario files end-to-end. Reads scenario markdown, executes steps

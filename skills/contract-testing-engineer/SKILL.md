@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:contract-testing-engineer
+name: wicked-testing-contract-testing-engineer
 context: fork
 description: |
   API contract testing specialist. Designs and reviews consumer-driven contracts,

@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:chaos-test-engineer
+name: wicked-testing-chaos-test-engineer
 context: fork
 description: |
   Chaos + resilience specialist — failure injection via Toxiproxy, tc,

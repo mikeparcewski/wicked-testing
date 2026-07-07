@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:observability-test-engineer
+name: wicked-testing-observability-test-engineer
 context: fork
 description: |
   Assert that logs, metrics, and traces emit correctly. Verify structured

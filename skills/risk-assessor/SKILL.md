@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:risk-assessor
+name: wicked-testing-risk-assessor
 context: fork
 description: |
   Identify failure modes, assess security/reliability/operational risks, and

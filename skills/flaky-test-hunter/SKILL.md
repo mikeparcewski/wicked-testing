@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:flaky-test-hunter
+name: wicked-testing-flaky-test-hunter
 context: fork
 description: |
   Flake detection + root-cause specialist. Queries DomainStore for historical

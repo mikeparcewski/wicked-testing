@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:integration-test-engineer
+name: wicked-testing-integration-test-engineer
 context: fork
 description: |
   Real-service integration testing — distinct from contract testing. Spins up

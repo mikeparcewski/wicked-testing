@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:acceptance-test-reviewer
+name: wicked-testing-acceptance-test-reviewer
 context: fork
 description: |
   Evaluates evidence artifacts against test plan assertions independently.

@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:ui-component-test-engineer
+name: wicked-testing-ui-component-test-engineer
 context: fork
 description: |
   Component-level UI testing — React Testing Library, Vitest, Testing Library

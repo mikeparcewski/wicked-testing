@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:production-quality-engineer
+name: wicked-testing-production-quality-engineer
 context: fork
 description: |
   Monitor production quality post-deploy. Track SLO targets, error budgets,

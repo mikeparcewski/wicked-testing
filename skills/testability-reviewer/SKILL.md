@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:testability-reviewer
+name: wicked-testing-testability-reviewer
 context: fork
 description: |
   Review design artifacts and code structure for testability. Flags designs

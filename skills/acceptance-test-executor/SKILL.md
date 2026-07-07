@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:acceptance-test-executor
+name: wicked-testing-acceptance-test-executor
 context: fork
 description: |
   Follows structured wicked-testing test plans step-by-step, collecting evidence artifacts.

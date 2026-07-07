@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:load-performance-engineer
+name: wicked-testing-load-performance-engineer
 context: fork
 description: |
   Load + performance testing — k6, locust, hey. SLO validation, P95/P99

@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:execution
+name: wicked-testing-execution
 context: fork
 description: |
   Tier-1 orchestrator for running tests and capturing evidence. Executes

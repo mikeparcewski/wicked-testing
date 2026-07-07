@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:fuzz-property-engineer
+name: wicked-testing-fuzz-property-engineer
 context: fork
 description: |
   Property-based and fuzz testing — Hypothesis (Python), fast-check (TS),

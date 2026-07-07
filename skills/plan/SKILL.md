@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:plan
+name: wicked-testing-plan
 context: fork
 description: |
   Tier-1 orchestrator for test planning. Covers test strategy, risk, testability

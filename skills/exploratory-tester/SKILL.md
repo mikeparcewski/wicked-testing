@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:exploratory-tester
+name: wicked-testing-exploratory-tester
 context: fork
 description: |
   Session-based, unscripted exploratory testing — the agent acts like a

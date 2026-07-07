@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:a11y-test-engineer
+name: wicked-testing-a11y-test-engineer
 context: fork
 description: |
   Accessibility specialist — axe-core + pa11y, WCAG 2.1 AA / 2.2 AA,

@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:coverage-archaeologist
+name: wicked-testing-coverage-archaeologist
 context: fork
 description: |
   Find dark corners in legacy code — untested, unreferenced, or low-confidence

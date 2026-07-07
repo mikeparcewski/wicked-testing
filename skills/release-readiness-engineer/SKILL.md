@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:release-readiness-engineer
+name: wicked-testing-release-readiness-engineer
 context: fork
 description: |
   Tier-2 specialist — aggregates ledger verdicts, open flakes, risk

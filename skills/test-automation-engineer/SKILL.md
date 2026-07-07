@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:test-automation-engineer
+name: wicked-testing-test-automation-engineer
 context: fork
 description: |
   Generate test code and configure test automation infrastructure. Creates unit,

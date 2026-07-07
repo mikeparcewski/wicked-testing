@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:update
+name: wicked-testing-update
 context: fork
 description: |
   Check for and install wicked-testing updates. Compares installed version

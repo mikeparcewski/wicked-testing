@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:acceptance-test-writer
+name: wicked-testing-acceptance-test-writer
 context: fork
 description: |
   Reads wicked-testing acceptance scenarios and produces structured, evidence-gated test plans.

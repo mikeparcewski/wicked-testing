@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:semantic-reviewer
+name: wicked-testing-semantic-reviewer
 context: fork
 description: |
   Verify spec-to-code alignment after implementation. Extracts numbered

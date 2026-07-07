@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:localization-test-engineer
+name: wicked-testing-localization-test-engineer
 context: fork
 description: |
   i18n / localization testing — pluralization, RTL, date/currency formatting,

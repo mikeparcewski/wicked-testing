@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:acceptance-testing
+name: wicked-testing-acceptance-testing
 context: fork
 description: |
   Evidence-gated acceptance testing with three-agent separation of concerns.

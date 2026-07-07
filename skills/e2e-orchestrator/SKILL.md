@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:e2e-orchestrator
+name: wicked-testing-e2e-orchestrator
 context: fork
 description: |
   Multi-service, multi-UI journey orchestration across environments. Coordinates

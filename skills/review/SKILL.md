@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:review
+name: wicked-testing-review
 context: fork
 description: |
   Tier-1 orchestrator for judgment. Renders independent verdicts on captured

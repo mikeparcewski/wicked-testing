@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:insight
+name: wicked-testing-insight
 context: fork
 description: |
   Tier-1 orchestrator for reading the ledger. Stats, reports, flake detection,
