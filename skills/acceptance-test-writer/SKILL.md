@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:acceptance-test-writer
+context: fork
 description: |
   Reads wicked-testing acceptance scenarios and produces structured, evidence-gated test plans.
   Transforms qualitative criteria into concrete, verifiable artifact requirements.

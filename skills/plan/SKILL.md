@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:plan
+context: fork
 description: |
   Tier-1 orchestrator for test planning. Covers test strategy, risk, testability
   review, and requirements quality. Dispatches specialist agents based on what
@@ -39,10 +40,10 @@ unrelated raw outputs dumped in.
 
 ### Dispatch block (executable)
 
+Dispatch skill `wicked-testing:test-strategist` (isolated via `context: fork`):
+
 ```
-Task(
-  subagent_type="wicked-testing:test-strategist",
-  prompt="""Generate a comprehensive test strategy for the target below.
+Generate a comprehensive test strategy for the target below.
 
 ## Target
 {file path, directory, or feature description}
@@ -55,12 +56,11 @@ Task(
 5. Flag any specification gaps discovered.
 
 **MANDATORY**: Every scenario must have BOTH positive AND negative counterpart.
-Return findings in the standard test-strategist format."""
-)
+Return findings in the standard test-strategist format.
 ```
 
 Swap `subagent_type` to the matching agent from the table above. For the
-"test everything" path, dispatch all four in parallel (one `Task(...)` call
+"test everything" path, dispatch all four in parallel (one skill dispatch call
 per agent in the same turn) and merge the returned findings.
 
 ## Tier-2 specialists this skill may pull in

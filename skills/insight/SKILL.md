@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:insight
+context: fork
 description: |
   Tier-1 orchestrator for reading the ledger. Stats, reports, flake detection,
   coverage gaps, historical queries. Never writes — only reads.
@@ -37,10 +38,10 @@ so answers are auditable, not LLM-guessed.
 
 ### Dispatch block (executable)
 
+Dispatch skill `wicked-testing:test-oracle` (isolated via `context: fork`):
+
 ```
-Task(
-  subagent_type="wicked-testing:test-oracle",
-  prompt="""Answer the question below against the wicked-testing ledger.
+Answer the question below against the wicked-testing ledger.
 
 ## Question
 {natural-language question}
@@ -60,8 +61,7 @@ Task(
    table (per --json flag).
 5. Include the query name used so the caller can audit.
 
-Do NOT perform state mutations. Do NOT emit bus events."""
-)
+Do NOT perform state mutations. Do NOT emit bus events.
 ```
 
 Swap `subagent_type` to the specialist when the trigger matches something the

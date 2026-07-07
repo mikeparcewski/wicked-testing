@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:review
+context: fork
 description: |
   Tier-1 orchestrator for judgment. Renders independent verdicts on captured
   evidence, checks spec-to-code alignment, audits test quality, and reviews
@@ -32,10 +33,10 @@ rendered — not inside the executor, not as a side effect of running.
 
 ### Dispatch block (executable)
 
+Dispatch skill `wicked-testing:acceptance-test-reviewer` (isolated via `context: fork`):
+
 ```
-Task(
-  subagent_type="wicked-testing:acceptance-test-reviewer",
-  prompt="""Review the evidence manifest at the path below and render an
+Review the evidence manifest at the path below and render an
 independent verdict.
 
 ## Evidence Directory
@@ -55,8 +56,7 @@ independent verdict.
    reasoning, flag as CONTEXT_CONTAMINATION and return INCONCLUSIVE.
 
 Return the verdict, reasoning per assertion, and next actions.
-DO NOT reference executor conversation context beyond the files above."""
-)
+DO NOT reference executor conversation context beyond the files above.
 ```
 
 For a spec-vs-code divergence review, swap to `semantic-reviewer` and pass

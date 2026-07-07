@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:authoring
+context: fork
 description: |
   Tier-1 orchestrator for producing tests. Writes scenario files, generates
   test code (unit / integration / E2E), creates fixtures and test data. The
@@ -36,10 +37,10 @@ jest / etc. that runs in CI).
 
 ### Dispatch block (executable)
 
+Dispatch skill `wicked-testing:test-automation-engineer` (isolated via `context: fork`):
+
 ```
-Task(
-  subagent_type="wicked-testing:test-automation-engineer",
-  prompt="""Generate tests for the target below in the project's detected
+Generate tests for the target below in the project's detected
 framework.
 
 ## Target
@@ -58,8 +59,7 @@ framework.
    project has factories.
 4. Follow the project's file-layout convention (co-located vs `tests/`).
 
-Return the path(s) written and a one-line per-file summary."""
-)
+Return the path(s) written and a one-line per-file summary.
 ```
 
 Specialized dispatches swap `subagent_type` for the right agent (see the

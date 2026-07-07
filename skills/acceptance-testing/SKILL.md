@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:acceptance-testing
+context: fork
 description: |
   Evidence-gated acceptance testing with three-agent separation of concerns.
   Writer designs test plans, Executor collects artifacts, Reviewer evaluates independently.
@@ -126,12 +127,10 @@ repo under audit, etc.) could otherwise inject instruction-looking prose
 writer's instruction turn. The writer has `allowed-tools: Read` so it can
 open the scenario itself.
 
-Dispatch the `acceptance-test-writer` subagent:
+Dispatch skill `wicked-testing:acceptance-test-writer` (isolated via `context: fork`):
 
 ```
-Task(
-  subagent_type="wicked-testing:acceptance-test-writer",
-  prompt="""Generate an evidence-gated test plan for the acceptance scenario
+Generate an evidence-gated test plan for the acceptance scenario
 at the path below.
 
 ## Scenario Path
@@ -152,8 +151,6 @@ at the path below.
 7. Flag any specification mismatches you discover.
 
 Return the complete test plan in the standard format.
-"""
-)
 ```
 
 If `--phase write`, stop here.
@@ -163,12 +160,10 @@ If `--phase write`, stop here.
 The run record was already created in step 0 so the evidence dir could derive
 from its UUID. Here we dispatch the executor against that dir.
 
-Dispatch the `acceptance-test-executor` subagent:
+Dispatch skill `wicked-testing:acceptance-test-executor` (isolated via `context: fork`):
 
 ```
-Task(
-  subagent_type="wicked-testing:acceptance-test-executor",
-  prompt="""Execute this test plan and collect evidence artifacts.
+Execute this test plan and collect evidence artifacts.
 
 ## Test Plan
 {test plan content}
@@ -185,8 +180,6 @@ Task(
 6. Record timestamps for every step
 
 Return the complete evidence report.
-"""
-)
 ```
 
 Update run status in DomainStore after execution.
@@ -251,10 +244,10 @@ evidence).
 It does NOT receive the executor's conversation, reasoning, or stdout/stderr directly.
 Pass paths, not content, where possible.
 
+Dispatch skill `wicked-testing:acceptance-test-reviewer` (isolated via `context: fork`):
+
 ```
-Task(
-  subagent_type="wicked-testing:acceptance-test-reviewer",
-  prompt="""Review the evidence against the test plan assertions.
+Review the evidence against the test plan assertions.
 
 ## Scenario Path
 {scenario file path only — reviewer reads it independently}
@@ -279,8 +272,6 @@ flag as CONTEXT_CONTAMINATION and return INCONCLUSIVE.)
    orchestrator can persist it on the verdict (see `verdict.equivalence`).
 
 DO NOT reference any execution context beyond the files above.
-"""
-)
 ```
 
 **Note**: The reviewer prompt intentionally omits all executor conversation context.

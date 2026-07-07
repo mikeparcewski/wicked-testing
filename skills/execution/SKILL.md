@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:execution
+context: fork
 description: |
   Tier-1 orchestrator for running tests and capturing evidence. Executes
   scenarios, invokes framework runners, collects artifacts, and writes the
@@ -40,10 +41,10 @@ in `agents/test-designer.md`.
 
 ### Dispatch block (executable)
 
+Dispatch skill `wicked-testing:scenario-executor` (isolated via `context: fork`):
+
 ```
-Task(
-  subagent_type="wicked-testing:scenario-executor",
-  prompt="""Execute the scenario file at the path below and capture evidence.
+Execute the scenario file at the path below and capture evidence.
 
 ## Scenario Path
 {path to scenarios/<name>.md}
@@ -61,8 +62,7 @@ Task(
 5. Determine per-step outcome: exit 0 = PASS, non-zero = FAIL, CLI missing = SKIPPED.
 
 Do NOT self-grade qualitative outcomes. For acceptance-grade verdicts
-route to /wicked-testing:acceptance instead."""
-)
+route to /wicked-testing:acceptance instead.
 ```
 
 Swap `subagent_type` per the table above. For a scenario that also needs
