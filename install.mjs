@@ -78,14 +78,18 @@ const CLI_TARGETS = [
   },
   {
     name: "antigravity",
-    // Google's terminal coding agent. Lives under ~/.gemini/antigravity-cli/,
-    // a subdirectory of the Gemini CLI root — separate product, separate path.
+    // Google's terminal coding agent (replaced Gemini CLI, May 2026). Uses a
+    // plugin-registry model: each plugin gets its own subdir under plugins/.
+    // Skills, agents, and commands are discovered *inside* the plugin dir —
+    // not at the root. So we install into plugins/wicked-testing/{skills,…}.
     rootDir: join(home, ".gemini", "antigravity-cli"),
-    dir: join(home, ".gemini", "antigravity-cli", "skills"),
-    agentDir: join(home, ".gemini", "antigravity-cli", "agents"),
-    commandDir: join(home, ".gemini", "antigravity-cli", "commands"),
+    dir: join(home, ".gemini", "antigravity-cli", "plugins", "wicked-testing", "skills"),
+    agentDir: join(home, ".gemini", "antigravity-cli", "plugins", "wicked-testing", "agents"),
+    commandDir: join(home, ".gemini", "antigravity-cli", "plugins", "wicked-testing", "commands"),
     platform: "antigravity",
-    identityMarkers: ["plugins", "config.json", "settings.json"],
+    // plugins/ dir exists after any first plugin install; on a fresh antigravity
+    // install it may not exist yet — use --assume-cli=antigravity then.
+    identityMarkers: ["plugins"],
     isolationTier: "advisory",
   },
   {
@@ -122,40 +126,49 @@ const CLI_TARGETS = [
   },
   {
     name: "opencode",
-    // SST's open-source terminal coding agent. Uses ~/.config/opencode/ as
-    // its global config root (npm-package-based plugin install); skills/agents/
-    // commands load from subdirs of that root alongside the npm package.
+    // SST's open-source terminal coding agent. Global config root is
+    // ~/.config/opencode/ with opencode.json as the main config file.
+    // skills/, agents/, and commands/ are all confirmed subdirs that opencode
+    // discovers automatically (docs: opencode.ai/docs/config/).
     rootDir: join(home, ".config", "opencode"),
     dir: join(home, ".config", "opencode", "skills"),
     agentDir: join(home, ".config", "opencode", "agents"),
     commandDir: join(home, ".config", "opencode", "commands"),
     platform: "opencode",
-    identityMarkers: ["package.json", "node_modules"],
+    identityMarkers: ["opencode.json"],
     isolationTier: "advisory",
   },
   {
     name: "pi",
     // pi-mono coding agent CLI (earendil-works/pi). Global config at
-    // ~/.pi/agent/; skills discovered via settings.json paths (see note above).
+    // ~/.pi/agent/ (settings.json, auth.json confirmed).
+    // skills/ is auto-discovered. pi uses prompts/ for prompt templates
+    // (equivalent to commands/ in Claude Code). Agent extensions are TypeScript-
+    // only — there is no markdown agent file support — so agentDir is null.
     rootDir: join(home, ".pi", "agent"),
     dir: join(home, ".pi", "agent", "skills"),
-    agentDir: join(home, ".pi", "agent", "agents"),
-    commandDir: join(home, ".pi", "agent", "commands"),
+    agentDir: null,
+    commandDir: join(home, ".pi", "agent", "prompts"),
     platform: "pi",
-    identityMarkers: ["settings.json", "sessions"],
+    identityMarkers: ["settings.json", "auth.json"],
     isolationTier: "advisory",
   },
   {
     name: "copilot",
-    // GitHub Copilot agent skills (added April 2026). Personal skills live at
-    // ~/.copilot/skills/. First install requires --assume-cli=copilot since
-    // the directory doesn't exist until skills are first written.
+    // GitHub Copilot agent skills (added April 2026). Personal skills and
+    // agents live at ~/.copilot/skills/ and ~/.copilot/agents/ respectively
+    // (docs: docs.github.com/en/copilot). No documented slash-commands dir —
+    // commandDir is null. Copilot requires the .agent.md extension on agent
+    // files (e.g. my-agent.agent.md) — set via agentExt below.
+    // First install requires --assume-cli=copilot since ~/.copilot/ doesn't
+    // exist until files are first written there.
     rootDir: join(home, ".copilot"),
     dir: join(home, ".copilot", "skills"),
     agentDir: join(home, ".copilot", "agents"),
-    commandDir: join(home, ".copilot", "commands"),
+    commandDir: null,
+    agentExt: ".agent.md",
     platform: "copilot",
-    identityMarkers: ["skills", "config.json"],
+    identityMarkers: ["skills"],
     isolationTier: "advisory",
   },
 ];
@@ -617,7 +630,8 @@ async function cmdDoctor() {
       checks.push({ name: checkName, status: "warn", message: `installed ${installed} at ${t.rootDir}, code is ${VERSION}`, fix: `run \`npx wicked-testing update --cli=${t.name}\`` });
     } else {
       // Spot-check: a few expected agent files are present and non-empty.
-      const expected = ["wicked-testing-acceptance-test-reviewer.md", "wicked-testing-test-oracle.md"];
+      const agentExt = t.agentExt || ".md";
+      const expected = ["acceptance-test-reviewer", "test-oracle"].map(n => `wicked-testing-${n}${agentExt}`);
       const missing = expected.filter(f => {
         const p = join(t.agentDir, f);
         if (!existsSync(p)) return true;
@@ -756,8 +770,9 @@ async function cmdInstall({ mode }) {
 
       if (target.agentDir) {
         mkdirSync(target.agentDir, { recursive: true });
-        for (const f of agentFiles) cpSync(join(agentsSrc, f), join(target.agentDir, `wicked-testing-${f}`), { force: true });
-        for (const f of specialistFiles) cpSync(join(specialistsSrc, f), join(target.agentDir, `wicked-testing-${f}`), { force: true });
+        const agentExt = target.agentExt || ".md";
+        for (const f of agentFiles) cpSync(join(agentsSrc, f), join(target.agentDir, `wicked-testing-${f.replace(/\.md$/, agentExt)}`), { force: true });
+        for (const f of specialistFiles) cpSync(join(specialistsSrc, f), join(target.agentDir, `wicked-testing-${f.replace(/\.md$/, agentExt)}`), { force: true });
         totalAgents += agentFiles.length + specialistFiles.length;
       }
 
@@ -840,12 +855,13 @@ function cmdUninstall() {
       if (migrateOneLegacyDir(target.dir, bare)) removed++;
     }
     if (target.agentDir) {
+      const agentExt = target.agentExt || ".md";
       for (const f of agentFiles) {
-        const p = join(target.agentDir, `wicked-testing-${f}`);
+        const p = join(target.agentDir, `wicked-testing-${f.replace(/\.md$/, agentExt)}`);
         if (existsSync(p)) { rmSync(p, { force: true }); removed++; }
       }
       for (const f of specialistFiles) {
-        const p = join(target.agentDir, `wicked-testing-${f}`);
+        const p = join(target.agentDir, `wicked-testing-${f.replace(/\.md$/, agentExt)}`);
         if (existsSync(p)) { rmSync(p, { force: true }); removed++; }
       }
     }
