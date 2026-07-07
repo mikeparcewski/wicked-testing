@@ -107,7 +107,9 @@ function hasRecentAcceptanceVerdict(cwd) {
 // --- main ---
 
 const input = readStdin();
-const cwd = input.cwd || process.cwd();
+// Normalize cwd across CLIs: Claude Code/Codex/Antigravity pass cwd;
+// Cursor passes workspace_roots[]; Copilot/Kiro use cwd too.
+const cwd = input.cwd || (Array.isArray(input.workspace_roots) && input.workspace_roots[0]) || process.cwd();
 
 const enabled = isEnabled(cwd);
 if (!enabled) process.exit(0);
