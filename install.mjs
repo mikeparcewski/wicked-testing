@@ -80,12 +80,13 @@ const CLI_TARGETS = [
     name: "antigravity",
     // Google's terminal coding agent (replaced Gemini CLI, May 2026). Uses a
     // plugin-registry model: each plugin gets its own subdir under plugins/.
-    // Skills, agents, and commands are discovered *inside* the plugin dir —
-    // not at the root. So we install into plugins/wicked-testing/{skills,…}.
+    // Skills-only install — agents and commands are Claude Code concepts that
+    // don't map cleanly to other CLIs. Agent/command functionality is covered
+    // by the agent skills installed into the skills dir.
     rootDir: join(home, ".gemini", "antigravity-cli"),
     dir: join(home, ".gemini", "antigravity-cli", "plugins", "wicked-testing", "skills"),
-    agentDir: join(home, ".gemini", "antigravity-cli", "plugins", "wicked-testing", "agents"),
-    commandDir: join(home, ".gemini", "antigravity-cli", "plugins", "wicked-testing", "commands"),
+    agentDir: null,
+    commandDir: null,
     platform: "antigravity",
     // plugins/ dir exists after any first plugin install; on a fresh antigravity
     // install it may not exist yet — use --assume-cli=antigravity then.
@@ -94,32 +95,33 @@ const CLI_TARGETS = [
   },
   {
     name: "codex",
+    // Skills-only: agents and commands are Claude Code-native concepts.
     rootDir: join(home, ".codex"),
     dir: join(home, ".codex", "skills"),
-    agentDir: join(home, ".codex", "agents"),
-    commandDir: join(home, ".codex", "commands"),
+    agentDir: null,
+    commandDir: null,
     platform: "codex",
-    // Codex stores config in TOML and maintains a plugins/ directory; check
-    // for either plus its auth blob.
     identityMarkers: ["config.toml", "config.json", "auth.json", "plugins"],
     isolationTier: "advisory",
   },
   {
     name: "cursor",
+    // Skills-only: agents and commands are Claude Code-native concepts.
     rootDir: join(home, ".cursor"),
     dir: join(home, ".cursor", "skills"),
-    agentDir: join(home, ".cursor", "agents"),
-    commandDir: join(home, ".cursor", "commands"),
+    agentDir: null,
+    commandDir: null,
     platform: "cursor",
     identityMarkers: ["User", "extensions", "settings.json"],
     isolationTier: "advisory",
   },
   {
     name: "kiro",
+    // Skills-only: agents and commands are Claude Code-native concepts.
     rootDir: join(home, ".kiro"),
     dir: join(home, ".kiro", "skills"),
-    agentDir: join(home, ".kiro", "agents"),
-    commandDir: join(home, ".kiro", "commands"),
+    agentDir: null,
+    commandDir: null,
     platform: "kiro",
     identityMarkers: ["config.json", "settings.json"],
     isolationTier: "advisory",
@@ -128,12 +130,14 @@ const CLI_TARGETS = [
     name: "opencode",
     // SST's open-source terminal coding agent. Global config root is
     // ~/.config/opencode/ with opencode.json as the main config file.
-    // skills/, agents/, and commands/ are all confirmed subdirs that opencode
-    // discovers automatically (docs: opencode.ai/docs/config/).
+    // Skills-only: opencode supports agents/ and commands/ natively, but the
+    // formats diverge (opencode uses tools: {write, edit, bash, ...} booleans;
+    // we use Claude Code's allowed-tools string). Agent/command functionality
+    // is covered by the agent skills installed into skills/.
     rootDir: join(home, ".config", "opencode"),
     dir: join(home, ".config", "opencode", "skills"),
-    agentDir: join(home, ".config", "opencode", "agents"),
-    commandDir: join(home, ".config", "opencode", "commands"),
+    agentDir: null,
+    commandDir: null,
     platform: "opencode",
     identityMarkers: ["opencode.json"],
     isolationTier: "advisory",
@@ -142,31 +146,29 @@ const CLI_TARGETS = [
     name: "pi",
     // pi-mono coding agent CLI (earendil-works/pi). Global config at
     // ~/.pi/agent/ (settings.json, auth.json confirmed).
-    // skills/ is auto-discovered. pi uses prompts/ for prompt templates
-    // (equivalent to commands/ in Claude Code). Agent extensions are TypeScript-
-    // only — there is no markdown agent file support — so agentDir is null.
+    // Skills-only: pi agent extensions are TypeScript-only (no markdown);
+    // prompts/ is the pi equivalent of commands, but we install functionality
+    // as skills so the same content works uniformly.
     rootDir: join(home, ".pi", "agent"),
     dir: join(home, ".pi", "agent", "skills"),
     agentDir: null,
-    commandDir: join(home, ".pi", "agent", "prompts"),
+    commandDir: null,
     platform: "pi",
     identityMarkers: ["settings.json", "auth.json"],
     isolationTier: "advisory",
   },
   {
     name: "copilot",
-    // GitHub Copilot agent skills (added April 2026). Personal skills and
-    // agents live at ~/.copilot/skills/ and ~/.copilot/agents/ respectively
-    // (docs: docs.github.com/en/copilot). No documented slash-commands dir —
-    // commandDir is null. Copilot requires the .agent.md extension on agent
-    // files (e.g. my-agent.agent.md) — set via agentExt below.
+    // GitHub Copilot agent skills (added April 2026). Personal skills live at
+    // ~/.copilot/skills/ (docs: docs.github.com/en/copilot).
+    // Skills-only: Copilot agents require .agent.md extension and a different
+    // tools schema. Agent/command functionality is covered by agent skills.
     // First install requires --assume-cli=copilot since ~/.copilot/ doesn't
     // exist until files are first written there.
     rootDir: join(home, ".copilot"),
     dir: join(home, ".copilot", "skills"),
-    agentDir: join(home, ".copilot", "agents"),
+    agentDir: null,
     commandDir: null,
-    agentExt: ".agent.md",
     platform: "copilot",
     identityMarkers: ["skills"],
     isolationTier: "advisory",
@@ -628,8 +630,8 @@ async function cmdDoctor() {
       checks.push({ name: checkName, status: "warn", message: `not installed yet at ${t.rootDir}`, fix: `run \`npx wicked-testing install --cli=${t.name}\`` });
     } else if (installed !== VERSION) {
       checks.push({ name: checkName, status: "warn", message: `installed ${installed} at ${t.rootDir}, code is ${VERSION}`, fix: `run \`npx wicked-testing update --cli=${t.name}\`` });
-    } else {
-      // Spot-check: a few expected agent files are present and non-empty.
+    } else if (t.agentDir) {
+      // Spot-check agent files only when this target installs agents (Claude Code).
       const agentExt = t.agentExt || ".md";
       const expected = ["acceptance-test-reviewer", "test-oracle"].map(n => `wicked-testing-${n}${agentExt}`);
       const missing = expected.filter(f => {
@@ -640,6 +642,9 @@ async function cmdDoctor() {
       checks.push(missing.length === 0
         ? { name: checkName, status: "ok",   message: `${VERSION} integrity verified (${t.isolationTier})` }
         : { name: checkName, status: "fail", message: `missing/empty agent files: ${missing.join(", ")}`, fix: `run \`npx wicked-testing install --force --cli=${t.name}\`` });
+    } else {
+      // Skills-only CLIs: just confirm the marker version (no agent spot-check).
+      checks.push({ name: checkName, status: "ok", message: `${VERSION} installed (skills-only, ${t.isolationTier})` });
     }
   }
 
