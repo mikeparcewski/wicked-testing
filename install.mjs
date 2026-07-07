@@ -902,8 +902,37 @@ async function cmdInstall({ mode }) {
     }
 
     try {
-      for (const skill of skillDirs) copyTree(join(skillsSrc, skill), join(target.dir, `wicked-testing-${skill}`));
-      totalSkills += skillDirs.length;
+      // Install skills, distinguishing regular skill dirs from namespace dirs.
+      //
+      // Regular skill dir: has a SKILL.md at its own top level.
+      //   Source:      skills/acceptance-testing/SKILL.md
+      //   Installed:   {cli}/skills/wicked-testing-acceptance-testing/SKILL.md
+      //
+      // Namespace dir: no top-level SKILL.md; contains sub-skill dirs.
+      //   Example:     skills/wicked-vault/{init,record-evidence,...}/SKILL.md
+      //   Installed:   {cli}/skills/wicked-vault-init/SKILL.md
+      //                {cli}/skills/wicked-vault-record-evidence/SKILL.md  (etc.)
+      //
+      // CLI skill scanners only look one level deep, so the namespace must be
+      // flattened to a flat prefix at install time. A nested dir
+      // (wicked-testing-wicked-vault/init/) would be invisible.
+      let skillsInstalledThisTarget = 0;
+      for (const skill of skillDirs) {
+        const skillDir = join(skillsSrc, skill);
+        if (!existsSync(join(skillDir, "SKILL.md"))) {
+          // Namespace dir — flatten each subskill as {namespace}-{subskill}
+          const subSkills = readdirSafe(skillDir).filter(d => !d.startsWith("."));
+          for (const sub of subSkills) {
+            copyTree(join(skillDir, sub), join(target.dir, `${skill}-${sub}`));
+            skillsInstalledThisTarget++;
+          }
+        } else {
+          // Regular skill dir
+          copyTree(skillDir, join(target.dir, `wicked-testing-${skill}`));
+          skillsInstalledThisTarget++;
+        }
+      }
+      totalSkills += skillsInstalledThisTarget;
 
       // Install hooks (opt-in claim-nudge). Claude Code uses the plugin's
       // hooks/hooks.json (auto-registered by the plugin system — no action
@@ -945,7 +974,7 @@ async function cmdInstall({ mode }) {
       }
 
       writeMarker(target);
-      console.log(`[${target.name}] installed ${VERSION} — ${skillDirs.length} skills`);
+      console.log(`[${target.name}] installed ${VERSION} — ${skillsInstalledThisTarget} skills`);
 
       perTargetReport.push({
         target: target.name,
@@ -978,6 +1007,32 @@ async function cmdInstall({ mode }) {
     }));
   }
 
+  // Register as a wicked-bus provider so downstream subscribers receive vault
+  // and testing events (wicked.evidence.captured, wicked.verdict.recorded, etc.).
+  // Absorbed from wicked-vault installer (ECOSYSTEM-RATIONALIZATION.md §5a Phase B).
+  // Non-fatal: wicked-testing emits events when wicked-bus is present and runs
+  // fully standalone when it isn't. Dynamic import keeps the bus optional.
+  try {
+    const bus = await import("wicked-bus");
+    const busConfig = typeof bus.loadConfig === "function" ? bus.loadConfig() : {};
+    const busDb = bus.openDb(busConfig);
+    try {
+      bus.register(busDb, { plugin: "wicked-testing", role: "provider", filter: "wicked.*" });
+      if (!jsonOut) console.log("\nwicked-bus: registered wicked-testing as a provider");
+    } catch (err) {
+      // Duplicate registration on re-install is a no-op — expected on update.
+      if (err.message && err.message.includes("UNIQUE")) {
+        if (!jsonOut) console.log("\nwicked-bus: wicked-testing already registered as a provider (re-install)");
+      } else {
+        if (!jsonOut) console.log(`\nwicked-bus: could not register (${err.message})`);
+      }
+    }
+    busDb.close();
+  } catch {
+    // wicked-bus not installed — fully expected in minimal setups.
+    if (!jsonOut) console.log("\nwicked-bus: not available (install wicked-bus to enable event emission)");
+  }
+
   // Non-zero exit if any target skipped due to a real failure (not just
   // "already installed"). This matches CI expectations — an install script
   // that partially succeeded should be a non-green build.
@@ -994,9 +1049,21 @@ function cmdUninstall() {
 
   for (const target of targets) {
     let removed = 0;
+    // Mirror the install logic: regular skills use the wicked-testing- prefix;
+    // namespace dirs (no top-level SKILL.md) are stored as flat {ns}-{subskill}/.
     for (const skill of skillDirs) {
-      const p = join(target.dir, `wicked-testing-${skill}`);
-      if (existsSync(p)) { rmSync(p, { recursive: true, force: true }); removed++; }
+      const skillDir = join(__dirname, "skills", skill);
+      if (!existsSync(join(skillDir, "SKILL.md"))) {
+        // Namespace dir — remove flat {ns}-{subskill} dirs
+        const subSkills = readdirSafe(skillDir).filter(d => !d.startsWith("."));
+        for (const sub of subSkills) {
+          const p = join(target.dir, `${skill}-${sub}`);
+          if (existsSync(p)) { rmSync(p, { recursive: true, force: true }); removed++; }
+        }
+      } else {
+        const p = join(target.dir, `wicked-testing-${skill}`);
+        if (existsSync(p)) { rmSync(p, { recursive: true, force: true }); removed++; }
+      }
     }
     // Also clean pre-0.3 bare-name skill dirs if they're still ours
     // (signature-checked — see migrateOneLegacyDir).

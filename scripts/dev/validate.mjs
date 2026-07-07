@@ -121,7 +121,16 @@ function checkSkills() {
   for (const d of dirs) {
     const skillFile = join(skillsRoot, d, "SKILL.md");
     const rel = relative(REPO, skillFile);
-    if (!existsSync(skillFile)) { err("skills", rel, "SKILL.md missing"); continue; }
+    if (!existsSync(skillFile)) {
+      // Namespace dir: no top-level SKILL.md but subdirs have SKILL.md files.
+      // install.mjs flattens these to `<namespace>-<subskill>/SKILL.md` at install time.
+      const isNamespace = readdirSync(join(skillsRoot, d)).some(sub => {
+        try { return statSync(join(skillsRoot, d, sub)).isDirectory() && existsSync(join(skillsRoot, d, sub, "SKILL.md")); }
+        catch { return false; }
+      });
+      if (!isNamespace) err("skills", rel, "SKILL.md missing");
+      continue;
+    }
     const fm = parseFrontmatter(readFileSync(skillFile, "utf8"));
     if (!fm) { err("skills", rel, "malformed frontmatter"); continue; }
     for (const k of requiredFields) {

@@ -50,33 +50,36 @@ function seedV1Row(db) {
   db.prepare("INSERT INTO verdicts (id,run_id,verdict,reviewer,created_at,updated_at,deleted) VALUES (?,?,?,?,?,?,0)").run("v1", "r1", "PASS", "rev", ISO, ISO);
 }
 
-test("listMigrations discovers 001 + 002 in numeric order", { skip: !Database }, () => {
+test("listMigrations discovers 001 + 002 + 003 in numeric order", { skip: !Database }, () => {
   const list = listMigrations(MIG_DIR);
   const versions = list.map((m) => m.version);
   assert.ok(versions.includes(1), "001 must be discoverable");
   assert.ok(versions.includes(2), "002 must be discoverable");
+  assert.ok(versions.includes(3), "003 must be discoverable (wicked-vault absorption)");
   // Sorted ascending by version.
   assert.deepEqual(versions, [...versions].sort((a, b) => a - b));
 });
 
-test("applyMigrations on a FRESH db brings schema to v2 and creates equivalence_json", { skip: !Database }, () => {
+test("applyMigrations on a FRESH db brings schema to v3 and creates equivalence_json + vault_payload_sha", { skip: !Database }, () => {
   const db = new Database(":memory:");
   try {
     db.pragma("foreign_keys = ON");
     const results = applyMigrations(db, MIG_DIR);
-    // Both migrations applied (none pre-existing on a fresh db).
-    assert.deepEqual(results.map((r) => r.status), ["applied", "applied"]);
+    // All three migrations applied (none pre-existing on a fresh db).
+    assert.deepEqual(results.map((r) => r.status), ["applied", "applied", "applied"]);
     const ver = db.prepare("SELECT MAX(version) v FROM schema_migrations").get().v;
-    assert.equal(ver, 2, "fresh db should land at schema version 2");
-    // The equivalence_json column exists on verdicts.
+    assert.equal(ver, 3, "fresh db should land at schema version 3");
+    // The equivalence_json column exists on verdicts (from 002).
     const cols = db.prepare("PRAGMA table_info(verdicts)").all().map((c) => c.name);
     assert.ok(cols.includes("equivalence_json"), "verdicts.equivalence_json must exist after 002");
+    // The vault_payload_sha column exists on verdicts (from 003, wicked-vault absorption).
+    assert.ok(cols.includes("vault_payload_sha"), "verdicts.vault_payload_sha must exist after 003");
   } finally {
     db.close();
   }
 });
 
-test("002 applies cleanly on a PRE-EXISTING v1 db (the upgrade path) and preserves rows", { skip: !Database }, () => {
+test("002 + 003 apply cleanly on a PRE-EXISTING v1 db (the upgrade path) and preserve rows", { skip: !Database }, () => {
   const db = new Database(":memory:");
   try {
     db.pragma("foreign_keys = ON");
@@ -87,26 +90,31 @@ test("002 applies cleanly on a PRE-EXISTING v1 db (the upgrade path) and preserv
     assert.equal(db.prepare("SELECT MAX(version) v FROM schema_migrations").get().v, 1);
     seedV1Row(db);
 
-    // --- Now run the runner: it must see v1 applied, SKIP 001, and APPLY 002. ---
+    // --- Now run the runner: it must see v1 applied, SKIP 001, and APPLY 002 + 003. ---
     const results = applyMigrations(db, MIG_DIR);
     const byVersion = Object.fromEntries(results.map((r) => [r.version, r.status]));
     assert.equal(byVersion[1], "already_applied", "001 must be skipped on a v1 db (no re-exec)");
     assert.equal(byVersion[2], "applied", "002 must be applied to upgrade v1 → v2");
-    assert.equal(db.prepare("SELECT MAX(version) v FROM schema_migrations").get().v, 2);
+    assert.equal(byVersion[3], "applied", "003 must be applied to add vault_payload_sha (wicked-vault absorption)");
+    assert.equal(db.prepare("SELECT MAX(version) v FROM schema_migrations").get().v, 3);
 
-    // --- The pre-existing row survives verbatim; the new column is NULL on it. ---
+    // --- The pre-existing row survives verbatim; new columns are NULL on it. ---
     const row = db.prepare("SELECT * FROM verdicts WHERE id = ?").get("v1");
     assert.equal(row.verdict, "PASS");
     assert.equal(row.reviewer, "rev");
-    assert.equal(row.equivalence_json, null, "legacy row's new column defaults to NULL");
+    assert.equal(row.equivalence_json, null, "legacy row's equivalence_json defaults to NULL");
+    assert.equal(row.vault_payload_sha, null, "legacy row's vault_payload_sha defaults to NULL");
 
-    // --- Indexes that lived on the old table were recreated. ---
+    // --- Indexes that lived on the old table were recreated (002 + 003 indexes). ---
     const idx = db
       .prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'verdicts' AND name LIKE 'idx_%'")
       .all()
       .map((r) => r.name)
       .sort();
-    assert.deepEqual(idx, ["idx_verdicts_created_at", "idx_verdicts_run", "idx_verdicts_verdict"]);
+    assert.ok(idx.includes("idx_verdicts_created_at"), "idx_verdicts_created_at must exist");
+    assert.ok(idx.includes("idx_verdicts_run"), "idx_verdicts_run must exist");
+    assert.ok(idx.includes("idx_verdicts_verdict"), "idx_verdicts_verdict must exist");
+    assert.ok(idx.includes("idx_verdicts_vault_sha"), "idx_verdicts_vault_sha must exist (from 003)");
 
     // --- The DROP/RENAME left no orphaned FKs (verdicts.run_id → runs.id). ---
     const fk = db.pragma("foreign_key_check", { simple: false });

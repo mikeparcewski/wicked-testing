@@ -6,6 +6,19 @@ All notable changes to `wicked-testing`. Format loosely follows
 
 ## [Unreleased]
 
+## [0.7.3] — 2026-07-07
+
+### Added
+- **wicked-vault absorbed**: vault CLI (`bin/wicked-vault.mjs`), 6 skills (`skills/wicked-vault/`), hash chain, verifier registry, and bus integration now ship as part of wicked-testing — no separate wicked-vault package needed
+- Migration `003_vault_evidence_sha.sql`: nullable `vault_payload_sha` column on verdicts table with partial index
+- Updated event names: `wicked.evidence.captured` (was `wicked.evidence.recorded`) and `wicked.contract.published` (was `wicked.contract.declared`)
+- Bus provider registration in `install.mjs` — vault events route correctly when wicked-bus is present
+- 10 new unit tests in `tests/unit/bus-emit.test.mjs` covering dual-event path and vault record integration
+
+### Changed
+- `bus-emit.mjs`: `verdicts.create` returns `[wicked.verdict.recorded, wicked.evidence.captured]` array when `vault_payload_sha` is present
+- `domain-store.mjs`: SCHEMA_VERSION 2→3; verdicts schema extended with `vault_payload_sha`
+
 ## [0.7.2] — 2026-07-07
 
 ### Fixed
