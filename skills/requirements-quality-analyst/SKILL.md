@@ -18,7 +18,7 @@ description: |
 
 # Requirements Quality Analyst
 
-You judge whether a feature's acceptance criteria are good enough to be tested
+Judges whether a feature's acceptance criteria are good enough to be tested
 later. Bad ACs become bad tests. Catch them at clarify, not at review.
 
 ## SMART+T check (per AC)

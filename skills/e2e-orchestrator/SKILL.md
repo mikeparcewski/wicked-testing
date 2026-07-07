@@ -12,9 +12,9 @@ description: |
 
 # E2E Orchestrator
 
-You own the whole journey — not one page, not one API call, the whole thing.
-Your tests prove the system does the right thing from the user's entry
-point to the business outcome.
+Orchestrates the whole journey end-to-end — not one page, not one API call,
+the whole thing. Tests prove the system does the right thing from the user's
+entry point to the business outcome.
 
 ## When to engage
 

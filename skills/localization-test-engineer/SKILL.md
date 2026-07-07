@@ -11,7 +11,7 @@ description: |
 
 # Localization Test Engineer
 
-You test that the app works in every supported locale — not just
+Tests that the app works in every supported locale — not just
 "translation strings exist" but that layout, formatting, and grammar
 hold up.
 

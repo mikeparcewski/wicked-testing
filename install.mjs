@@ -218,49 +218,75 @@ function buildClaudeTarget(rootDir, source, { trusted = false } = {}) {
 // ---------------------------------------------------------------------------
 
 // Build the CLI-specific hooks.json content for a given target.
-// scriptPath must be the absolute path to claim-nudge.mjs.
+// hooksDir must be the absolute path to the hooks/ directory.
 // Returns null if the CLI uses a TypeScript extension system (hookPath null).
-function buildHookJson(targetName, scriptPath, timeout = 5000) {
-  const cmd = `node "${scriptPath}"`;
+function buildHookJson(targetName, hooksDir, timeout = 5000) {
+  const claimNudgeCmd     = `node "${join(hooksDir, "claim-nudge.mjs")}"`;
+  const sessionStartCmd   = `node "${join(hooksDir, "session-start.mjs")}"`;
+  const subagentVerdictCmd = `node "${join(hooksDir, "subagent-verdict.mjs")}"`;
   switch (targetName) {
     case "cursor":
-      // Cursor: version:1, lowercase event names, flat handler array per event.
+      // Cursor: version:1, camelCase event names, flat handler array per event.
       return {
         version: 1,
-        hooks: { stop: [{ command: cmd, timeout, matcher: "*" }] },
+        hooks: {
+          stop:         [{ command: claimNudgeCmd,      timeout, matcher: "*" }],
+          sessionStart: [{ command: sessionStartCmd,    timeout, matcher: "*" }],
+          subagentStop: [{ command: subagentVerdictCmd, timeout, matcher: "*" }],
+        },
       };
     case "kiro":
       // Kiro: version:"v1" (string), array of hook objects with trigger + action.
       // Kiro timeout is in seconds; convert from the millisecond default.
+      // Kiro supports SessionStart but NOT SubagentStop.
       return {
         version: "v1",
-        hooks: [{
-          name: "wicked-testing-claim-nudge",
-          trigger: "Stop",
-          action: { type: "command", command: cmd },
-          timeout: Math.ceil(timeout / 1000),
-          enabled: true,
-        }],
+        hooks: [
+          {
+            name: "wicked-testing-claim-nudge",
+            trigger: "Stop",
+            action: { type: "command", command: claimNudgeCmd },
+            timeout: Math.ceil(timeout / 1000),
+            enabled: true,
+          },
+          {
+            name: "wicked-testing-session-start",
+            trigger: "SessionStart",
+            action: { type: "command", command: sessionStartCmd },
+            timeout: Math.ceil(timeout / 1000),
+            enabled: true,
+          },
+        ],
       };
     case "copilot":
-      // Copilot: version:1, Stop event is named "agentStop", no matcher needed.
+      // Copilot: version:1, events named agentStop/sessionStart/subagentStop.
       // bash + powershell + command for proper cross-platform per Copilot docs.
       return {
         version: 1,
-        hooks: { agentStop: [{ type: "command", bash: cmd, powershell: cmd, command: cmd }] },
+        hooks: {
+          agentStop:    [{ type: "command", bash: claimNudgeCmd,      powershell: claimNudgeCmd,      command: claimNudgeCmd      }],
+          sessionStart: [{ type: "command", bash: sessionStartCmd,    powershell: sessionStartCmd,    command: sessionStartCmd    }],
+          subagentStop: [{ type: "command", bash: subagentVerdictCmd, powershell: subagentVerdictCmd, command: subagentVerdictCmd }],
+        },
       };
     case "antigravity":
       // Antigravity: outer key = hook name (not event). Inner key = event name.
+      // PreInvocation is the session-start equivalent; no SubagentStop support.
       return {
         "wicked-testing-claim-nudge": {
-          Stop: [{ matcher: "*", hooks: [{ type: "command", command: cmd, timeout }] }],
+          Stop: [{ matcher: "*", hooks: [{ type: "command", command: claimNudgeCmd, timeout }] }],
+        },
+        "wicked-testing-session-start": {
+          PreInvocation: [{ matcher: "*", hooks: [{ type: "command", command: sessionStartCmd, timeout }] }],
         },
       };
     default:
       // Codex and any future Claude Code-compatible CLIs: standard schema.
       return {
         hooks: {
-          Stop: [{ matcher: "*", hooks: [{ type: "command", command: cmd, timeout }] }],
+          Stop:         [{ matcher: "*", hooks: [{ type: "command", command: claimNudgeCmd,      timeout }] }],
+          SessionStart: [{ matcher: "*", hooks: [{ type: "command", command: sessionStartCmd,    timeout }] }],
+          SubagentStop: [{ matcher: "*", hooks: [{ type: "command", command: subagentVerdictCmd, timeout }] }],
         },
       };
   }
@@ -272,12 +298,12 @@ function buildHookJson(targetName, scriptPath, timeout = 5000) {
 function mergeHookJson(existing, ours, targetName) {
   if (!existing) return ours;
   if (targetName === "antigravity") {
-    // Outer key = hook name — just overwrite our key, leave others.
+    // Outer key = hook name — overwrite all wicked-testing-* keys, leave others.
     return { ...existing, ...ours };
   }
   if (targetName === "kiro") {
-    // Array-based: filter out old wicked-testing entry by name, append ours.
-    const kept = (existing.hooks || []).filter(h => h.name !== "wicked-testing-claim-nudge");
+    // Array-based: filter out all old wicked-testing entries by name, append ours.
+    const kept = (existing.hooks || []).filter(h => !h.name?.startsWith("wicked-testing-"));
     return { ...existing, hooks: [...kept, ...ours.hooks] };
   }
   // Object-based (Cursor, Codex): merge by event key.
@@ -295,11 +321,13 @@ function removeHookJson(existing, targetName) {
   if (!existing) return null;
   if (targetName === "antigravity") {
     const cleaned = { ...existing };
-    delete cleaned["wicked-testing-claim-nudge"];
+    for (const key of Object.keys(cleaned)) {
+      if (key.startsWith("wicked-testing-")) delete cleaned[key];
+    }
     return Object.keys(cleaned).length ? cleaned : null;
   }
   if (targetName === "kiro") {
-    const kept = (existing.hooks || []).filter(h => h.name !== "wicked-testing-claim-nudge");
+    const kept = (existing.hooks || []).filter(h => !h.name?.startsWith("wicked-testing-"));
     return { ...existing, hooks: kept };
   }
   const mergedHooks = { ...(existing.hooks || {}) };
@@ -876,8 +904,8 @@ async function cmdInstall({ mode }) {
       // needed here). Other CLIs get a per-CLI hook config written to
       // hookPath. opencode and pi use TypeScript extensions — hookPath null.
       if (target.hookPath) {
-        const scriptPath = join(__dirname, "hooks", "claim-nudge.mjs");
-        const hookJson = buildHookJson(target.name, scriptPath);
+        const hooksDir = join(__dirname, "hooks");
+        const hookJson = buildHookJson(target.name, hooksDir);
         try {
           if (target.hookMode === "dir") {
             mkdirSync(target.hookPath, { recursive: true });
@@ -888,7 +916,7 @@ async function cmdInstall({ mode }) {
             const merged = mergeHookJson(existing, hookJson, target.name);
             writeFileSync(target.hookPath, JSON.stringify(merged, null, 2));
           }
-          console.log(`[${target.name}] hooks installed (claim-nudge opt-in)`);
+          console.log(`[${target.name}] hooks installed (session-start, claim-nudge, subagent-verdict)`);
         } catch (err) {
           console.warn(`[${target.name}] hooks skipped — could not write to ${target.hookPath}: ${err?.code || err?.message}`);
         }

@@ -18,8 +18,8 @@ description: |
 
 # Semantic Reviewer
 
-Tests passing is not the same as spec intent being satisfied. You read both
-the spec and the code, and report per-AC whether the code does what the spec
+Tests passing is not the same as spec intent being satisfied. Reads both
+the spec and the code, and reports per-AC whether the code does what the spec
 said to do.
 
 ## Process

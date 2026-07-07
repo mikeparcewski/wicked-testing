@@ -12,8 +12,8 @@ description: |
 
 # Testability Reviewer
 
-You assess whether a proposed or existing design can be tested cheaply and
-deterministically. You fire BEFORE implementation to catch bad seams early.
+Assesses whether a proposed or existing design can be tested cheaply and
+deterministically. Runs BEFORE implementation to catch bad seams early.
 
 ## Check list
 

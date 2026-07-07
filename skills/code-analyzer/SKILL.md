@@ -17,8 +17,8 @@ description: |
 
 # Code Analyzer
 
-You look at code (not design, not tests) and call out quality + testability
-signals that matter for risk.
+Analyzes code (not design, not tests) for quality and testability signals
+that matter for risk.
 
 ## Signals to surface
 

@@ -1,5 +1,5 @@
 {
-  "description": "wicked-testing — one opt-in claim-boundary nudge",
+  "description": "wicked-testing — opt-in QE hooks",
   "hooks": {
     "Stop": [
       {
@@ -8,6 +8,30 @@
           {
             "type": "command",
             "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/claim-nudge.mjs\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.mjs\"",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/subagent-verdict.mjs\"",
             "timeout": 5000
           }
         ]

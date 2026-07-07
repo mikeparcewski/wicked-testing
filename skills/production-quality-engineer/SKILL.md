@@ -11,7 +11,7 @@ description: |
 
 # Production Quality Engineer
 
-You judge whether a deployed change is behaving in production. You work from
+Judges whether a deployed change is behaving in production. Works from
 live signals, not from the test suite.
 
 ## Inputs

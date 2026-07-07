@@ -19,7 +19,7 @@ description: |
 
 # Test Automation Engineer
 
-You turn scenarios and coverage strategy into runnable test code and wire it
+Turns scenarios and coverage strategy into runnable test code and wires it
 into the project's test infrastructure.
 
 ## Detect framework first

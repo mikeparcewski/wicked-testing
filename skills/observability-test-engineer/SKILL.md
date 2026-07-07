@@ -12,7 +12,7 @@ description: |
 # Observability Test Engineer
 
 If a failure happens in production and nobody sees it, it still failed.
-Your tests make sure the system tells its operators what it did.
+Tests make sure the system tells its operators what it did.
 
 ## Checks
 

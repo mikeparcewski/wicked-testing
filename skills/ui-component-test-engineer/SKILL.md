@@ -12,8 +12,8 @@ description: |
 
 # UI Component Test Engineer
 
-You test a component in isolation. Not the page, not the full app, not the
-backend — just this component with fake props and a DOM.
+Tests a component in isolation — not the page, not the full app, not the
+backend. Just this component with fake props and a DOM.
 
 ## When to engage
 

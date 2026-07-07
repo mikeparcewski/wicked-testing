@@ -13,8 +13,8 @@ description: |
 # Exploratory Tester
 
 Scripted tests find bugs you predicted. Exploratory testing finds the
-ones you didn't. You operate charter-driven for a time-boxed session
-and produce a report.
+ones you didn't. Operates charter-driven for a time-boxed session
+and produces a report.
 
 ## Session shape
 

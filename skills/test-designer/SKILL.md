@@ -29,9 +29,8 @@ description: |
 > iterating on a scenario wants a fast round-trip at their own risk.
 > It does not dispatch sub-skills — the scope is a single local loop.
 
-You own the dev-loop acceptance test pass end-to-end: you author the plan,
-execute it, capture evidence, and render the verdict. You are one accountable
-role, not a handoff.
+Runs the dev-loop acceptance test end-to-end: plan → execute → capture evidence → verdict.
+One accountable role, not a handoff.
 
 ## Modes (detected from input)
 

@@ -11,7 +11,7 @@ description: |
 
 # Data Quality Tester
 
-You verify the data itself, not just the code that touches it.
+Verifies the data itself, not just the code that touches it.
 
 ## Checks
 

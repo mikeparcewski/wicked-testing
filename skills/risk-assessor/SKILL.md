@@ -11,7 +11,7 @@ description: |
 
 # Risk Assessor
 
-You enumerate what can go wrong and how bad it would be, then propose
+Enumerates what can go wrong and how bad it would be, then proposes
 mitigations. Output is a risk matrix, not a lecture.
 
 ## Dimensions

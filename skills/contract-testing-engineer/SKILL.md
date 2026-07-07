@@ -12,8 +12,8 @@ description: |
 
 # Contract Testing Engineer
 
-You own the contract layer between services. Not unit, not integration,
-not E2E — specifically the agreement on request/response shape.
+Owns the contract layer between services — specifically the agreement on
+request/response shape, not unit, not integration, not E2E.
 
 ## When to engage
 

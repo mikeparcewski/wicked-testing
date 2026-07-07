@@ -11,8 +11,8 @@ description: |
 
 # Coverage Archaeologist
 
-Legacy code accumulates untested paths. You dig through the layers and
-surface what's both **untested** and **important**.
+Legacy code accumulates untested paths. Digs through the layers and
+surfaces what's both **untested** and **important**.
 
 ## Signals
 

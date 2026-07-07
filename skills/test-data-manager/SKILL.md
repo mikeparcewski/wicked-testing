@@ -12,7 +12,7 @@ description: |
 # Test Data Manager
 
 Tests need realistic data. Fake data that's too simple hides bugs; real
-data leaks PII. Your job is the middle path.
+data leaks PII. The goal: the middle path — realistic data without leaking real PII.
 
 ## Approaches
 
