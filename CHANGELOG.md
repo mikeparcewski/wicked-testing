@@ -6,6 +6,14 @@ All notable changes to `wicked-testing`. Format loosely follows
 
 ## [Unreleased]
 
+## [0.7.1] — 2026-07-07
+
+### Changed
+- **`plugin.json` skills list removed** — Claude Code now auto-scans `skills/`
+  directory directly. All 47 skills are discovered automatically; the previous
+  explicit 7-entry list is no longer needed and was a maintenance liability.
+- `sync-plugin-version.mjs` — comment updated to reflect auto-scan behaviour.
+
 ## [0.7.0] — 2026-07-06
 
 **Skills-only architecture.** Everything is now a skill — agents and commands

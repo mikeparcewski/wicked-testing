@@ -1,35 +1,5 @@
 {
   "name": "wicked-testing",
-  "version": "0.7.0",
-  "description": "Standalone QE library — skills-only, 47 skills installed from skills/ directory. 5 Tier-1 orchestrators for user invocation; 40 specialist skills dispatched internally via context:fork.",
-  "skills": [
-    {
-      "name": "wicked-testing:acceptance-testing",
-      "path": "skills/acceptance-testing/SKILL.md"
-    },
-    {
-      "name": "wicked-testing:authoring",
-      "path": "skills/authoring/SKILL.md"
-    },
-    {
-      "name": "wicked-testing:execution",
-      "path": "skills/execution/SKILL.md"
-    },
-    {
-      "name": "wicked-testing:insight",
-      "path": "skills/insight/SKILL.md"
-    },
-    {
-      "name": "wicked-testing:plan",
-      "path": "skills/plan/SKILL.md"
-    },
-    {
-      "name": "wicked-testing:review",
-      "path": "skills/review/SKILL.md"
-    },
-    {
-      "name": "wicked-testing:update",
-      "path": "skills/update/SKILL.md"
-    }
-  ]
+  "version": "0.7.1",
+  "description": "Standalone QE library — 47 skills auto-discovered from skills/ directory. 7 Tier-1 orchestrators for user invocation; 40 Tier-2 specialists dispatched internally via context:fork."
 }

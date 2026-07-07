@@ -58,11 +58,9 @@ if (existsSync(marketplacePath)) {
 }
 
 // --- Desired state: version only -------------------------------------------
-// plugin.json's skills list is manually maintained (7 Tier-1 user-invokeable
-// skills). install.mjs distributes all 47 skills by reading the skills/
-// directory directly — plugin.json is not the source of truth for skill
-// discovery. agents/ and commands/ are legacy directories that are no longer
-// distributed. Only the version field is derived from package.json.
+// plugin.json carries no skills list — Claude Code auto-scans the skills/
+// directory when the list is absent. install.mjs distributes all 47 skills
+// by scanning skills/ directly. Only the version field is synced here.
 
 const desired = {
   version: pkg.version,
