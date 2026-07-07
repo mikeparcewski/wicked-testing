@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:test-data-manager
+context: fork
 description: |
   Fixtures, factories, anonymized production snapshots. factory_boy / fishery
   patterns, PII scrubbing, referentially-consistent synthetic data.

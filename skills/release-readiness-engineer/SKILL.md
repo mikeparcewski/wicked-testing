@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:release-readiness-engineer
+context: fork
 description: |
   Tier-2 specialist — aggregates ledger verdicts, open flakes, risk
   register, coverage delta, and prod SLO state into a single release-gate

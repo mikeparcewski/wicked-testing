@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:localization-test-engineer
+context: fork
 description: |
   i18n / localization testing — pluralization, RTL, date/currency formatting,
   missing strings, pseudolocalization.

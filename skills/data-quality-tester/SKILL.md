@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:data-quality-tester
+context: fork
 description: |
   Data-quality specialist — schema drift, referential integrity, migration
   forward/rollback verification, great_expectations / dbt-test patterns.

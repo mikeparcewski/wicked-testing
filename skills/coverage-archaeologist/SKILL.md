@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:coverage-archaeologist
+context: fork
 description: |
   Find dark corners in legacy code — untested, unreferenced, or low-confidence
   paths. Prioritizes by risk using coverage + git history + call-graph.

@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:incident-to-scenario-synthesizer
+context: fork
 description: |
   Turns a production incident into a deterministic scenario file that
   reproduces it. Takes an incident-report markdown OR direct fields

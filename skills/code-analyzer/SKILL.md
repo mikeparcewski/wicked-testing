@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:code-analyzer
+context: fork
 description: |
   Static code analysis for testability, quality, and maintainability. Reviews
   code structure, identifies test-coverage gaps, and flags risky areas.

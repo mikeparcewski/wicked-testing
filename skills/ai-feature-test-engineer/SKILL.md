@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:ai-feature-test-engineer
+context: fork
 description: |
   Tier-2 specialist — testing LLM-backed features. Prompt-injection probes
   (direct / indirect / payload-smuggling / multi-turn), jailbreak library

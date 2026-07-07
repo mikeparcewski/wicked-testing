@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:flaky-test-hunter
+context: fork
 description: |
   Flake detection + root-cause specialist. Queries DomainStore for historical
   verdicts per scenario_id, computes flake rate over a rolling 14d window,

@@ -59,7 +59,7 @@ Generate a comprehensive test strategy for the target below.
 Return findings in the standard test-strategist format.
 ```
 
-Swap `subagent_type` to the matching agent from the table above. For the
+Swap the skill name to the matching agent from the table above. For the
 "test everything" path, dispatch all four in parallel (one skill dispatch call
 per agent in the same turn) and merge the returned findings.
 

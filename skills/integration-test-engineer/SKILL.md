@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:integration-test-engineer
+context: fork
 description: |
   Real-service integration testing — distinct from contract testing. Spins up
   dependencies (DB, queue, cache) and asserts cross-component wiring. No mocks.

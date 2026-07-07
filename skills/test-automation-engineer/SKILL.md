@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:test-automation-engineer
+context: fork
 description: |
   Generate test code and configure test automation infrastructure. Creates unit,
   integration, and end-to-end tests. Configures test runners, CI pipelines,

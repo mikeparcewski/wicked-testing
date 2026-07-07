@@ -64,7 +64,7 @@ Answer the question below against the wicked-testing ledger.
 Do NOT perform state mutations. Do NOT emit bus events.
 ```
 
-Swap `subagent_type` to the specialist when the trigger matches something the
+Swap the skill name to the specialist when the trigger matches something the
 oracle doesn't cover — flake detection, coverage archaeology, and exploratory
 sessions all have dedicated agents.
 

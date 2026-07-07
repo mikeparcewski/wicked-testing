@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:security-test-engineer
+context: fork
 description: |
   Tier-2 specialist — application security testing. SAST orchestration
   (semgrep, CodeQL), DAST (ZAP, nuclei), secrets scanning (gitleaks,

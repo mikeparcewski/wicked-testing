@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:visual-regression-engineer
+context: fork
 description: |
   Snapshot + perceptual-diff specialist. Playwright for capture, pixelmatch /
   odiff for diff, dynamic-region masking via CSS selectors, cross-browser

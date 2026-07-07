@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:test-designer
+context: fork
 description: |
   DEV-LOOP FAST PATH ONLY. Single-role plan→execute→verdict for local iteration
   when the 3-agent isolated pipeline's rigor is explicitly not needed. Reads

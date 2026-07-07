@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:compliance-test-engineer
+context: fork
 description: |
   Regulatory-control specialist — SOC 2 / HIPAA / GDPR / PCI-DSS evidence
   collection. Reads a `controls:` list from the scenario frontmatter,

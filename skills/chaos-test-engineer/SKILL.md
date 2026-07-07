@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:chaos-test-engineer
+context: fork
 description: |
   Chaos + resilience specialist — failure injection via Toxiproxy, tc,
   Chaos Mesh, or AWS FIS. Pre-registers a steady-state hypothesis, caps

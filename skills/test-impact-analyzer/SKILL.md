@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:test-impact-analyzer
+context: fork
 description: |
   Tier-2 specialist — answers "given this diff, which tests must I run?"
   Consumes git diff, call-graph signal, and historical coverage from the

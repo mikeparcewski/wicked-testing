@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:production-quality-engineer
+context: fork
 description: |
   Monitor production quality post-deploy. Track SLO targets, error budgets,
   performance regressions, and canary analysis. Define rollback criteria.

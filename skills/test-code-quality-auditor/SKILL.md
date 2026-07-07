@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:test-code-quality-auditor
+context: fork
 description: |
   Audits the TEST code itself — not the SUT. Detects assertion-free tests,
   tautological assertions, try/catch swallowing, shared-state bleed,

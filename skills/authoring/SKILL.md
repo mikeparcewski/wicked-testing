@@ -62,7 +62,7 @@ framework.
 Return the path(s) written and a one-line per-file summary.
 ```
 
-Specialized dispatches swap `subagent_type` for the right agent (see the
+Specialized dispatches swap the skill name for the right agent (see the
 table above). For an OpenAPI spec, use `contract-testing-engineer`; for the
 3-agent acceptance pipeline's test-plan phase, use `acceptance-test-writer`.
 

@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:semantic-reviewer
+context: fork
 description: |
   Verify spec-to-code alignment after implementation. Extracts numbered
   acceptance criteria (AC-*, FR-*, REQ-*) from clarify artifacts and produces

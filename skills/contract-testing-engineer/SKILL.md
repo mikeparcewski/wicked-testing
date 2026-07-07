@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:contract-testing-engineer
+context: fork
 description: |
   API contract testing specialist. Designs and reviews consumer-driven contracts,
   Pact-style tests, OpenAPI contract verification, schema versioning, and

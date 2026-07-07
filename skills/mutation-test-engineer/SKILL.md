@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:mutation-test-engineer
+context: fork
 description: |
   Mutation-testing specialist — Stryker (JS/TS), Mutmut (Python), Pitest (Java),
   go-mutesting (Go). Runs a scoped mutation pass, parses the kill report, and

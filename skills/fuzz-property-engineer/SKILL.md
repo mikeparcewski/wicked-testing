@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:fuzz-property-engineer
+context: fork
 description: |
   Property-based and fuzz testing — Hypothesis (Python), fast-check (TS),
   AFL/libFuzzer for native code. Finds inputs example tests never consider.

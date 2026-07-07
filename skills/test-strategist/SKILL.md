@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:test-strategist
+context: fork
 description: |
   Generate test strategies and coverage plans from code and requirements.
   Identifies happy paths, error cases, and edge cases with positive+negative pairing.

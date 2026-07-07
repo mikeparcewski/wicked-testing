@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:update
+context: fork
 description: |
   Check for and install wicked-testing updates. Compares installed version
   against npm registry, updates the published CLI, refreshes skills / agents

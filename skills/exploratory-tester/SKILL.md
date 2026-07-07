@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:exploratory-tester
+context: fork
 description: |
   Session-based, unscripted exploratory testing — the agent acts like a
   human tester. Charter-driven session, note-taking, bug hunting across

@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:snapshot-hygiene-auditor
+context: fork
 description: |
   Snapshot-rot detector. Scans `__snapshots__/`, `*.snap`, `*.golden`,
   `cassettes/`, and `.syrupy` directories for four classes of rot:

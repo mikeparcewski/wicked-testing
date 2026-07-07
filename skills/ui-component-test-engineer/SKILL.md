@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:ui-component-test-engineer
+context: fork
 description: |
   Component-level UI testing — React Testing Library, Vitest, Testing Library
   for Vue/Svelte. Render a single component with props, interact, assert.

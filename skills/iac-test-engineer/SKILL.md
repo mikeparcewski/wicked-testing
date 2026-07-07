@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:iac-test-engineer
+context: fork
 description: |
   Infrastructure-as-Code specialist — terraform validate/plan, checkov,
   tflint, tfsec, Rego/OPA (opa eval / conftest), Kyverno (kyverno-cli test),

@@ -65,7 +65,7 @@ Do NOT self-grade qualitative outcomes. For acceptance-grade verdicts
 route to /wicked-testing:acceptance instead.
 ```
 
-Swap `subagent_type` per the table above. For a scenario that also needs
+Swap the skill name per the table above. For a scenario that also needs
 contract verification, dispatch `scenario-executor` and
 `contract-testing-engineer` in parallel and merge results.
 

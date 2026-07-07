@@ -1,5 +1,6 @@
 ---
 name: wicked-testing:e2e-orchestrator
+context: fork
 description: |
   Multi-service, multi-UI journey orchestration across environments. Coordinates
   a scenario that spans frontend + API + worker, manages environment, asserts
