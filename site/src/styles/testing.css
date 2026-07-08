@@ -1,0 +1,279 @@
+/* wicked-testing content styles (wt.wickedagile.com).
+   The shared wicked-web chrome (Base/Topbar/Footer/SameGarden + tokens.css)
+   owns the chrome, the family palette, the fixed grid+glow background, and
+   theming via [data-theme]. Only page-specific content styles live here.
+   Same token NAMES as the shared tokens.css, so the page stays on-brand. */
+
+/* The shared Topbar is position:fixed; offset content below it. */
+body { padding-top: var(--topbar-h); }
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+  line-height: 1.0;
+  margin: 0;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+p { margin: 0; }
+code { font-family: var(--font-mono); }
+.y { color: var(--accent); }
+
+/* ── section rhythm ─────────────────────────────────────────────────────── */
+.band {
+  border-top: 1px solid var(--hairline);
+  padding: clamp(56px, 10vh, 108px) 0;
+}
+.sec-head { max-width: 62ch; margin: 0 auto clamp(34px, 5vh, 56px); text-align: center; }
+.sec-head h2 { font-size: clamp(1.9rem, 3.6vw, 2.9rem); margin-top: 14px; }
+.sec-sub {
+  font-family: var(--font-mono);
+  font-size: .84rem;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 16px auto 0;
+  max-width: 58ch;
+}
+.sec-sub b, .lede b, .prob-copy b, .flow-foot b, .ledger b { color: var(--ink); font-weight: 700; }
+.band h2 em, .sec-sub em { font-style: normal; color: var(--accent); }
+
+/* ── Hero ───────────────────────────────────────────────────────────────── */
+.hero {
+  position: relative;
+  min-height: calc(100vh - var(--topbar-h));
+  display: flex;
+  align-items: center;
+  padding: clamp(48px, 8vh, 96px) 0;
+}
+.hero-inner { max-width: 900px; }
+.hero h1 {
+  font-size: clamp(2.6rem, 6.4vw, 5rem);
+  line-height: .96;
+  margin: 20px 0 0;
+}
+.hero .lede {
+  font-family: var(--font-sans, var(--font-display));
+  font-size: clamp(1.02rem, 1.7vw, 1.32rem);
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 60ch;
+  margin: 26px 0 0;
+}
+
+/* ── install block (family pattern) ─────────────────────────────────────── */
+.install {
+  margin: 34px 0 0;
+  max-width: 560px;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 12px;
+  overflow: hidden;
+  background: color-mix(in oklab, var(--surface) 82%, transparent);
+}
+.install__bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--hairline);
+  background: var(--surface-2);
+}
+.install__label {
+  font-family: var(--font-mono); font-size: .62rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--muted);
+}
+.install__copy {
+  font-family: var(--font-mono); font-size: .64rem; letter-spacing: .06em;
+  color: var(--muted); background: transparent; cursor: pointer;
+  border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 4px 12px;
+  transition: border-color .2s var(--ease), color .2s var(--ease);
+}
+.install__copy:hover { border-color: var(--accent); color: var(--accent); }
+.install__code { margin: 0; padding: 16px 18px; overflow-x: auto; }
+.install__code code {
+  font-family: var(--font-mono); font-size: .92rem; color: var(--ink);
+  line-height: 1.7; white-space: pre;
+}
+.install__code .p { color: var(--accent); }
+.install__alt {
+  font-family: var(--font-mono); font-size: .68rem; color: var(--faint);
+  padding: 0 18px 14px; margin: 0;
+}
+.install__alt code { color: var(--muted); }
+
+/* ── CLI chip row ───────────────────────────────────────────────────────── */
+.cli-row { margin: 30px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.cli-lbl {
+  font-family: var(--font-mono); font-size: .62rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--faint); margin-right: 6px;
+}
+.cli-chip {
+  font-family: var(--font-mono); font-size: .72rem; color: var(--muted);
+  border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 5px 12px;
+}
+
+/* ── the self-grading problem ───────────────────────────────────────────── */
+.prob-grid {
+  display: grid;
+  grid-template-columns: minmax(220px, 340px) 1fr;
+  gap: clamp(32px, 5vw, 72px);
+  align-items: center;
+}
+.prob-figure {
+  border: 1px solid var(--hairline-strong);
+  border-radius: 16px;
+  padding: 40px 28px;
+  text-align: center;
+  background:
+    radial-gradient(ellipse 80% 90% at 50% 0%, color-mix(in oklab, var(--accent) 16%, transparent), transparent 70%),
+    color-mix(in oklab, var(--surface) 70%, transparent);
+}
+.prob-stat {
+  font-family: var(--font-display); font-weight: 900; font-stretch: 125%;
+  font-size: clamp(3.4rem, 8vw, 5.2rem); line-height: .9;
+  color: var(--accent); letter-spacing: -.03em;
+}
+.prob-stat-cap {
+  font-family: var(--font-mono); font-size: .68rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted); margin-top: 16px; line-height: 1.7;
+}
+.prob-copy h2 { font-size: clamp(1.7rem, 3.2vw, 2.5rem); margin-top: 12px; }
+.prob-copy p { color: var(--muted); line-height: 1.7; margin-top: 18px; max-width: 54ch; }
+.prob-kick { color: var(--ink) !important; font-weight: 600; }
+
+/* ── the pipeline flow (differentiator) ─────────────────────────────────── */
+.flow {
+  display: flex; align-items: stretch; justify-content: center;
+  gap: 14px; flex-wrap: wrap; margin: 0 auto; max-width: 1080px;
+}
+.node {
+  flex: 1 1 260px; max-width: 320px;
+  border: 1px solid var(--hairline-strong); border-radius: 14px;
+  padding: 22px 20px; background: color-mix(in oklab, var(--surface) 80%, transparent);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.node--review { border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline-strong)); }
+.node-role {
+  font-family: var(--font-display); font-weight: 900; font-stretch: 115%;
+  font-size: 1.2rem; color: var(--ink);
+}
+.node-tools {
+  font-family: var(--font-mono); font-size: .64rem; letter-spacing: .04em;
+  color: var(--accent);
+}
+.node p { font-size: .84rem; line-height: 1.6; color: var(--muted); margin-top: 4px; }
+.edge {
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-mono); font-size: 1.4rem; color: var(--faint);
+  flex: 0 0 auto; padding: 0 2px;
+}
+.edge--wall { flex-direction: column; gap: 8px; position: relative; padding: 0 6px; }
+.wall-line {
+  width: 2px; flex: 1; min-height: 60px;
+  background: repeating-linear-gradient(to bottom, var(--accent) 0 7px, transparent 7px 14px);
+  border-radius: 2px;
+}
+.wall-tag {
+  font-family: var(--font-mono); font-size: .56rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--accent);
+  writing-mode: vertical-rl; transform: rotate(180deg); white-space: nowrap;
+}
+.flow-foot {
+  font-family: var(--font-mono); font-size: .76rem; line-height: 1.8;
+  color: var(--muted); text-align: center; max-width: 68ch; margin: 34px auto 0;
+}
+.flow-foot code, .ledger code, .closer code, .prob-copy code {
+  font-size: .84em; color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  padding: 1px 6px; border-radius: 5px;
+}
+
+/* ── the QE team ────────────────────────────────────────────────────────── */
+.surf-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px; max-width: 1080px; margin: 0 auto;
+}
+.surf {
+  border: 1px solid var(--hairline-strong); border-radius: 12px;
+  padding: 20px; background: color-mix(in oklab, var(--surface) 78%, transparent);
+  transition: border-color .25s var(--ease), transform .25s var(--ease);
+}
+.surf:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline-strong)); transform: translateY(-3px); }
+.surf-cmd {
+  display: inline-block; font-family: var(--font-mono); font-size: .82rem;
+  color: var(--accent); margin-bottom: 10px;
+}
+.surf p { font-size: .82rem; line-height: 1.6; color: var(--muted); }
+
+.stat-row {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+  max-width: 1080px; margin: clamp(34px, 5vh, 56px) auto 0;
+}
+.stat {
+  text-align: center; border: 1px solid var(--hairline);
+  border-radius: 12px; padding: 24px 12px;
+  background: color-mix(in oklab, var(--surface) 60%, transparent);
+}
+.stat-n {
+  display: block; font-family: var(--font-display); font-weight: 900;
+  font-stretch: 125%; font-size: clamp(2.4rem, 5vw, 3.4rem);
+  color: var(--accent); line-height: 1; letter-spacing: -.02em;
+}
+.stat-l {
+  display: block; margin-top: 10px; font-family: var(--font-mono);
+  font-size: .64rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+}
+
+/* ── ledger ─────────────────────────────────────────────────────────────── */
+.ledger-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 5vw, 64px);
+  align-items: center;
+}
+.ledger-grid h2 { font-size: clamp(1.6rem, 3vw, 2.4rem); margin-top: 12px; }
+.ledger-grid p { color: var(--muted); line-height: 1.7; margin-top: 18px; max-width: 52ch; }
+.ledger-tree {
+  border: 1px solid var(--hairline-strong); border-radius: 12px; overflow: hidden;
+  background: var(--surface-2);
+}
+.ledger-tree pre { margin: 0; padding: 22px; overflow-x: auto; }
+.ledger-tree code {
+  font-family: var(--font-mono); font-size: .8rem; line-height: 1.85; color: var(--ink);
+  white-space: pre; background: none; padding: 0;
+}
+.ledger-tree .c { color: var(--faint); }
+
+/* ── closer ─────────────────────────────────────────────────────────────── */
+.finale { border-top: 1px solid var(--hairline); }
+.closer { padding: clamp(56px, 10vh, 108px) 0; }
+.closer-grid {
+  display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(28px, 4vw, 56px);
+  align-items: center;
+}
+.closer-intro h2 { font-size: clamp(1.9rem, 3.6vw, 2.9rem); margin-top: 12px; }
+.closer-intro p { color: var(--muted); line-height: 1.7; margin-top: 18px; max-width: 46ch; }
+.gh-pill {
+  grid-column: 1 / -1;
+  display: inline-flex; align-items: center; gap: 14px; justify-self: start;
+  color: var(--ink); text-decoration: none;
+  border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 10px 22px 10px 14px;
+  font-family: var(--font-mono); font-size: .82rem; letter-spacing: .06em;
+  transition: border-color .22s var(--ease), color .22s var(--ease);
+}
+.gh-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .prob-grid { grid-template-columns: 1fr; }
+  .ledger-grid { grid-template-columns: 1fr; }
+  .closer-grid { grid-template-columns: 1fr; }
+  .stat-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 720px) {
+  .flow { flex-direction: column; align-items: stretch; }
+  .node, .node--review { max-width: none; }
+  .edge { transform: rotate(90deg); padding: 4px 0; }
+  .edge--wall { flex-direction: row; }
+  .edge--wall .wall-line { width: 100%; min-height: 0; height: 2px;
+    background: repeating-linear-gradient(to right, var(--accent) 0 7px, transparent 7px 14px); }
+  .wall-tag { writing-mode: horizontal-tb; transform: none; }
+}

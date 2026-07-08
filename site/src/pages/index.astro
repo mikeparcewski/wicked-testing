@@ -1,0 +1,233 @@
+---
+/**
+ * index.astro — the wicked-testing product landing page (wt.wickedagile.com).
+ * Consumes the shared wicked-web chrome (Base + Topbar + Footer + SameGarden)
+ * and the family design tokens; only the page-specific content styles live in
+ * ../styles/testing.css. Theming is driven by [data-theme] (no-flash init in
+ * Base, toggle in Topbar) — this page adds no chrome or theme system of its own.
+ *
+ * Messaging is locked to scratch/marketing/CANONICAL-MESSAGING.md
+ * (wicked-testing section): the differentiator is enforced reviewer isolation.
+ */
+import Base from 'wicked-web/layouts/Base.astro';
+import Topbar from 'wicked-web/components/Topbar.astro';
+import Footer from 'wicked-web/components/Footer.astro';
+import SameGarden from 'wicked-web/components/SameGarden.astro';
+import '../styles/testing.css';
+
+const title = 'wicked-testing — a QE team for AI coding CLIs that can’t self-grade';
+const description = 'When an AI agent tests its own work it grades its own homework — self-reported PASS rates run 80%+ above human-reviewed rates. wicked-testing gives your AI CLI a complete QE team from planning through execution through judgment, with enforced separation between the agent that runs tests and the agent that evaluates them. Local-first, SQLite-backed, MIT. Published to npm as wicked-testing v0.7.3.';
+const repo = 'https://github.com/mikeparcewski/wicked-testing';
+
+// The eight AI CLIs the installer targets.
+const CLIS = ['Claude Code', 'Antigravity', 'Cursor', 'Codex', 'Kiro', 'Copilot', 'OpenCode', 'Pi'];
+
+// The five Tier-1 orchestrator surfaces — the public contract.
+const SURFACES = [
+  { skill: 'plan', line: 'Shift-left test strategy from code or a feature description — strategist, risk, testability, AC-quality.' },
+  { skill: 'authoring', line: 'Author scenario files and generate test code in your project’s detected framework.' },
+  { skill: 'execution', line: 'Run a scenario and capture evidence — stdout, stderr, exit codes, artifacts. No judgment.' },
+  { skill: 'review', line: 'Produce an independent verdict from cold evidence. Gap Report per acceptance criterion.' },
+  { skill: 'insight', line: 'Domain health, run history, and plain-English questions answered by a fixed-SQL oracle.' },
+];
+---
+
+<Base title={title} description={description}>
+  <Topbar pkg="wicked-testing" repo={repo} />
+
+  <!-- ── Hero ──────────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <div class="kicker">Quality engineering for AI coding CLIs</div>
+      <h1>A complete QE team for AI CLIs<br><span class="y">that can’t self-grade.</span></h1>
+      <p class="lede">
+        When an AI agent tests its own work, it grades its own homework —
+        self-reported PASS rates run <b>80%+ above</b> human-reviewed rates.
+        wicked-testing gives your CLI a full QE team from planning through
+        execution through judgment, with <b>enforced separation</b> between the
+        agent that runs tests and the agent that evaluates them.
+      </p>
+
+      <div class="install" role="group" aria-label="Install wicked-testing">
+        <div class="install__bar">
+          <span class="install__label">Install</span>
+          <button class="install__copy" type="button" aria-label="Copy install command"
+            onclick="navigator.clipboard&&navigator.clipboard.writeText('npx wicked-testing install').then(()=>{this.textContent='Copied';setTimeout(()=>{this.textContent='Copy';},1400);})">Copy</button>
+        </div>
+        <pre class="install__code"><code><span class="p">npx</span> wicked-testing install</code></pre>
+      </div>
+
+      <div class="cli-row" aria-label="Supported AI coding CLIs">
+        <span class="cli-lbl">Installs into</span>
+        {CLIS.map((c) => <span class="cli-chip">{c}</span>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- ── The self-grading problem ──────────────────────────────────────── -->
+  <section class="band problem">
+    <div class="wrap prob-grid">
+      <div class="prob-figure" aria-hidden="true">
+        <div class="prob-stat">80%+</div>
+        <div class="prob-stat-cap">self-reported PASS inflation<br>over human-reviewed rates</div>
+      </div>
+      <div class="prob-copy">
+        <span class="kicker">The self-grading problem</span>
+        <h2>The agent that wrote the code also runs the tests — and decides they passed.</h2>
+        <p>
+          There is no independence at any layer. Scripted frameworks —
+          Playwright, pytest, k6, axe-core — only run what you already thought
+          to test. They don’t tell you <em>what</em> to test, whether the tests
+          are any good, or whether the results mean anything.
+        </p>
+        <p class="prob-kick">wicked-testing separates authorship from judgment, and enforces it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── THE differentiator: reviewer isolation ────────────────────────── -->
+  <section class="band pipeline">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker">The differentiator · reviewer isolation</span>
+        <h2>Three agents. One wall. A verdict you can trust.</h2>
+        <p class="sec-sub">
+          The 3-agent acceptance pipeline gives each role its own tool boundary.
+          The reviewer reads <b>cold evidence files only</b> — never the
+          executor’s context, reasoning, or stdout — so the self-grading that
+          inflates AI test PASS rates has nowhere to hide.
+        </p>
+      </div>
+
+      <div class="flow" role="list">
+        <div class="node" role="listitem">
+          <span class="node-role">Writer</span>
+          <span class="node-tools">Read · Grep · Glob · Skill</span>
+          <p>Reads the scenario and code, produces an evidence-gated plan — every step declares its expected evidence and an assertion. Cannot execute or write state.</p>
+        </div>
+        <span class="edge" aria-hidden="true">→</span>
+        <div class="node" role="listitem">
+          <span class="node-role">Executor</span>
+          <span class="node-tools">Read · Write · Bash</span>
+          <p>Follows the plan mechanically. Captures stdout, stderr, exit codes, and file artifacts. Makes <b>no judgment</b> about results.</p>
+        </div>
+        <span class="edge edge--wall" aria-hidden="true">
+          <span class="wall-line"></span>
+          <span class="wall-tag">cold evidence only</span>
+        </span>
+        <div class="node node--review" role="listitem">
+          <span class="node-role">Reviewer</span>
+          <span class="node-tools">Read</span>
+          <p>Reads the evidence files and nothing else. Evaluates each assertion against the artifacts. Never sees how they were produced. Cannot execute.</p>
+        </div>
+      </div>
+
+      <p class="flow-foot">
+        Cold context injection lets the orchestrator hand the reviewer
+        <b>non-prejudicial</b> domain knowledge only (WCAG thresholds, tool
+        quirks). Prior verdicts or pass/fail rates leak nothing — prejudicial
+        content trips <code>INCONCLUSIVE + CONTEXT_CONTAMINATION</code>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── The QE team ───────────────────────────────────────────────────── -->
+  <section class="band team">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="kicker">A complete QE team</span>
+        <h2>Five orchestrators. Forty agents. Planning to judgment.</h2>
+        <p class="sec-sub">
+          <b>40 agents</b> — 15 Tier-1 agents form a stable public contract, 25
+          Tier-2 specialists route internally — grouped behind five Tier-1
+          orchestrator skills, shipped across <b>47 installable skills</b>.
+        </p>
+      </div>
+
+      <div class="surf-grid">
+        {SURFACES.map((s) => (
+          <div class="surf">
+            <code class="surf-cmd">/wicked-testing:{s.skill}</code>
+            <p>{s.line}</p>
+          </div>
+        ))}
+      </div>
+
+      <div class="stat-row">
+        <div class="stat"><span class="stat-n">40</span><span class="stat-l">specialist agents</span></div>
+        <div class="stat"><span class="stat-n">47</span><span class="stat-l">installable skills</span></div>
+        <div class="stat"><span class="stat-n">3</span><span class="stat-l">agent acceptance pipeline</span></div>
+        <div class="stat"><span class="stat-n">8</span><span class="stat-l">AI CLIs supported</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Evidence + ledger ─────────────────────────────────────────────── -->
+  <section class="band ledger">
+    <div class="wrap ledger-grid">
+      <div>
+        <span class="kicker">Evidence, not assertions</span>
+        <h2>A project-local ledger where every verdict traces to the evidence that produced it.</h2>
+        <p>
+          Records write JSON first (fsync’d), then SQLite — a WAL-mode ledger
+          with a fixed-SQL test oracle and <b>no ad-hoc SQL</b>. On SQLite
+          failure the store degrades to JSON-only. Every record carries
+          <code>run_id</code>, <code>scenario_id</code>, <code>agent</code>, and
+          <code>verdict</code>.
+        </p>
+        <p>
+          <b>wicked-vault is absorbed</b> as of 0.7.3 — the evidence hash chain,
+          verifier registry, and vault CLI ship in-package. wicked-bus events and
+          wicked-brain memory writes are optional: absent either one, it no-ops
+          and keeps running.
+        </p>
+      </div>
+      <div class="ledger-tree" aria-hidden="true">
+        <pre><code>.wicked-testing/
+  wicked-testing.db      <span class="c">SQLite ledger (WAL, 7 tables)</span>
+  evidence/
+    &lt;run-id&gt;/
+      manifest.json      <span class="c">public contract</span>
+      evidence.json      <span class="c">executor summary</span>
+      step-N.json        <span class="c">per-step evidence</span>
+      context.md         <span class="c">cold reviewer context</span>
+  verdicts/&#123;id&#125;.json     <span class="c">traceable to run</span></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Closer / install ──────────────────────────────────────────────── -->
+  <div class="finale">
+    <section class="closer">
+      <div class="wrap closer-grid">
+        <div class="closer-intro">
+          <span class="kicker">Get started</span>
+          <h2>Give your agent a QE team it can’t out-argue.</h2>
+          <p>
+            Local-first and SQLite-backed. MIT-licensed, published to npm as
+            <code>wicked-testing</code> v0.7.3. The <code>wicked-qe</code> rename
+            is pending — the <code>wicked-qe</code> bin alias already ships.
+          </p>
+        </div>
+        <div class="install install--closer" role="group" aria-label="Install in Claude Code">
+          <div class="install__bar">
+            <span class="install__label">Claude Code plugin</span>
+            <button class="install__copy" type="button" aria-label="Copy install commands"
+              onclick="navigator.clipboard&&navigator.clipboard.writeText('claude plugins marketplace add mikeparcewski/wicked-testing\nclaude plugins install wicked-testing').then(()=>{this.textContent='Copied';setTimeout(()=>{this.textContent='Copy';},1400);})">Copy</button>
+          </div>
+          <pre class="install__code"><code><span class="p">claude</span> plugins marketplace add mikeparcewski/wicked-testing
+<span class="p">claude</span> plugins install wicked-testing</code></pre>
+          <p class="install__alt">or <code>npx wicked-testing install</code> for any of the eight CLIs</p>
+        </div>
+        <a class="gh-pill" href="https://github.com/mikeparcewski/wicked-testing#readme" target="_blank" rel="noopener" aria-label="View on GitHub">
+          <svg viewBox="0 0 16 16" width="42" height="42" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.02-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+          <span>View on GitHub</span>
+        </a>
+      </div>
+    </section>
+
+    <SameGarden current="wicked-testing" />
+
+    <Footer repo={repo} />
+  </div>
+</Base>

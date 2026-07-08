@@ -7,13 +7,17 @@
                                                                  |___/ 
 ```
 
-**47 skills (5 Tier-1 orchestrators + 42 specialists). A 3-skill acceptance pipeline that eliminates self-grading.**
+**A complete QE team for AI coding CLIs that can't self-grade.**
+
+40 agents · 47 installable skills (5 Tier-1 orchestrators + 42 specialists) · a 3-agent acceptance pipeline that eliminates self-grading.
 
 ```bash
 npx wicked-testing install
 ```
 
 Works with **Claude Code**, **Antigravity**, **Cursor**, **Codex**, **Kiro**, **Copilot**, **OpenCode**, and **Pi**.
+
+Published to npm as [`wicked-testing`](https://www.npmjs.com/package/wicked-testing) v0.7.3 · site at [wt.wickedagile.com](https://wt.wickedagile.com). The `wicked-qe` rename is pending — the `wicked-qe` bin alias already ships.
 
 ---
 
@@ -139,7 +143,7 @@ Invoke as slash commands — each maps to the installed `wicked-testing:<name>` 
 | `/wicked-testing:plan` | Shift-left test strategy from code or feature description |
 | `/wicked-testing:authoring` | Author scenario files and test code |
 | `/wicked-testing:execution` | Run a scenario and capture evidence |
-| `/wicked-testing:acceptance-testing` | Full 3-skill pipeline: Writer → Executor → Reviewer |
+| `/wicked-testing:acceptance-testing` | Full 3-agent pipeline: Writer → Executor → Reviewer |
 | `/wicked-testing:review` | Evaluate captured evidence |
 | `/wicked-testing:insight` | Domain health, run history, oracle queries, stats, reports |
 
@@ -294,7 +298,7 @@ See [SCENARIO-FORMAT.md](SCENARIO-FORMAT.md) for the full spec. Working examples
 - One of: Claude Code, Antigravity, Codex, Cursor, Kiro, Copilot, OpenCode, or Pi
 - `better-sqlite3` — installed via `npm install`, pre-built binaries for macOS x64/arm64, Linux x64/arm64, Windows x64. On unsupported platforms, `npm install` falls back to `node-gyp rebuild` which requires a C++ toolchain.
 
-Windows (Git Bash / WSL) is fully supported. Native PowerShell hook support is planned for v2.
+Windows (Git Bash / WSL) is fully supported.
 
 ## License
 
