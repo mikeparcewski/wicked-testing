@@ -102,12 +102,15 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
 <Base title={title} description={description}>
   <Topbar pkg="wicked-testing" repo={repo} />
 
-  <!-- ── Hero — intro + install SIDE BY SIDE ──────────────────────────────── -->
+  <!-- ── Hero — full-width title on top; slim intro + LARGE imagery below ──── -->
   <section class="hero">
     <div class="wrap hero-inner">
-      <div class="hero-lead">
+      <div class="hero-head">
         <span class="kicker">A QE team for AI coding CLIs</span>
         <h1>No agent grades <span class="y">its own homework.</span></h1>
+      </div>
+
+      <div class="hero-body">
         <p class="lede">
           When an AI agent tests its own work, it grades its own homework —
           self-reported PASS rates run <b>80%+ above</b> human-reviewed rates.
@@ -115,10 +118,9 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
           <b>wall</b> between the agent that runs the tests and the agent that
           decides they passed.
         </p>
-      </div>
 
-      <div class="hero-side">
-        <div class="install" role="group" aria-label="Install wicked-testing">
+        <div class="hero-side">
+          <div class="install" role="group" aria-label="Install wicked-testing">
           <div class="install__bar">
             <span class="install__label">Install · the wicked family</span>
             <button class="install__copy" type="button" aria-label="Copy install command"
@@ -130,16 +132,17 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
             <span class="install__or">or just this:</span> <code>npx wicked-testing install</code>
           </p>
         </div>
-        <div class="cli-row" aria-label="Supported AI coding CLIs">
-          <span class="cli-lbl">Installs into 8 CLIs</span>
-          {CLIS.map((c) => <span class="cli-chip">{c}</span>)}
+          <div class="cli-row" aria-label="Supported AI coding CLIs">
+            <span class="cli-lbl">Installs into 8 CLIs</span>
+            {CLIS.map((c) => <span class="cli-chip">{c}</span>)}
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- ── The gap — the self-grading problem (side-by-side) ────────────────── -->
-  <section class="band">
+  <section class="band gap-band">
     <div class="wrap gap-grid">
       <div class="card-fig" id="cardfig" data-revealed="false">
         <div class="card-fig-h"><span>report card · same feature</span><span>run #0.7.3</span></div>
@@ -274,7 +277,7 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
 
       <div class="fleet-grid" id="fleetGrid">
         {AGENTS.map((a) => (
-          <div class="agent" data-surf={a.s} data-tier={a.t}>
+          <div class="agent" data-surf={a.s} data-tier={a.t} title={a.n}>
             <span class="agent-dot" aria-hidden="true"></span>
             <span class="agent-name">{a.n}</span>
           </div>
@@ -290,7 +293,7 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
   </section>
 
   <!-- ── The ledger — evidence (side-by-side) ─────────────────────────────── -->
-  <section class="band">
+  <section class="band ledger-band">
     <div class="wrap ledger-grid">
       <div>
         <span class="kicker">Evidence, not assertions</span>

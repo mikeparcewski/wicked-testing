@@ -14,6 +14,71 @@
 /* The shared Topbar is position:fixed; offset content below it. */
 body { padding-top: var(--topbar-h); }
 
+/* ── Scroll-lock to section + per-section viewport sizing ──────────────────
+   The validated family pattern (crew / interactive): every top-level content
+   section fills the viewport and the document snaps section-to-section.
+   `proximity` (not mandatory) so a section taller than the viewport never
+   traps the user; `safe center` aligns it to the top instead of clipping.
+   scroll-padding offsets the fixed topbar. Mobile falls back to free scroll. */
+html { scroll-snap-type: y proximity; scroll-padding-top: var(--topbar-h); }
+.hero, .band, .wall-band, .closer {
+  min-height: 100vh;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+}
+@media (max-width: 760px) {
+  html { scroll-snap-type: none; }
+  .hero, .band, .wall-band, .closer { min-height: 0; }
+}
+
+/* Translucent alternating bands — base sections transparent so the fixed
+   isolation-chamber background shows through; every-other section gets a
+   faint darkening overlay (never an opaque fill). */
+.hero, .wall-band, .ledger-band { background: transparent; }
+.gap-band, .fleet-band, .closer { background: color-mix(in oklab, #000 7%, transparent); }
+
+/* ── UNIQUE BACKGROUND — illustrative QE line-art ──────────────────────────
+   Overrides the shared family grid+glow (tokens.css body::before/::after, in
+   @layer base — these unlayered rules win). ::before is a fixed, ink-coloured,
+   mask-driven layer of faint recognizable QE/testing icon schematics scattered
+   like garden's tool cards: magnifier-over-code, checklist clipboards, shield-
+   checks, bugs, an Erlenmeyer flask, a PASS seal/stamp, evidence documents, a
+   test target/bullseye, and the isolation motif — two figures split by a dashed
+   WALL — plus evidence-handoff arrows and recurring dashed isolation walls.
+   ::after keeps the family's dashed accent WALL + author/reviewer chamber glows.
+   Kept low-opacity so text stays readable through the translucent bands. */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-color: var(--ink);
+  background-image: none;
+  opacity: .10;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='1600' height='900' viewBox='0 0 1600 900' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(120,120) scale(1.15)'%3E%3Ccircle cx='34' cy='34' r='26'/%3E%3Cpath d='M53 53 L77 77' stroke-width='3.4'/%3E%3Cpath d='M28 26 l-9 8 l9 8'/%3E%3Cpath d='M40 26 l9 8 l-9 8'/%3E%3Cpath d='M38 23 l-4 22'/%3E%3C/g%3E%3Cg transform='translate(430,108) scale(1.15)'%3E%3Crect x='8' y='12' width='62' height='78' rx='8'/%3E%3Crect x='28' y='5' width='22' height='13' rx='4'/%3E%3Cpath d='M17 36 l6 6 l10 -13'/%3E%3Cpath d='M40 38 h24'/%3E%3Cpath d='M17 56 l6 6 l10 -13'/%3E%3Cpath d='M40 58 h24'/%3E%3Cpath d='M17 76 l6 6 l10 -13'/%3E%3Cpath d='M40 78 h20'/%3E%3C/g%3E%3Cg transform='translate(745,116) scale(1.15)'%3E%3Cpath d='M40 6 L72 18 V44 C72 66 58 80 40 92 C22 80 8 66 8 44 V18 Z'/%3E%3Cpath d='M24 46 l12 12 l22 -26'/%3E%3C/g%3E%3Cg transform='translate(1065,120) scale(1.15)'%3E%3Cellipse cx='40' cy='48' rx='20' ry='24'/%3E%3Cpath d='M40 26 V72'/%3E%3Ccircle cx='40' cy='20' r='8'/%3E%3Cpath d='M34 14 l-9 -8'/%3E%3Cpath d='M46 14 l9 -8'/%3E%3Cpath d='M20 38 l-14 -6'/%3E%3Cpath d='M18 50 h-16'/%3E%3Cpath d='M20 62 l-14 8'/%3E%3Cpath d='M60 38 l14 -6'/%3E%3Cpath d='M62 50 h16'/%3E%3Cpath d='M60 62 l14 8'/%3E%3C/g%3E%3Cg transform='translate(1405,118) scale(1.15)'%3E%3Cpath d='M32 8 h16'/%3E%3Cpath d='M35 8 V33 L17 73 C14 81 19 87 27 87 H53 C61 87 66 81 63 73 L45 33 V8'/%3E%3Cpath d='M24 64 H56'/%3E%3Ccircle cx='34' cy='75' r='3'/%3E%3Ccircle cx='45' cy='69' r='2.4'/%3E%3Ccircle cx='40' cy='81' r='2'/%3E%3C/g%3E%3Cg transform='translate(175,432) scale(1.15) rotate(-8 40 40)'%3E%3Ccircle cx='40' cy='40' r='31'/%3E%3Ccircle cx='40' cy='40' r='24'/%3E%3Cpath d='M27 40 l9 10 l17 -21'/%3E%3C/g%3E%3Cg transform='translate(470,415) scale(1.15)'%3E%3Cpath d='M14 6 H50 L66 22 V88 H14 Z'/%3E%3Cpath d='M50 6 V22 H66'/%3E%3Cpath d='M24 36 H56'/%3E%3Cpath d='M24 46 H56'/%3E%3Cpath d='M24 56 H48'/%3E%3Ccircle cx='30' cy='72' r='10'/%3E%3Cpath d='M25 72 l4 4 l7 -9'/%3E%3C/g%3E%3Cg transform='translate(805,448) scale(1.28)'%3E%3Ccircle cx='22' cy='24' r='10'/%3E%3Cpath d='M5 66 C5 47 39 47 39 66'/%3E%3Ccircle cx='78' cy='24' r='10'/%3E%3Cpath d='M61 66 C61 47 95 47 95 66'/%3E%3Cpath d='M50 2 V72' stroke-dasharray='4 7'/%3E%3C/g%3E%3Cg transform='translate(1165,436) scale(1.15)'%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3Ccircle cx='40' cy='40' r='19'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Ccircle cx='40' cy='40' r='2.4'/%3E%3C/g%3E%3Cg transform='translate(1445,438) scale(1.15)'%3E%3Ccircle cx='34' cy='34' r='26'/%3E%3Cpath d='M53 53 L77 77' stroke-width='3.4'/%3E%3Cpath d='M28 26 l-9 8 l9 8'/%3E%3Cpath d='M40 26 l9 8 l-9 8'/%3E%3Cpath d='M38 23 l-4 22'/%3E%3C/g%3E%3Cg transform='translate(150,726) scale(1.15)'%3E%3Crect x='8' y='12' width='62' height='78' rx='8'/%3E%3Crect x='28' y='5' width='22' height='13' rx='4'/%3E%3Cpath d='M17 36 l6 6 l10 -13'/%3E%3Cpath d='M40 38 h24'/%3E%3Cpath d='M17 56 l6 6 l10 -13'/%3E%3Cpath d='M40 58 h24'/%3E%3Cpath d='M17 76 l6 6 l10 -13'/%3E%3Cpath d='M40 78 h20'/%3E%3C/g%3E%3Cg transform='translate(520,730) scale(1.15)'%3E%3Cellipse cx='40' cy='48' rx='20' ry='24'/%3E%3Cpath d='M40 26 V72'/%3E%3Ccircle cx='40' cy='20' r='8'/%3E%3Cpath d='M34 14 l-9 -8'/%3E%3Cpath d='M46 14 l9 -8'/%3E%3Cpath d='M20 38 l-14 -6'/%3E%3Cpath d='M18 50 h-16'/%3E%3Cpath d='M20 62 l-14 8'/%3E%3Cpath d='M60 38 l14 -6'/%3E%3Cpath d='M62 50 h16'/%3E%3Cpath d='M60 62 l14 8'/%3E%3C/g%3E%3Cg transform='translate(790,742) scale(0.95)'%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3Ccircle cx='40' cy='40' r='19'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Ccircle cx='40' cy='40' r='2.4'/%3E%3C/g%3E%3Cg transform='translate(1105,716) scale(1.15)'%3E%3Cpath d='M40 6 L72 18 V44 C72 66 58 80 40 92 C22 80 8 66 8 44 V18 Z'/%3E%3Cpath d='M24 46 l12 12 l22 -26'/%3E%3C/g%3E%3Cg transform='translate(1440,700) scale(1.15)'%3E%3Cpath d='M14 6 H50 L66 22 V88 H14 Z'/%3E%3Cpath d='M50 6 V22 H66'/%3E%3Cpath d='M24 36 H56'/%3E%3Cpath d='M24 46 H56'/%3E%3Cpath d='M24 56 H48'/%3E%3Ccircle cx='30' cy='72' r='10'/%3E%3Cpath d='M25 72 l4 4 l7 -9'/%3E%3C/g%3E%3Cpath d='M368 250 V600' stroke-dasharray='5 9'/%3E%3Cpath d='M1010 560 V850' stroke-dasharray='5 9'/%3E%3Cpath d='M300 175 h96'/%3E%3Cpath d='M388 168 l10 7 l-10 7'/%3E%3Cpath d='M600 470 h150'/%3E%3Cpath d='M742 463 l10 7 l-10 7'/%3E%3Cpath d='M980 175 h70'/%3E%3Cpath d='M1042 168 l10 7 l-10 7'/%3E%3Cpath d='M690 760 h70'/%3E%3Cpath d='M752 753 l10 7 l-10 7'/%3E%3C/g%3E%3C/svg%3E");
+          mask-image: url("data:image/svg+xml,%3Csvg width='1600' height='900' viewBox='0 0 1600 900' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(120,120) scale(1.15)'%3E%3Ccircle cx='34' cy='34' r='26'/%3E%3Cpath d='M53 53 L77 77' stroke-width='3.4'/%3E%3Cpath d='M28 26 l-9 8 l9 8'/%3E%3Cpath d='M40 26 l9 8 l-9 8'/%3E%3Cpath d='M38 23 l-4 22'/%3E%3C/g%3E%3Cg transform='translate(430,108) scale(1.15)'%3E%3Crect x='8' y='12' width='62' height='78' rx='8'/%3E%3Crect x='28' y='5' width='22' height='13' rx='4'/%3E%3Cpath d='M17 36 l6 6 l10 -13'/%3E%3Cpath d='M40 38 h24'/%3E%3Cpath d='M17 56 l6 6 l10 -13'/%3E%3Cpath d='M40 58 h24'/%3E%3Cpath d='M17 76 l6 6 l10 -13'/%3E%3Cpath d='M40 78 h20'/%3E%3C/g%3E%3Cg transform='translate(745,116) scale(1.15)'%3E%3Cpath d='M40 6 L72 18 V44 C72 66 58 80 40 92 C22 80 8 66 8 44 V18 Z'/%3E%3Cpath d='M24 46 l12 12 l22 -26'/%3E%3C/g%3E%3Cg transform='translate(1065,120) scale(1.15)'%3E%3Cellipse cx='40' cy='48' rx='20' ry='24'/%3E%3Cpath d='M40 26 V72'/%3E%3Ccircle cx='40' cy='20' r='8'/%3E%3Cpath d='M34 14 l-9 -8'/%3E%3Cpath d='M46 14 l9 -8'/%3E%3Cpath d='M20 38 l-14 -6'/%3E%3Cpath d='M18 50 h-16'/%3E%3Cpath d='M20 62 l-14 8'/%3E%3Cpath d='M60 38 l14 -6'/%3E%3Cpath d='M62 50 h16'/%3E%3Cpath d='M60 62 l14 8'/%3E%3C/g%3E%3Cg transform='translate(1405,118) scale(1.15)'%3E%3Cpath d='M32 8 h16'/%3E%3Cpath d='M35 8 V33 L17 73 C14 81 19 87 27 87 H53 C61 87 66 81 63 73 L45 33 V8'/%3E%3Cpath d='M24 64 H56'/%3E%3Ccircle cx='34' cy='75' r='3'/%3E%3Ccircle cx='45' cy='69' r='2.4'/%3E%3Ccircle cx='40' cy='81' r='2'/%3E%3C/g%3E%3Cg transform='translate(175,432) scale(1.15) rotate(-8 40 40)'%3E%3Ccircle cx='40' cy='40' r='31'/%3E%3Ccircle cx='40' cy='40' r='24'/%3E%3Cpath d='M27 40 l9 10 l17 -21'/%3E%3C/g%3E%3Cg transform='translate(470,415) scale(1.15)'%3E%3Cpath d='M14 6 H50 L66 22 V88 H14 Z'/%3E%3Cpath d='M50 6 V22 H66'/%3E%3Cpath d='M24 36 H56'/%3E%3Cpath d='M24 46 H56'/%3E%3Cpath d='M24 56 H48'/%3E%3Ccircle cx='30' cy='72' r='10'/%3E%3Cpath d='M25 72 l4 4 l7 -9'/%3E%3C/g%3E%3Cg transform='translate(805,448) scale(1.28)'%3E%3Ccircle cx='22' cy='24' r='10'/%3E%3Cpath d='M5 66 C5 47 39 47 39 66'/%3E%3Ccircle cx='78' cy='24' r='10'/%3E%3Cpath d='M61 66 C61 47 95 47 95 66'/%3E%3Cpath d='M50 2 V72' stroke-dasharray='4 7'/%3E%3C/g%3E%3Cg transform='translate(1165,436) scale(1.15)'%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3Ccircle cx='40' cy='40' r='19'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Ccircle cx='40' cy='40' r='2.4'/%3E%3C/g%3E%3Cg transform='translate(1445,438) scale(1.15)'%3E%3Ccircle cx='34' cy='34' r='26'/%3E%3Cpath d='M53 53 L77 77' stroke-width='3.4'/%3E%3Cpath d='M28 26 l-9 8 l9 8'/%3E%3Cpath d='M40 26 l9 8 l-9 8'/%3E%3Cpath d='M38 23 l-4 22'/%3E%3C/g%3E%3Cg transform='translate(150,726) scale(1.15)'%3E%3Crect x='8' y='12' width='62' height='78' rx='8'/%3E%3Crect x='28' y='5' width='22' height='13' rx='4'/%3E%3Cpath d='M17 36 l6 6 l10 -13'/%3E%3Cpath d='M40 38 h24'/%3E%3Cpath d='M17 56 l6 6 l10 -13'/%3E%3Cpath d='M40 58 h24'/%3E%3Cpath d='M17 76 l6 6 l10 -13'/%3E%3Cpath d='M40 78 h20'/%3E%3C/g%3E%3Cg transform='translate(520,730) scale(1.15)'%3E%3Cellipse cx='40' cy='48' rx='20' ry='24'/%3E%3Cpath d='M40 26 V72'/%3E%3Ccircle cx='40' cy='20' r='8'/%3E%3Cpath d='M34 14 l-9 -8'/%3E%3Cpath d='M46 14 l9 -8'/%3E%3Cpath d='M20 38 l-14 -6'/%3E%3Cpath d='M18 50 h-16'/%3E%3Cpath d='M20 62 l-14 8'/%3E%3Cpath d='M60 38 l14 -6'/%3E%3Cpath d='M62 50 h16'/%3E%3Cpath d='M60 62 l14 8'/%3E%3C/g%3E%3Cg transform='translate(790,742) scale(0.95)'%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3Ccircle cx='40' cy='40' r='19'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Ccircle cx='40' cy='40' r='2.4'/%3E%3C/g%3E%3Cg transform='translate(1105,716) scale(1.15)'%3E%3Cpath d='M40 6 L72 18 V44 C72 66 58 80 40 92 C22 80 8 66 8 44 V18 Z'/%3E%3Cpath d='M24 46 l12 12 l22 -26'/%3E%3C/g%3E%3Cg transform='translate(1440,700) scale(1.15)'%3E%3Cpath d='M14 6 H50 L66 22 V88 H14 Z'/%3E%3Cpath d='M50 6 V22 H66'/%3E%3Cpath d='M24 36 H56'/%3E%3Cpath d='M24 46 H56'/%3E%3Cpath d='M24 56 H48'/%3E%3Ccircle cx='30' cy='72' r='10'/%3E%3Cpath d='M25 72 l4 4 l7 -9'/%3E%3C/g%3E%3Cpath d='M368 250 V600' stroke-dasharray='5 9'/%3E%3Cpath d='M1010 560 V850' stroke-dasharray='5 9'/%3E%3Cpath d='M300 175 h96'/%3E%3Cpath d='M388 168 l10 7 l-10 7'/%3E%3Cpath d='M600 470 h150'/%3E%3Cpath d='M742 463 l10 7 l-10 7'/%3E%3Cpath d='M980 175 h70'/%3E%3Cpath d='M1042 168 l10 7 l-10 7'/%3E%3Cpath d='M690 760 h70'/%3E%3Cpath d='M752 753 l10 7 l-10 7'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center;  mask-position: center;
+  -webkit-mask-size: cover;       mask-size: cover;
+}
+[data-theme="dark"] body::before { opacity: .13; }
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    /* THE WALL — a faint dashed vertical barrier splitting author | reviewer */
+    repeating-linear-gradient(to bottom,
+      color-mix(in oklab, var(--accent) 24%, transparent) 0 11px,
+      transparent 11px 24px),
+    /* author chamber — warm accent glow, upper-left */
+    radial-gradient(ellipse 42% 50% at 13% 6%,  color-mix(in oklab, var(--accent) 13%, transparent), transparent 60%),
+    /* reviewer chamber — cool, isolated, lower-right */
+    radial-gradient(ellipse 44% 52% at 88% 96%, color-mix(in oklab, var(--link) 12%, transparent), transparent 62%);
+  background-size: 2px 100%, auto, auto;
+  background-position: 61% 0, 0 0, 0 0;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  -webkit-mask: linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+          mask: linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+}
+
 h1, h2, h3 {
   font-family: var(--font-display);
   font-weight: 900;
@@ -32,8 +97,7 @@ b { color: var(--ink); font-weight: 700; }
 /* ── section rhythm ─────────────────────────────────────────────────────── */
 .band {
   border-top: 1px solid var(--hairline);
-  padding: clamp(64px, 12vh, 128px) 0;
-  scroll-snap-align: start;
+  padding: clamp(40px, 6.5vh, 96px) 0;
   position: relative;
 }
 .wrap { max-width: 1240px; margin: 0 auto; padding: 0 28px; }
@@ -53,16 +117,13 @@ b { color: var(--ink); font-weight: 700; }
 .sec-sub b { color: var(--ink); }
 .sec-sub em, .band h2 em { font-style: normal; color: var(--accent); }
 
-/* ── HERO — intro + install SIDE BY SIDE (same row) ─────────────────────── */
+/* ── HERO — full-width title on top; slim intro + LARGE imagery below ────── */
 .hero {
   position: relative;
-  min-height: calc(100vh - var(--topbar-h));
-  display: flex; align-items: center;
-  padding: clamp(56px, 9vh, 104px) 0;
-  scroll-snap-align: start;
+  padding: clamp(48px, 8vh, 96px) 0;
   overflow: hidden;
 }
-/* the wall motif, faint, splitting the hero */
+/* the wall motif, faint, splitting the hero (reinforces the page wall bg) */
 .hero::before {
   content: ''; position: absolute; top: 0; bottom: 0; left: 61%;
   width: 2px; pointer-events: none; opacity: .5;
@@ -70,19 +131,32 @@ b { color: var(--ink); font-weight: 700; }
   mask: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
 }
 @media (max-width: 900px) { .hero::before { display: none; } }
+
+/* the whole hero stacks: title head (full width) over a two-column body */
 .hero-inner {
-  display: grid; grid-template-columns: 1.15fr .85fr;
-  gap: clamp(32px, 5vw, 76px); align-items: center; width: 100%;
+  display: flex; flex-direction: column;
+  gap: clamp(28px, 4.5vh, 54px); width: 100%;
 }
-.hero-lead { max-width: 40ch; }
-.hero h1 { font-size: clamp(2.7rem, 6.2vw, 5.2rem); line-height: .95; margin: 18px 0 0; }
+.hero-head { width: 100%; }               /* title spans the full container */
+.hero h1 {
+  font-size: clamp(2.7rem, 6.6vw, 5.6rem); line-height: .95;
+  margin: 14px 0 0; max-width: 20ch;
+}
+/* below the title: a slim intro column beside the large imagery */
+.hero-body {
+  display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr);
+  gap: clamp(28px, 4vw, 64px); align-items: center; width: 100%;
+}
 .hero .lede {
   font-family: var(--font-sans, var(--font-display));
-  font-size: clamp(1.02rem, 1.6vw, 1.26rem); line-height: 1.6;
-  color: var(--muted); max-width: 46ch; margin: 24px 0 0;
+  font-size: clamp(1.02rem, 1.55vw, 1.24rem); line-height: 1.6;
+  color: var(--muted); max-width: 40ch; margin: 0;
 }
 .hero .lede b { color: var(--ink); }
+/* the imagery — install block + CLI chips — gets the bulk of the width */
 .hero-side { min-width: 0; }
+.hero-side .install__code { padding: 22px 22px; }
+.hero-side .install__code code { font-size: 1.16rem; }
 
 /* install block (family pattern) */
 .install {
@@ -155,9 +229,10 @@ b { color: var(--ink); font-weight: 700; }
   text-transform: uppercase; color: var(--faint);
   border-bottom: 1px solid var(--hairline); padding-bottom: 12px;
 }
-.grades { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px; }
+.grades { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
 .grade-cell {
-  border: 1px solid var(--hairline); border-radius: 12px; padding: 16px 14px 14px;
+  min-width: 0;
+  border: 1px solid var(--hairline); border-radius: 12px; padding: 16px 10px 14px;
   text-align: center; background: color-mix(in oklab, var(--surface-2) 60%, transparent);
   position: relative;
 }
@@ -167,8 +242,8 @@ b { color: var(--ink); font-weight: 700; }
   text-transform: uppercase; color: var(--muted);
 }
 .grade-mark {
-  font-family: var(--font-display); font-weight: 900; font-stretch: 125%;
-  font-size: clamp(2.6rem, 6vw, 3.6rem); line-height: 1; letter-spacing: -.03em;
+  font-family: var(--font-display); font-weight: 900; font-stretch: 115%;
+  font-size: clamp(2rem, 4.4vw, 2.8rem); line-height: 1; letter-spacing: -.03em;
   margin-top: 10px; color: var(--accent);
   transition: color .4s var(--ease), opacity .4s var(--ease);
 }
@@ -206,12 +281,13 @@ b { color: var(--ink); font-weight: 700; }
 
 /* ── THE WALL — reviewer isolation (ONE SCREEN) ─────────────────────────── */
 .wall-band {
-  min-height: calc(100vh - var(--topbar-h));
-  display: flex; flex-direction: column; justify-content: center;
-  padding: clamp(48px, 8vh, 88px) 0;
-  border-top: 1px solid var(--hairline); scroll-snap-align: start;
+  justify-content: safe center;
+  padding: clamp(40px, 6vh, 72px) 0;
+  border-top: 1px solid var(--hairline);
 }
-.wall-band .head-top { margin-bottom: clamp(24px, 4vh, 44px); }
+.wall-band .head-top { margin-bottom: clamp(18px, 2.6vh, 30px); }
+.wall-band .head-top h2 { margin-top: 12px; }
+.wall-band .head-top .sec-sub { margin-top: 12px; font-size: .82rem; line-height: 1.6; max-width: 84ch; }
 .wall-band .head-top .kicker { color: var(--accent); }
 
 /* the three-role stage */
@@ -223,7 +299,7 @@ b { color: var(--ink); font-weight: 700; }
 }
 .role {
   border: 1px solid var(--hairline-strong); border-radius: 14px;
-  padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 8px;
+  padding: 15px 16px 14px; display: flex; flex-direction: column; gap: 7px;
   background: color-mix(in oklab, var(--surface) 80%, transparent);
   transition: border-color .3s var(--ease), box-shadow .3s var(--ease), opacity .3s var(--ease);
 }
@@ -249,7 +325,7 @@ b { color: var(--ink); font-weight: 700; }
 
 /* the wall itself — the dashed barrier between executor and reviewer */
 .wall {
-  position: relative; align-self: stretch; min-height: 190px;
+  position: relative; align-self: stretch; min-height: 150px;
   background: repeating-linear-gradient(to bottom, var(--accent) 0 8px, transparent 8px 17px);
   border-radius: 2px; opacity: .85;
 }
@@ -264,10 +340,11 @@ b { color: var(--ink); font-weight: 700; }
 
 /* the evidence channel — chips crossing / bouncing off the wall.
    Spans the executor→reviewer gap; sits behind the wall visually. */
+/* absolutely overlaid on the executor→reviewer span so it never adds a grid
+   row (grid placement forced a phantom 2nd row that ballooned the stage). */
 .channel {
-  grid-column: 2 / 5; grid-row: 1; align-self: center;
-  position: relative; height: 100%; pointer-events: none; overflow: hidden;
-  z-index: 2; margin: 0 -6px;
+  position: absolute; top: 0; bottom: 0; left: 34%; right: 0;
+  pointer-events: none; overflow: hidden; z-index: 2;
 }
 .chip {
   position: absolute; top: 50%; left: 4%;
@@ -308,7 +385,7 @@ b { color: var(--ink); font-weight: 700; }
 /* the wall legend — what crosses vs what is blocked (compact, one row) */
 .wall-legend {
   display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-  max-width: 1184px; margin: clamp(20px, 3vh, 34px) 0 0;
+  max-width: 1184px; margin: clamp(16px, 2.4vh, 26px) 0 0;
 }
 .leg {
   border: 1px solid var(--hairline-strong); border-radius: 12px;
@@ -334,8 +411,8 @@ b { color: var(--ink); font-weight: 700; }
 .leg--pass .leg-items span code, .leg-items code { color: var(--accent); font-size: .95em; }
 
 .wall-foot {
-  font-family: var(--font-mono); font-size: .74rem; line-height: 1.75;
-  color: var(--muted); max-width: 90ch; margin: clamp(18px, 3vh, 30px) 0 0;
+  font-family: var(--font-mono); font-size: .72rem; line-height: 1.65;
+  color: var(--muted); max-width: 108ch; margin: clamp(14px, 2.2vh, 24px) 0 0;
 }
 .wall-foot code {
   font-size: .86em; color: var(--accent);
@@ -345,8 +422,10 @@ b { color: var(--ink); font-weight: 700; }
 .wall-foot b { color: var(--ink); }
 
 /* ── THE FLEET — 40 agents, filter by orchestrator surface ──────────────── */
+.fleet-band .head-top { margin-bottom: clamp(20px, 3.2vh, 34px); }
+.fleet-band .head-top .sec-sub { margin-top: 12px; }
 .fleet-band .head-top .kicker { color: var(--accent); }
-.fleet-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; align-items: center; }
+.fleet-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; align-items: center; }
 .fleet-lbl {
   font-family: var(--font-mono); font-size: .6rem; letter-spacing: .2em;
   text-transform: uppercase; color: var(--faint); margin-right: 4px;
@@ -363,14 +442,14 @@ b { color: var(--ink); font-weight: 700; }
 .f-btn .f-n { opacity: .7; margin-left: 5px; }
 
 .fleet-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(186px, 1fr));
-  gap: 9px; max-width: 1184px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px; max-width: 1184px;
 }
 .agent {
-  display: flex; align-items: center; gap: 9px;
-  border: 1px solid var(--hairline); border-radius: 9px; padding: 10px 12px;
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--hairline); border-radius: 9px; padding: 7px 11px;
   background: color-mix(in oklab, var(--surface) 46%, transparent);
-  font-family: var(--font-mono); font-size: .72rem; color: var(--ink);
+  font-family: var(--font-mono); font-size: .68rem; color: var(--ink);
   transition: opacity .3s var(--ease), border-color .3s var(--ease), background .3s var(--ease), transform .3s var(--ease);
 }
 .agent-dot {
@@ -385,7 +464,7 @@ b { color: var(--ink); font-weight: 700; }
   background: color-mix(in oklab, var(--surface) 74%, transparent); transform: translateY(-2px);
 }
 .fleet-legend {
-  display: flex; flex-wrap: wrap; gap: 16px; margin-top: 20px;
+  display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px;
   font-family: var(--font-mono); font-size: .64rem; color: var(--muted); letter-spacing: .04em;
 }
 .fleet-legend .fl-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
@@ -443,8 +522,8 @@ b { color: var(--ink); font-weight: 700; }
 
 /* ── responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 960px) {
-  .hero-inner { grid-template-columns: 1fr; gap: 36px; }
-  .hero-lead, .hero .lede { max-width: none; }
+  .hero-body { grid-template-columns: 1fr; gap: 32px; }
+  .hero .lede { max-width: none; }
   .gap-grid { grid-template-columns: 1fr; }
   .ledger-grid { grid-template-columns: 1fr; }
   .closer-grid { grid-template-columns: 1fr; }
