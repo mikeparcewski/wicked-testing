@@ -8,7 +8,7 @@
  * accent barrier and a live evidence handoff across it (the reviewer-isolation
  * band). Distinct from the family's graph / terminal / console techniques.
  *
- * Consumes the shared wicked-web chrome (Base + Topbar + Footer + SameGarden)
+ * Consumes the shared wicked-web chrome (Base + Topbar + Footer)
  * and the family design tokens; page-specific content styles live in
  * ../styles/testing.css. Theming is driven by [data-theme]; this page adds no
  * chrome or theme system of its own.
@@ -24,7 +24,6 @@
 import Base from 'wicked-web/layouts/Base.astro';
 import Topbar from 'wicked-web/components/Topbar.astro';
 import Footer from 'wicked-web/components/Footer.astro';
-import SameGarden from 'wicked-web/components/SameGarden.astro';
 import '../styles/testing.css';
 
 const title = 'wicked-testing — no agent grades its own homework';
@@ -358,8 +357,6 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
         </a>
       </div>
     </section>
-
-    <SameGarden current="wicked-testing" />
 
     <Footer repo={repo} />
   </div>

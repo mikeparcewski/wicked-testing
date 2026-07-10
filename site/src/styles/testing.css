@@ -17,10 +17,11 @@ body { padding-top: var(--topbar-h); }
 /* ── Scroll-lock to section + per-section viewport sizing ──────────────────
    The validated family pattern (crew / interactive): every top-level content
    section fills the viewport and the document snaps section-to-section.
-   `proximity` (not mandatory) so a section taller than the viewport never
-   traps the user; `safe center` aligns it to the top instead of clipping.
-   scroll-padding offsets the fixed topbar. Mobile falls back to free scroll. */
-html { scroll-snap-type: y proximity; scroll-padding-top: var(--topbar-h); }
+   `mandatory` hard-locks section-to-section — every testing section fits the
+   viewport, so it never traps the user; `safe center` aligns it to the top
+   instead of clipping. scroll-padding offsets the fixed topbar. Mobile falls
+   back to free scroll. */
+html { scroll-snap-type: y mandatory; scroll-padding-top: var(--topbar-h); }
 .hero, .band, .wall-band, .closer {
   min-height: 100vh;
   scroll-snap-align: start;
