@@ -1,13 +1,25 @@
 ---
 /**
  * index.astro — the wicked-testing product landing page (wt.wickedagile.com).
- * Consumes the shared wicked-web chrome (Base + Topbar + Footer + SameGarden)
- * and the family design tokens; only the page-specific content styles live in
- * ../styles/testing.css. Theming is driven by [data-theme] (no-flash init in
- * Base, toggle in Topbar) — this page adds no chrome or theme system of its own.
  *
- * Messaging is locked to scratch/marketing/CANONICAL-MESSAGING.md
- * (wicked-testing section): the differentiator is enforced reviewer isolation.
+ * Wave-4 reimagination. Concept: THE WALL — the agent that runs the tests can
+ * never be the one that grades them. Enforced separation between authorship and
+ * judgment is wicked-testing's single idea, so the page is built around a dashed
+ * accent barrier and a live evidence handoff across it (the reviewer-isolation
+ * band). Distinct from the family's graph / terminal / console techniques.
+ *
+ * Consumes the shared wicked-web chrome (Base + Topbar + Footer + SameGarden)
+ * and the family design tokens; page-specific content styles live in
+ * ../styles/testing.css. Theming is driven by [data-theme]; this page adds no
+ * chrome or theme system of its own.
+ *
+ * Every claim is code-grounded against the wicked-testing repo (v0.7.3):
+ *   40 agents (15 Tier-1 public contract + 25 Tier-2 specialists),
+ *   47 installable skills, 5 Tier-1 orchestrator surfaces,
+ *   a 3-agent acceptance pipeline (Writer → Executor → Reviewer) with tool
+ *   boundaries taken from each agent's `allowed-tools` frontmatter, and the
+ *   pending wicked-qe rename (bin alias already ships). Messaging is locked to
+ *   scratch/marketing/CANONICAL-MESSAGING.md (Wave-4 top).
  */
 import Base from 'wicked-web/layouts/Base.astro';
 import Topbar from 'wicked-web/components/Topbar.astro';
@@ -15,248 +27,313 @@ import Footer from 'wicked-web/components/Footer.astro';
 import SameGarden from 'wicked-web/components/SameGarden.astro';
 import '../styles/testing.css';
 
-const title = 'wicked-testing — a QE team for AI coding CLIs that can’t self-grade';
-const description = 'When an AI agent tests its own work it grades its own homework — self-reported PASS rates run 80%+ above human-reviewed rates. wicked-testing gives your AI CLI a complete QE team from planning through execution through judgment, with enforced separation between the agent that runs tests and the agent that evaluates them. Local-first, SQLite-backed, MIT. Published to npm as wicked-testing v0.7.3.';
+const title = 'wicked-testing — no agent grades its own homework';
+const description = 'When an AI agent tests its own work it grades its own homework — self-reported PASS rates run 80%+ above human-reviewed rates. wicked-testing gives your AI CLI a complete QE team from planning through execution through judgment, with an enforced wall between the agent that runs the tests and the agent that evaluates them. Local-first, SQLite-backed, MIT. Published to npm as wicked-testing v0.7.3.';
 const repo = 'https://github.com/mikeparcewski/wicked-testing';
 
-// The eight AI CLIs the installer targets.
+// The eight AI CLIs the installer targets (install.mjs).
 const CLIS = ['Claude Code', 'Antigravity', 'Cursor', 'Codex', 'Kiro', 'Copilot', 'OpenCode', 'Pi'];
 
-// The five Tier-1 orchestrator surfaces — the public contract.
-const SURFACES = [
-  { skill: 'plan', line: 'Shift-left test strategy from code or a feature description — strategist, risk, testability, AC-quality.' },
-  { skill: 'authoring', line: 'Author scenario files and generate test code in your project’s detected framework.' },
-  { skill: 'execution', line: 'Run a scenario and capture evidence — stdout, stderr, exit codes, artifacts. No judgment.' },
-  { skill: 'review', line: 'Produce an independent verdict from cold evidence. Gap Report per acceptance criterion.' },
-  { skill: 'insight', line: 'Domain health, run history, and plain-English questions answered by a fixed-SQL oracle.' },
+// The 40 agents, grounded against agents/ (15 Tier-1) + agents/specialists/ (25).
+// `surface` = the Tier-1 orchestrator skill each agent serves (plan / authoring
+// / execution / review / insight). tier 1 = stable public contract.
+const AGENTS = [
+  // plan
+  { n: 'test-strategist', s: 'plan', t: 1 },
+  { n: 'risk-assessor', s: 'plan', t: 1 },
+  { n: 'testability-reviewer', s: 'plan', t: 1 },
+  { n: 'requirements-quality-analyst', s: 'plan', t: 1 },
+  { n: 'code-analyzer', s: 'plan', t: 1 },
+  { n: 'coverage-archaeologist', s: 'plan', t: 2 },
+  { n: 'test-impact-analyzer', s: 'plan', t: 2 },
+  // authoring
+  { n: 'acceptance-test-writer', s: 'authoring', t: 1 },
+  { n: 'test-designer', s: 'authoring', t: 1 },
+  { n: 'test-automation-engineer', s: 'authoring', t: 1 },
+  { n: 'contract-testing-engineer', s: 'authoring', t: 1 },
+  { n: 'ui-component-test-engineer', s: 'authoring', t: 2 },
+  { n: 'integration-test-engineer', s: 'authoring', t: 2 },
+  { n: 'e2e-orchestrator', s: 'authoring', t: 2 },
+  { n: 'fuzz-property-engineer', s: 'authoring', t: 2 },
+  { n: 'test-data-manager', s: 'authoring', t: 2 },
+  { n: 'incident-to-scenario-synthesizer', s: 'authoring', t: 2 },
+  // execution
+  { n: 'acceptance-test-executor', s: 'execution', t: 1 },
+  { n: 'scenario-executor', s: 'execution', t: 1 },
+  { n: 'load-performance-engineer', s: 'execution', t: 2 },
+  { n: 'chaos-test-engineer', s: 'execution', t: 2 },
+  { n: 'security-test-engineer', s: 'execution', t: 2 },
+  { n: 'a11y-test-engineer', s: 'execution', t: 2 },
+  { n: 'mutation-test-engineer', s: 'execution', t: 2 },
+  { n: 'ai-feature-test-engineer', s: 'execution', t: 2 },
+  { n: 'iac-test-engineer', s: 'execution', t: 2 },
+  { n: 'localization-test-engineer', s: 'execution', t: 2 },
+  { n: 'observability-test-engineer', s: 'execution', t: 2 },
+  { n: 'data-quality-tester', s: 'execution', t: 2 },
+  { n: 'visual-regression-engineer', s: 'execution', t: 2 },
+  { n: 'exploratory-tester', s: 'execution', t: 2 },
+  // review
+  { n: 'acceptance-test-reviewer', s: 'review', t: 1 },
+  { n: 'semantic-reviewer', s: 'review', t: 1 },
+  { n: 'test-code-quality-auditor', s: 'review', t: 2 },
+  { n: 'snapshot-hygiene-auditor', s: 'review', t: 2 },
+  { n: 'flaky-test-hunter', s: 'review', t: 2 },
+  { n: 'release-readiness-engineer', s: 'review', t: 2 },
+  // insight
+  { n: 'test-oracle', s: 'insight', t: 1 },
+  { n: 'production-quality-engineer', s: 'insight', t: 1 },
+  { n: 'compliance-test-engineer', s: 'insight', t: 2 },
 ];
+
+const SURFACES = [
+  { key: 'plan', line: 'Shift-left strategy — strategist, risk, testability, AC-quality.' },
+  { key: 'authoring', line: 'Author scenarios and generate test code in your framework.' },
+  { key: 'execution', line: 'Run scenarios and capture evidence. No judgment.' },
+  { key: 'review', line: 'Independent verdict from cold evidence. Gap Report per criterion.' },
+  { key: 'insight', line: 'Domain health and history, answered by a fixed-SQL oracle.' },
+];
+const surfaceCount = (k) => AGENTS.filter((a) => a.s === k).length;
+
+// Evidence that crosses the wall vs signals blocked at it.
+const CROSSES = ['manifest.json', 'evidence.json', 'step-N.json', 'context.md'];
+const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior verdicts'];
 ---
 
 <Base title={title} description={description}>
   <Topbar pkg="wicked-testing" repo={repo} />
 
-  <!-- ── Hero ──────────────────────────────────────────────────────────── -->
+  <!-- ── Hero — intro + install SIDE BY SIDE ──────────────────────────────── -->
   <section class="hero">
     <div class="wrap hero-inner">
-      <div class="kicker">Quality engineering for AI coding CLIs</div>
-      <h1>A complete QE team for AI coding CLIs<br><span class="y">that can’t self-grade.</span></h1>
-      <p class="lede">
-        When an AI agent tests its own work, it grades its own homework —
-        self-reported PASS rates run <b>80%+ above</b> human-reviewed rates.
-        wicked-testing gives your CLI a full QE team from planning through
-        execution through judgment, with <b>enforced separation</b> between the
-        agent that runs tests and the agent that evaluates them.
-      </p>
-
-      <div class="install" role="group" aria-label="Install wicked-testing">
-        <div class="install__bar">
-          <span class="install__label">Install · the wicked family</span>
-          <button class="install__copy" type="button" aria-label="Copy install command"
-            onclick="navigator.clipboard&&navigator.clipboard.writeText('npx wicked-installer').then(()=>{this.textContent='Copied';setTimeout(()=>{this.textContent='Copy';},1400);})">Copy</button>
-        </div>
-        <pre class="install__code"><code><span class="p">npx</span> wicked-installer</code></pre>
-        <p class="install__alt">
-          Interactive installer — pick your products, cross-CLI, ships the
-          <code>wicked</code> CLI. <span class="install__or">or install just this directly:</span>
-          <code>npx wicked-testing install</code>
+      <div class="hero-lead">
+        <span class="kicker">A QE team for AI coding CLIs</span>
+        <h1>No agent grades <span class="y">its own homework.</span></h1>
+        <p class="lede">
+          When an AI agent tests its own work, it grades its own homework —
+          self-reported PASS rates run <b>80%+ above</b> human-reviewed rates.
+          wicked-testing gives your CLI a full QE team, then puts a
+          <b>wall</b> between the agent that runs the tests and the agent that
+          decides they passed.
         </p>
       </div>
 
-      <div class="cli-row" aria-label="Supported AI coding CLIs">
-        <span class="cli-lbl">Installs into</span>
-        {CLIS.map((c) => <span class="cli-chip">{c}</span>)}
+      <div class="hero-side">
+        <div class="install" role="group" aria-label="Install wicked-testing">
+          <div class="install__bar">
+            <span class="install__label">Install · the wicked family</span>
+            <button class="install__copy" type="button" aria-label="Copy install command"
+              onclick="navigator.clipboard&&navigator.clipboard.writeText('npx wicked-installer').then(()=>{this.textContent='Copied';setTimeout(()=>{this.textContent='Copy';},1400);})">Copy</button>
+          </div>
+          <pre class="install__code"><code><span class="p">npx</span> wicked-installer</code></pre>
+          <p class="install__alt">
+            Interactive · cross-CLI · ships the <code>wicked</code> CLI.
+            <span class="install__or">or just this:</span> <code>npx wicked-testing install</code>
+          </p>
+        </div>
+        <div class="cli-row" aria-label="Supported AI coding CLIs">
+          <span class="cli-lbl">Installs into 8 CLIs</span>
+          {CLIS.map((c) => <span class="cli-chip">{c}</span>)}
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ── The self-grading problem ──────────────────────────────────────── -->
-  <section class="band problem">
-    <div class="wrap prob-grid">
-      <div class="grade" id="grade" data-revealed="false">
-        <div class="grade-bars" aria-hidden="true">
-          <div class="grade-bar grade-bar--self">
-            <span class="grade-fill"></span>
-            <span class="grade-val">PASS ✓</span>
+  <!-- ── The gap — the self-grading problem (side-by-side) ────────────────── -->
+  <section class="band">
+    <div class="wrap gap-grid">
+      <div class="card-fig" id="cardfig" data-revealed="false">
+        <div class="card-fig-h"><span>report card · same feature</span><span>run #0.7.3</span></div>
+        <div class="grades">
+          <div class="grade-cell grade-cell--self">
+            <span class="grade-tag">author grades itself</span>
+            <div class="grade-mark">PASS</div>
+            <div class="grade-sub">100% · every time</div>
+            <span class="stamp">self-reported</span>
           </div>
-          <div class="grade-bar grade-bar--rev">
-            <span class="grade-fill"></span>
-            <span class="grade-val" data-revval>?</span>
+          <div class="grade-cell grade-cell--rev">
+            <span class="grade-tag">independent reviewer</span>
+            <div class="grade-mark grade-mark--rev" data-revmark>PASS</div>
+            <div class="grade-sub" data-revsub>awaiting review…</div>
+            <span class="stamp">contradicted</span>
           </div>
         </div>
-        <div class="grade-axis" aria-hidden="true">
-          <span>self-graded</span><span>reviewed</span>
-        </div>
-        <div class="grade-delta"><span class="grade-delta-n">80%+</span> inflation revealed</div>
-        <button class="grade-btn" type="button" data-grade aria-pressed="false">Run the reviewer →</button>
-        <p class="grade-note">Illustrative of the measured self-grading gap.</p>
+        <div class="gap-delta"><b>80%+</b> of self-graded PASSes don't survive an independent read.</div>
+        <button class="gap-btn" type="button" data-reveal aria-pressed="false">Send it to an independent reviewer →</button>
+        <p class="gap-note">Illustrative of the measured self-grading gap.</p>
       </div>
-      <div class="prob-copy">
+
+      <div class="gap-copy">
         <span class="kicker">The self-grading problem</span>
-        <h2>The agent that wrote the code also runs the tests — and decides they passed.</h2>
+        <h2>The agent that wrote the code runs the tests — and calls them green.</h2>
         <p>
-          There is no independence at any layer. Scripted frameworks —
+          There's no independence at any layer. Scripted frameworks —
           Playwright, pytest, k6, axe-core — only run what you already thought
-          to test. They don’t tell you <em>what</em> to test, whether the tests
+          to test. They don't tell you <em>what</em> to test, whether the tests
           are any good, or whether the results mean anything.
         </p>
-        <p class="prob-kick">wicked-testing separates authorship from judgment, and enforces it.</p>
+        <p class="kick">wicked-testing separates authorship from judgment — and enforces it.</p>
       </div>
     </div>
   </section>
 
-  <!-- ── THE differentiator: reviewer isolation ────────────────────────── -->
-  <section class="band pipeline">
+  <!-- ── THE WALL — reviewer isolation (ONE SCREEN) ───────────────────────── -->
+  <section class="wall-band" id="wall">
     <div class="wrap">
-      <div class="sec-head">
+      <div class="head-top">
         <span class="kicker">The differentiator · reviewer isolation</span>
-        <h2>Three agents. One wall. A verdict you can trust.</h2>
+        <h2>The reviewer never sees who did the work.</h2>
         <p class="sec-sub">
           The 3-agent acceptance pipeline gives each role its own tool boundary.
           The reviewer reads <b>cold evidence files only</b> — never the
-          executor’s context, reasoning, or stdout — so the self-grading that
-          inflates AI test PASS rates has nowhere to hide.
+          executor's context, reasoning, or stdout — so the self-grading that
+          inflates AI PASS rates has nowhere to hide. Watch what crosses the wall.
         </p>
       </div>
 
-      <div class="pipe" id="pipe" data-stage="0">
-        <div class="pipe-controls" role="tablist" aria-label="Step through the acceptance pipeline">
-          <button class="pipe-tab is-on" role="tab" type="button" data-go="0" aria-selected="true">1&nbsp;·&nbsp;Writer</button>
-          <button class="pipe-tab" role="tab" type="button" data-go="1" aria-selected="false">2&nbsp;·&nbsp;Executor</button>
-          <button class="pipe-tab" role="tab" type="button" data-go="2" aria-selected="false">3&nbsp;·&nbsp;Reviewer</button>
-          <button class="pipe-play" type="button" data-play aria-label="Auto-play the pipeline">▶&nbsp;Play</button>
+      <div class="stage is-playing" id="stage" role="group" aria-label="Live evidence handoff across the reviewer wall">
+        <div class="role" data-role="0">
+          <span class="role-n">Step 1 · authors</span>
+          <span class="role-name">Writer</span>
+          <span class="role-tools"><span class="role-tool">Read</span><span class="role-tool">Grep</span><span class="role-tool">Glob</span><span class="role-tool">Skill</span></span>
+          <p>Turns the scenario into an evidence-gated plan — every step declares its expected evidence and an assertion. Can't execute.</p>
         </div>
 
-        <div class="flow" role="list">
-          <div class="node is-active" data-node="0" role="listitem">
-            <span class="node-role">Writer</span>
-            <span class="node-tools">Read · Grep · Glob · Skill</span>
-            <p>Reads the scenario and code, produces an evidence-gated plan — every step declares its expected evidence and an assertion. Cannot execute or write state.</p>
-          </div>
-          <span class="edge" aria-hidden="true">→</span>
-          <div class="node" data-node="1" role="listitem">
-            <span class="node-role">Executor</span>
-            <span class="node-tools">Read · Write · Bash</span>
-            <p>Follows the plan mechanically. Captures stdout, stderr, exit codes, and file artifacts. Makes <b>no judgment</b> about results.</p>
-          </div>
-          <span class="edge edge--wall" aria-hidden="true">
-            <span class="wall-line"></span>
-            <span class="wall-tag">cold evidence only</span>
-          </span>
-          <div class="node node--review" data-node="2" role="listitem">
-            <span class="node-role">Reviewer</span>
-            <span class="node-tools">Read</span>
-            <p>Reads the evidence files and nothing else. Evaluates each assertion against the artifacts. Never sees how they were produced. Cannot execute.</p>
-          </div>
+        <div class="role" data-role="1">
+          <span class="role-n">Step 2 · runs</span>
+          <span class="role-name">Executor</span>
+          <span class="role-tools"><span class="role-tool">Read</span><span class="role-tool">Write</span><span class="role-tool">Bash</span></span>
+          <p>Follows the plan mechanically. Captures stdout, exit codes, and artifacts. Makes <b>no judgment</b>.</p>
         </div>
 
-        <!-- Isolation ledger: what crosses the wall vs what is blocked. Lights up at the Reviewer stage. -->
-        <div class="xfer" aria-live="polite">
-          <div class="xfer-col xfer-col--pass">
-            <span class="xfer-h"><span class="xfer-dot" aria-hidden="true"></span>Crosses the wall — the reviewer reads</span>
-            <ul>
-              <li><code>manifest.json</code><span class="xfer-t">public contract</span></li>
-              <li><code>evidence.json</code><span class="xfer-t">executor summary</span></li>
-              <li><code>step-N.json</code><span class="xfer-t">per-step artifacts</span></li>
-              <li><code>context.md</code><span class="xfer-t">cold, non-prejudicial</span></li>
-            </ul>
-          </div>
-          <div class="xfer-col xfer-col--block">
-            <span class="xfer-h"><span class="xfer-dot" aria-hidden="true"></span>Blocked at the wall — never seen</span>
-            <ul>
-              <li>executor context</li>
-              <li>chain-of-thought &amp; reasoning</li>
-              <li>the raw stdout stream</li>
-              <li>prior verdicts &amp; PASS/FAIL rates</li>
-            </ul>
-          </div>
+        <div class="wall" aria-hidden="true"><span class="wall-tag">cold evidence only</span></div>
+
+        <div class="role role--reviewer is-lit" data-role="2">
+          <span class="role-n">Step 3 · judges</span>
+          <span class="role-name">Reviewer</span>
+          <span class="role-tools"><span class="role-tool">Read</span></span>
+          <p>Reads the evidence files and <b>nothing else</b>. Never sees how they were produced. One tool — <code>Read</code>. Can't execute.</p>
+        </div>
+
+        <!-- the live channel: evidence chips cross, reasoning bounces off -->
+        <div class="channel" aria-hidden="true">
+          <span class="chip chip--pass" style="top:26%;animation-delay:0s">manifest.json</span>
+          <span class="chip chip--pass" style="top:70%;animation-delay:1.3s">evidence.json</span>
+          <span class="chip chip--pass" style="top:44%;animation-delay:2.6s">step-N.json</span>
+          <span class="chip chip--pass" style="top:84%;animation-delay:3.9s">context.md</span>
+          <span class="chip chip--block" style="top:36%;animation-delay:.6s">executor context</span>
+          <span class="chip chip--block" style="top:58%;animation-delay:1.9s">chain-of-thought</span>
+          <span class="chip chip--block" style="top:16%;animation-delay:3.2s">raw stdout</span>
+          <span class="chip chip--block" style="top:78%;animation-delay:4.5s">prior verdicts</span>
         </div>
       </div>
 
-      <p class="flow-foot">
-        Cold context injection lets the orchestrator hand the reviewer
-        <b>non-prejudicial</b> domain knowledge only (WCAG thresholds, tool
-        quirks). Prior verdicts or pass/fail rates leak nothing — prejudicial
-        content trips <code>INCONCLUSIVE + CONTEXT_CONTAMINATION</code>.
+      <div class="wall-legend">
+        <div class="leg leg--pass">
+          <div class="leg-h"><span class="leg-dot"></span>Crosses the wall — the reviewer reads</div>
+          <div class="leg-items">{CROSSES.map((f) => <span><code>{f}</code></span>)}</div>
+        </div>
+        <div class="leg leg--block">
+          <div class="leg-h"><span class="leg-dot"></span>Bounced at the wall — never seen</div>
+          <div class="leg-items">{BLOCKED.map((f) => <span>{f}</span>)}</div>
+        </div>
+      </div>
+
+      <p class="wall-foot">
+        Cold context injection hands the reviewer <b>non-prejudicial</b> domain
+        knowledge only — WCAG thresholds, tool quirks. Prior verdicts or pass/fail
+        rates leak nothing: prejudicial content trips
+        <code>INCONCLUSIVE + CONTEXT_CONTAMINATION</code>. Isolation is enforced by
+        the reviewer's <code>context: fork</code> boundary and an <code>allowed-tools: Read</code> frontmatter.
       </p>
     </div>
   </section>
 
-  <!-- ── The QE team ───────────────────────────────────────────────────── -->
-  <section class="band team">
+  <!-- ── The fleet — 40 agents, filter by orchestrator surface ────────────── -->
+  <section class="band fleet-band">
     <div class="wrap">
-      <div class="sec-head">
+      <div class="head-top">
         <span class="kicker">A complete QE team</span>
-        <h2>Five orchestrators. Forty agents. Planning to judgment.</h2>
+        <h2>Forty specialist agents. Five orchestrators. One contract.</h2>
         <p class="sec-sub">
-          <b>40 agents</b> — 15 Tier-1 agents form a stable public contract, 25
-          Tier-2 specialists route internally — grouped behind five Tier-1
-          orchestrator skills, shipped across <b>47 installable skills</b>.
+          <b>40 agents</b> behind five Tier-1 orchestrator skills, shipped as
+          <b>47 installable skills</b>. The <b>15 Tier-1</b> agents are a stable
+          public contract; <b>25 Tier-2</b> specialists route beneath them. Pick a
+          surface — see who reports to it.
         </p>
       </div>
 
-      <div class="surf-grid">
+      <div class="fleet-filter" id="fleetFilter" role="tablist" aria-label="Filter agents by orchestrator surface">
+        <span class="fleet-lbl">Surface</span>
+        <button class="f-btn is-on" role="tab" type="button" data-surf="all" aria-selected="true">all<span class="f-n">40</span></button>
         {SURFACES.map((s) => (
-          <div class="surf">
-            <code class="surf-cmd">/wicked-testing:{s.skill}</code>
-            <p>{s.line}</p>
+          <button class="f-btn" role="tab" type="button" data-surf={s.key} aria-selected="false" title={s.line}>
+            /{s.key}<span class="f-n">{surfaceCount(s.key)}</span>
+          </button>
+        ))}
+      </div>
+
+      <div class="fleet-grid" id="fleetGrid">
+        {AGENTS.map((a) => (
+          <div class="agent" data-surf={a.s} data-tier={a.t}>
+            <span class="agent-dot" aria-hidden="true"></span>
+            <span class="agent-name">{a.n}</span>
           </div>
         ))}
       </div>
 
-      <div class="stat-row">
-        <div class="stat"><span class="stat-n">40</span><span class="stat-l">specialist agents</span></div>
-        <div class="stat"><span class="stat-n">47</span><span class="stat-l">installable skills</span></div>
-        <div class="stat"><span class="stat-n">3</span><span class="stat-l">agent acceptance pipeline</span></div>
-        <div class="stat"><span class="stat-n">8</span><span class="stat-l">AI CLIs supported</span></div>
+      <div class="fleet-legend">
+        <span><span class="fl-dot fl-dot--t1"></span>Tier-1 · public contract (15)</span>
+        <span><span class="fl-dot fl-dot--t2"></span>Tier-2 · internal specialists (25)</span>
+        <span>every skill ships with <code>context: fork</code></span>
       </div>
     </div>
   </section>
 
-  <!-- ── Evidence + ledger ─────────────────────────────────────────────── -->
-  <section class="band ledger">
+  <!-- ── The ledger — evidence (side-by-side) ─────────────────────────────── -->
+  <section class="band">
     <div class="wrap ledger-grid">
       <div>
         <span class="kicker">Evidence, not assertions</span>
-        <h2>A project-local ledger where every verdict traces to the evidence that produced it.</h2>
+        <h2>Every verdict traces to the evidence that produced it.</h2>
         <p>
-          Records write JSON first (fsync’d), then SQLite — a WAL-mode ledger
+          Records write JSON first (fsync'd), then SQLite — a WAL-mode ledger
           with a fixed-SQL test oracle and <b>no ad-hoc SQL</b>. On SQLite
-          failure the store degrades to JSON-only. Every record carries
-          <code>run_id</code>, <code>scenario_id</code>, <code>agent</code>, and
-          <code>verdict</code>.
+          failure the store degrades to JSON-only and keeps running. Every record
+          carries <code>run_id</code>, <code>scenario_id</code>, <code>agent</code>,
+          and <code>verdict</code>.
         </p>
         <p>
           <b>wicked-vault is absorbed</b> as of 0.7.3 — the evidence hash chain,
           verifier registry, and vault CLI ship in-package. wicked-bus events and
-          wicked-brain memory writes are optional: absent either one, it no-ops
-          and keeps running.
+          wicked-brain memory writes are optional: absent either, it no-ops.
         </p>
       </div>
       <div class="ledger-tree" aria-hidden="true">
-        <pre><code>.wicked-testing/
-  wicked-testing.db      <span class="c">SQLite ledger (WAL, 7 tables)</span>
+        <div class="ledger-tree-bar"><i></i><i></i><i></i><span>.wicked-testing/</span></div>
+        <pre><code><span class="k">.wicked-testing/</span>
+  wicked-testing.db      <span class="c">SQLite ledger · WAL · 7 tables</span>
   evidence/
     &lt;run-id&gt;/
       manifest.json      <span class="c">public contract</span>
       evidence.json      <span class="c">executor summary</span>
-      step-N.json        <span class="c">per-step evidence</span>
+      step-N.json        <span class="c">per-step artifacts</span>
       context.md         <span class="c">cold reviewer context</span>
-  verdicts/&#123;id&#125;.json     <span class="c">traceable to run</span></code></pre>
+  verdicts/&#123;id&#125;.json     <span class="c">traceable to the run</span></code></pre>
       </div>
     </div>
   </section>
 
-  <!-- ── Closer / install ──────────────────────────────────────────────── -->
+  <!-- ── Closer / install ─────────────────────────────────────────────────── -->
   <div class="finale">
     <section class="closer">
       <div class="wrap closer-grid">
         <div class="closer-intro">
           <span class="kicker">Get started</span>
-          <h2>Give your agent a QE team it can’t out-argue.</h2>
+          <h2>Give your agent a QE team it can't out-argue.</h2>
           <p>
             Local-first and SQLite-backed. MIT-licensed, published to npm as
-            <code>wicked-testing</code> v0.7.3. The <code>wicked-qe</code> rename
-            is pending — the <code>wicked-qe</code> bin alias already ships.
+            <code>wicked-testing</code> v0.7.3. The <code>wicked-qe</code> rename is
+            pending — the <code>wicked-qe</code> bin alias already ships.
           </p>
         </div>
         <div class="install install--closer" role="group" aria-label="Install wicked-testing">
@@ -284,65 +361,76 @@ const SURFACES = [
     <Footer repo={repo} />
   </div>
 
-  <!-- Interactive: steppable Writer→Executor→Reviewer pipeline + self-grade reveal. Vanilla, reduced-motion safe. -->
+  <!-- Interactive: self-grade reveal · live wall handoff · fleet filter. Vanilla, reduced-motion safe. -->
   <script is:inline>
     (function () {
       var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      /* ── Steppable acceptance pipeline ─────────────────────────────── */
-      var pipe = document.getElementById('pipe');
-      if (pipe) {
-        var tabs = Array.prototype.slice.call(pipe.querySelectorAll('.pipe-tab'));
-        var nodes = Array.prototype.slice.call(pipe.querySelectorAll('.node'));
-        var playBtn = pipe.querySelector('[data-play]');
-        var timer = null;
-
-        function render(stage) {
-          pipe.setAttribute('data-stage', String(stage));
-          tabs.forEach(function (t, j) {
-            var on = j === stage;
-            t.classList.toggle('is-on', on);
-            t.setAttribute('aria-selected', on ? 'true' : 'false');
-          });
-          nodes.forEach(function (n, j) {
-            n.classList.toggle('is-active', j === stage);
-            n.classList.toggle('is-done', j < stage);
-          });
-        }
-        function go(stage) { stop(); render(stage); }
-        function stop() {
-          if (timer) { clearInterval(timer); timer = null; }
-          if (playBtn) { playBtn.classList.remove('is-playing'); playBtn.innerHTML = '▶&nbsp;Play'; }
-        }
-        function play() {
-          if (timer) { stop(); return; }
-          playBtn.classList.add('is-playing');
-          playBtn.innerHTML = '❚❚&nbsp;Pause';
-          timer = setInterval(function () {
-            var next = (Number(pipe.getAttribute('data-stage')) + 1) % 3;
-            render(next);
-          }, 1600);
-        }
-
-        tabs.forEach(function (t, j) { t.addEventListener('click', function () { go(j); }); });
-        if (playBtn) playBtn.addEventListener('click', play);
-        render(0);
-        if (!reduce) play();
+      /* ── Self-grade vs reviewed reveal ─────────────────────────────── */
+      var fig = document.getElementById('cardfig');
+      if (fig) {
+        var btn = fig.querySelector('[data-reveal]');
+        var mark = fig.querySelector('[data-revmark]');
+        var sub = fig.querySelector('[data-revsub]');
+        btn.addEventListener('click', function () {
+          var on = fig.getAttribute('data-revealed') === 'true';
+          fig.setAttribute('data-revealed', on ? 'false' : 'true');
+          btn.setAttribute('aria-pressed', on ? 'false' : 'true');
+          if (mark) mark.textContent = on ? 'PASS' : 'FAIL';
+          if (sub) sub.textContent = on ? 'awaiting review…' : 'caught a real bug';
+          btn.textContent = on ? 'Send it to an independent reviewer →' : '↺ Reset';
+        });
       }
 
-      /* ── Self-grade vs reviewed reveal ─────────────────────────────── */
-      var grade = document.getElementById('grade');
-      if (grade) {
-        var btn = grade.querySelector('[data-grade]');
-        var val = grade.querySelector('[data-revval]');
-        function reveal() {
-          var on = grade.getAttribute('data-revealed') === 'true';
-          grade.setAttribute('data-revealed', on ? 'false' : 'true');
-          btn.setAttribute('aria-pressed', on ? 'false' : 'true');
-          if (val) val.textContent = on ? '?' : '80%+ lower';
-          btn.textContent = on ? 'Run the reviewer →' : '↺ Reset';
+      /* ── The wall: play/pause the live handoff, light a role on click ─ */
+      var stage = document.getElementById('stage');
+      if (stage) {
+        if (reduce) stage.classList.remove('is-playing');
+        var roles = Array.prototype.slice.call(stage.querySelectorAll('.role'));
+        stage.addEventListener('click', function (e) {
+          var role = e.target.closest('.role');
+          if (role) {
+            roles.forEach(function (r) { r.classList.toggle('is-lit', r === role); });
+            return;
+          }
+          stage.classList.toggle('is-playing');
+        });
+      }
+
+      /* ── Fleet filter: pick a surface, matching agents light up ──────── */
+      var grid = document.getElementById('fleetGrid');
+      var filter = document.getElementById('fleetFilter');
+      if (grid && filter) {
+        var fbtns = Array.prototype.slice.call(filter.querySelectorAll('.f-btn'));
+        var agents = Array.prototype.slice.call(grid.querySelectorAll('.agent'));
+        var cycle = null;
+
+        function apply(surf) {
+          fbtns.forEach(function (b) {
+            var on = b.getAttribute('data-surf') === surf;
+            b.classList.toggle('is-on', on);
+            b.setAttribute('aria-selected', on ? 'true' : 'false');
+          });
+          if (surf === 'all') {
+            grid.classList.remove('is-filtered');
+            agents.forEach(function (a) { a.classList.remove('is-match'); });
+          } else {
+            grid.classList.add('is-filtered');
+            agents.forEach(function (a) { a.classList.toggle('is-match', a.getAttribute('data-surf') === surf); });
+          }
         }
-        btn.addEventListener('click', reveal);
+        function stopCycle() { if (cycle) { clearInterval(cycle); cycle = null; } }
+
+        fbtns.forEach(function (b) {
+          b.addEventListener('click', function () { stopCycle(); apply(b.getAttribute('data-surf')); });
+        });
+
+        /* auto-demo: cycle through the five surfaces until the user interacts */
+        if (!reduce) {
+          var order = ['plan', 'authoring', 'execution', 'review', 'insight'];
+          var i = -1;
+          cycle = setInterval(function () { i = (i + 1) % order.length; apply(order[i]); }, 2200);
+        }
       }
     })();
   </script>
