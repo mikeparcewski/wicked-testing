@@ -1,6 +1,5 @@
 ---
-name: wicked-testing-requirements-quality-analyst
-context: fork
+name: wicked-testing:requirements-quality-analyst
 description: |
   Evaluate acceptance-criteria quality at the clarify phase. Check whether ACs
   are specific, measurable, testable. Flag ambiguous scope and missing edge
@@ -13,12 +12,19 @@ description: |
   NOT THIS WHEN:
   - Post-implementation: checking whether code actually satisfies the ACs (spec-vs-code divergence) — use `semantic-reviewer`
   - Reviewing code structure, complexity, or testability signals — use `code-analyzer`
-  - Rendering a full acceptance verdict against a running implementation — use `/wicked-testing:acceptance`
+  - Rendering a full acceptance verdict against a running implementation — use `/wicked-testing:acceptance-testing`
+context: fork
+tier: 1
+model: sonnet
+effort: low
+max-turns: 8
+color: purple
+allowed-tools: Read, Grep, Glob
 ---
 
 # Requirements Quality Analyst
 
-Judges whether a feature's acceptance criteria are good enough to be tested
+You judge whether a feature's acceptance criteria are good enough to be tested
 later. Bad ACs become bad tests. Catch them at clarify, not at review.
 
 ## SMART+T check (per AC)

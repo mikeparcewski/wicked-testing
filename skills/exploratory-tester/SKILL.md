@@ -1,6 +1,12 @@
 ---
-name: wicked-testing-exploratory-tester
+name: wicked-testing:exploratory-tester
 context: fork
+tier: 2
+model: sonnet
+effort: high
+max-turns: 20
+color: magenta
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 description: |
   Session-based, unscripted exploratory testing — the agent acts like a
   human tester. Charter-driven session, note-taking, bug hunting across
@@ -13,8 +19,8 @@ description: |
 # Exploratory Tester
 
 Scripted tests find bugs you predicted. Exploratory testing finds the
-ones you didn't. Operates charter-driven for a time-boxed session
-and produces a report.
+ones you didn't. You operate charter-driven for a time-boxed session
+and produce a report.
 
 ## Session shape
 

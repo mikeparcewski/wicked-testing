@@ -45,8 +45,8 @@ Two existing spots don't map cleanly and should be treated as advisory:
 - `/wicked-testing:execution` exits `2` on **PARTIAL** (mixed PASS + SKIP).
   The new contract keeps `2` semantically equivalent (inconclusive),
   just widened to cover INCONCLUSIVE verdicts.
-- Agent-specific codes in the `64-78` range (e.g. `ERR_AXE_TIMEOUT`)
-  remain per-agent. Pipelines should treat `64-78` as "command-specific,
+- Skill-specific codes in the `64-78` range (e.g. `ERR_AXE_TIMEOUT`)
+  remain per-skill. Pipelines should treat `64-78` as "command-specific,
   see stderr".
 
 ### Example — conditional CI step
@@ -108,7 +108,7 @@ same glob pattern:
 ## 3. PR-Comment Summary
 
 Each template ships a step that turns `manifest.json` + the JSON
-envelope from `/wicked-testing:acceptance --json` into a compact
+envelope from `/wicked-testing:acceptance-testing --json` into a compact
 markdown comment posted on the PR / MR.
 
 ### Target comment shape
@@ -228,7 +228,7 @@ hook calling `gh pr comment` (requires `GH_TOKEN` in the step env).
 
 | Secret              | Purpose                                              |
 |---------------------|------------------------------------------------------|
-| `ANTHROPIC_API_KEY` | Powers the 3-agent acceptance pipeline (Writer / Executor / Reviewer). |
+| `ANTHROPIC_API_KEY` | Powers the 3-agent acceptance pipeline (Writer / Executor / Reviewer — three forked skills in isolated contexts). |
 
 ### Optional (per-provider)
 

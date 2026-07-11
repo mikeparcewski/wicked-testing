@@ -107,9 +107,9 @@ No LLM-generated SQL. No ad-hoc queries. Every query is auditable by code review
 
 If `better-sqlite3` fails to load:
 
-| Command | JSON-only behavior |
-|---------|-------------------|
-| setup, plan, scenarios, automate, run, acceptance | Continue — JSON written, no SQLite row, warning printed |
-| oracle, tasks | Return `ERR_SQLITE_UNAVAILABLE` |
-| stats | Return degraded stats (file counts only, `"mode":"json-only"`) |
-| report | Read JSON files directly, annotate as `"mode":"json-only"` |
+| Workflow skill | JSON-only behavior |
+|----------------|-------------------|
+| setup, plan, authoring, execution, acceptance-testing, review | Continue — JSON written, no SQLite row, warning printed |
+| insight — oracle & task queries | Return `ERR_SQLITE_UNAVAILABLE` |
+| insight — stats | Return degraded stats (file counts only, `"mode":"json-only"`) |
+| insight — report | Read JSON files directly, annotate as `"mode":"json-only"` |

@@ -1,13 +1,14 @@
 ---
-name: wicked-testing-authoring
-context: fork
+name: wicked-testing:authoring
 description: |
   Tier-1 orchestrator for producing tests. Writes scenario files, generates
   test code (unit / integration / E2E), creates fixtures and test data. The
   "make me tests" skill.
 
   Use when: "write tests", "generate test code", "author scenarios", "create
-  a scenario file", "add fixtures", "test data setup", "automate this scenario".
+  a scenario file", "add fixtures", "test data setup", "automate this scenario",
+  "/wicked-testing:authoring".
+argument-hint: "[target] [--framework jest|pytest|playwright|...] [--scenario] [--code]"
 ---
 
 # wicked-testing:authoring
@@ -15,6 +16,17 @@ description: |
 Turns a plan or a diff into runnable tests. Two modes: scenario authoring
 (markdown files the executor runs later) and test code generation (pytest /
 jest / etc. that runs in CI).
+
+## Usage
+
+```
+/wicked-testing:authoring [target] [--framework <name>] [--scenario] [--code]
+```
+
+- `target` — file path, feature description, or scenario name
+- `--framework` — force a specific framework (autodetected otherwise)
+- `--scenario` — produce a scenario file only
+- `--code` — produce test code only (both if neither flag is passed)
 
 ## When to use
 
@@ -34,13 +46,17 @@ jest / etc. that runs in CI).
 | Contract work (OpenAPI, Pact, gRPC, GraphQL)         | `wicked-testing:contract-testing-engineer`   |
 | "write a scenario" / "edit scenario"                 | scenario-authoring flow (markdown per SCENARIO-FORMAT.md) |
 | "scaffold playwright/cypress/k6" / "browser test"    | `wicked-testing:e2e-orchestrator` (run) / harness scaffold; detection via `setup` |
+| A diff                                               | tests for the changed lines (`wicked-testing:test-automation-engineer`, scoped to the diff) |
 
 ### Dispatch block (executable)
 
-Dispatch skill `wicked-testing:test-automation-engineer` (isolated via `context: fork`):
+Every id in the tables above is a forked worker skill (`context: fork`) —
+invoke it with the Skill tool so it runs in an isolated context:
 
 ```
-Generate tests for the target below in the project's detected
+Skill(
+  skill="wicked-testing:test-automation-engineer",
+  args="""Generate tests for the target below in the project's detected
 framework.
 
 ## Target
@@ -59,12 +75,13 @@ framework.
    project has factories.
 4. Follow the project's file-layout convention (co-located vs `tests/`).
 
-Return the path(s) written and a one-line per-file summary.
+Return the path(s) written and a one-line per-file summary."""
+)
 ```
 
-Specialized dispatches swap the skill name for the right agent (see the
+Specialized dispatches swap the `skill` id for the right worker (see the
 table above). For an OpenAPI spec, use `contract-testing-engineer`; for the
-3-agent acceptance pipeline's test-plan phase, use `acceptance-test-writer`.
+3-role acceptance pipeline's test-plan phase, use `acceptance-test-writer`.
 
 ## Tier-2 specialists this skill routes to
 
@@ -96,6 +113,13 @@ Scenario files use the format in [`SCENARIO-FORMAT.md`](../../SCENARIO-FORMAT.md
 
 Emits `wicked.scenario.authored` and/or `wicked.teststrategy.authored` on the
 bus when present.
+
+## Legacy invocations (absorbed in 0.4.0)
+
+| Old command | Ask authoring instead |
+|-------------|-----------------------|
+| `scenarios` | "write/edit a scenario for <X>" — authoring writes scenario files in the format in `SCENARIO-FORMAT.md` |
+| `automate`  | "scaffold browser automation for <X>" — authoring generates the Playwright/Cypress/k6 harness; tool *detection* lives in `setup` |
 
 ## References
 

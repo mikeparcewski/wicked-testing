@@ -1,11 +1,10 @@
 ---
-name: wicked-testing-update
-context: fork
+name: wicked-testing:update
 description: |
   Check for and install wicked-testing updates. Compares installed version
-  against npm registry, updates the published CLI, refreshes skills across
-  all detected AI CLIs (Claude Code, Antigravity, Codex, Cursor, Kiro,
-  Copilot, OpenCode, Pi), and verifies the upgrade landed.
+  against npm registry, updates the published CLI, refreshes the skills
+  across all detected AI CLIs (Claude Code, Gemini, Codex, Cursor, Kiro),
+  and verifies the upgrade landed.
 
   Use when: "update wicked-testing", "check for updates", "wicked-testing:update",
   or periodically to stay current.
@@ -14,7 +13,8 @@ description: |
 # wicked-testing:update
 
 You check for and install updates to the published `wicked-testing` npm
-package and refresh the skills it drops into each detected AI CLI.
+package and refresh the skills it drops into each detected AI CLI (the
+distribution is skills-only — former agents and commands are skills now).
 
 Unlike `wicked-brain` (which runs a persistent server that must be
 restarted after upgrade), `wicked-testing` is a plugin — there is no
@@ -86,14 +86,14 @@ If an update is available, ask the user:
 1. The **npm package** — reinstalled so `npx wicked-testing` resolves to the
    new version.
 2. The **skills** dropped into each detected AI CLI's plugin directory
-   (`~/.claude/`, `~/.gemini/antigravity-cli/`, `~/.codex/`, `~/.cursor/`,
-   `~/.kiro/`, `~/.copilot/`; OpenCode and Pi use a TypeScript extension
-   system). These live outside the npm install; `npx wicked-testing install`
-   is what refreshes them from the updated package.
+   (`~/.claude/skills/`, `~/.gemini/skills/`, `~/.codex/skills/`,
+   `~/.cursor/skills/`, `~/.kiro/skills/`). These live outside the npm
+   install; `npx wicked-testing install` is what refreshes them from the
+   updated package (and sweeps any agent/command files left by pre-skills-only
+   versions).
 
 Running only one of the two creates a split-brain where the CLI sees stale
-skill files even though the npm package is fresh (or vice versa). Do
-both.
+skill files even though the npm package is fresh (or vice versa). Do both.
 
 ```bash
 npm install -g wicked-testing@latest 2>&1
@@ -121,7 +121,7 @@ re-copy even when versions match. Options:
 
 ```bash
 # Restrict to a subset of CLIs
-npx --yes wicked-testing install --cli=claude,antigravity
+npx --yes wicked-testing install --cli=claude,gemini
 
 # Override identity-marker detection (use when the CLI's marker set diverges
 # from the built-in heuristic; see Wave 5 #60)

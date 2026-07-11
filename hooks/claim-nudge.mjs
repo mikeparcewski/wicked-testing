@@ -120,7 +120,7 @@ const hasAcceptanceVerdict = hasRecentAcceptanceVerdict(cwd);
 if (shouldNudge({ enabled, lastAssistantText: text, hasAcceptanceVerdict })) {
   process.stderr.write(
     'wicked-testing: you claimed the tests pass, but nothing re-derived it. ' +
-    'Run `/wicked-testing:acceptance <scenario>` for an independent verdict.\n'
+    'Run `/wicked-testing:acceptance-testing <scenario>` for an independent verdict.\n'
   );
 }
 

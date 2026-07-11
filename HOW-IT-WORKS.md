@@ -1,13 +1,13 @@
 # How It Works — wicked-testing End-to-End Walkthrough
 
-This document walks through the full E2E flow: from running `/wicked-testing:acceptance scenario.md` through to `/wicked-testing:insight` answering a question about the result.
+This document walks through the full E2E flow: from running `/wicked-testing:acceptance-testing scenario.md` through to `/wicked-testing:insight` answering a question about the result.
 
 ---
 
 ## The Full Pipeline
 
 ```
-User: /wicked-testing:acceptance scenarios/test-runner.md
+User: /wicked-testing:acceptance-testing scenarios/test-runner.md
         |
         v
 [1] acceptance-testing skill activates
@@ -18,7 +18,7 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
         - Creates run record: status = 'running'
         |
         v
-[2] Dispatches acceptance-test-writer (skill, context: fork)
+[2] Dispatches acceptance-test-writer (forked skill — context: fork)
         allowed-tools: Read, Grep, Glob
         - Reads scenario.md + implementation code
         - Produces structured test plan:
@@ -27,7 +27,7 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
         - Returns test plan to parent skill
         |
         v
-[3] Dispatches acceptance-test-executor (skill, context: fork)
+[3] Dispatches acceptance-test-executor (forked skill — context: fork)
         allowed-tools: Read, Write, Bash
         - Receives: scenario path + test plan
         - Creates run directory: .wicked-testing/evidence/{run-id}/
@@ -39,8 +39,8 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
         - Does NOT judge results — only records what happened
         |
         v
-[4] Dispatches acceptance-test-reviewer (skill, context: fork)
-        allowed-tools: Read        <-- advisory; isolation enforced by context: fork
+[4] Dispatches acceptance-test-reviewer (forked skill — context: fork)
+        allowed-tools: Read        <-- READ ONLY. Hard-enforced on Claude Code.
         - Receives ONLY:
             * scenario.md path (for assertion reference)
             * evidence directory path
@@ -83,7 +83,7 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
 [7] Insight query
         User: /wicked-testing:insight "what was the verdict for the bootstrap run?"
         |
-        test-oracle agent activates
+        test-oracle skill activates (forked context)
         - Maps question to named query: last_verdict_for_scenario
         - Runs parameterized SQL:
             SELECT v.verdict, v.created_at, v.reason
@@ -101,11 +101,11 @@ User: /wicked-testing:acceptance scenarios/test-runner.md
 
 ### install.mjs
 
-Runs `node install.mjs`. Detects installed AI CLIs (claude, antigravity, codex, kiro, cursor, copilot, opencode, pi). Copies 47 skills (all `context: fork`) into each CLI's skills directory. Runs the bootstrap self-test: initializes the SQLite store, creates a bootstrap project/scenario/run/verdict, verifies the schema. Exits 0 on success.
+Runs `node install.mjs`. Detects installed AI CLIs (claude, antigravity, codex, kiro, cursor, copilot, opencode, pi). Copies each `skills/<name>/` directory into the CLI's skills directory as `wicked-testing-<name>/` (skills are the only distributed surface — former `agents/` and `commands/` files from pre-skills-only installs are swept by the legacy-layout migration). Runs the bootstrap self-test: initializes the SQLite store, creates a bootstrap project/scenario/run/verdict, verifies the schema. Exits 0 on success.
 
 ### .wicked-testing/config.json
 
-Created by `/wicked-testing:setup`. Records the project name and detected CLI capabilities (playwright installed: true/false, cypress: true/false, etc.). All commands check for this file — if missing, they return `ERR_NO_CONFIG`.
+Created by `/wicked-testing:setup`. Records the project name and detected CLI capabilities (playwright installed: true/false, cypress: true/false, etc.). All workflow skills check for this file — if missing, they return `ERR_NO_CONFIG`.
 
 ### lib/domain-store.mjs
 
@@ -128,7 +128,7 @@ Fixed library of 12 named queries. `routeQuestion(question, filters)` does keywo
 
 ### The 3-Agent Acceptance Pipeline
 
-The key insight: **three separate subagent invocations with non-overlapping permissions**.
+The key insight: **three separate forked-skill invocations (`context: fork`) with non-overlapping permissions**. (The pipeline keeps its "3-agent" name — the writer/executor/reviewer separation is the ethos; each role is now a forked skill rather than a subagent.)
 
 - **Writer** reads scenario + code. Cannot execute (no Bash). Cannot modify state.
 - **Executor** executes steps and captures artifacts. Cannot evaluate — only records.
@@ -140,7 +140,7 @@ This separation is what eliminates the self-grading false-positive rate.
 
 ## Data Flow: What Gets Written Where
 
-After `/wicked-testing:acceptance scenarios/test-runner.md` completes:
+After `/wicked-testing:acceptance-testing scenarios/test-runner.md` completes:
 
 ```
 .wicked-testing/
@@ -163,8 +163,8 @@ After `/wicked-testing:acceptance scenarios/test-runner.md` completes:
 | What fails | What happens |
 |-----------|-------------|
 | `better-sqlite3` fails to load | Store degrades to JSON-only; oracle/tasks return `ERR_SQLITE_UNAVAILABLE` |
-| Scenario file not found | Command returns `ERR_SCENARIO_NOT_FOUND` |
-| No config.json | Command returns `ERR_NO_CONFIG` |
+| Scenario file not found | Workflow skill returns `ERR_SCENARIO_NOT_FOUND` |
+| No config.json | Workflow skill returns `ERR_NO_CONFIG` |
 | SQLite row INSERT fails | JSON retained, warning to stderr, drift count incremented |
 | DB newer than code (version > 1) | Refuse to write, print upgrade message |
 | Oracle question matches no query | Return list of supported patterns, no crash |
@@ -186,7 +186,7 @@ When you run `node install.mjs`, the installer:
 After install, you can verify with:
 
 ```bash
-/wicked-testing:acceptance scenarios/test-runner.md
+/wicked-testing:acceptance-testing scenarios/test-runner.md
 /wicked-testing:insight "show bootstrap verdict"
 ```
 
