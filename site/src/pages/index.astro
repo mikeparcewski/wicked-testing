@@ -14,11 +14,12 @@
  * chrome or theme system of its own.
  *
  * Every claim is code-grounded against the wicked-testing repo (v0.7.3):
- *   40 agents (15 Tier-1 public contract + 25 Tier-2 specialists),
- *   47 installable skills, 5 Tier-1 orchestrator surfaces,
- *   a 3-agent acceptance pipeline (Writer → Executor → Reviewer) with tool
- *   boundaries taken from each agent's `allowed-tools` frontmatter, and the
- *   pending wicked-qe rename (bin alias already ships). Messaging is locked to
+ *   48 skills (8 Tier-1 workflow/orchestrator skills + 40 specialist skills),
+ *   5 orchestrator surfaces the specialists route under,
+ *   a 3-skill acceptance pipeline (Writer → Executor → Reviewer) with tool
+ *   boundaries taken from each skill's `allowed-tools` frontmatter and reviewer
+ *   isolation via `context: fork`, and the pending wicked-qe rename (bin alias
+ *   already ships). Messaging is locked to
  *   scratch/marketing/CANONICAL-MESSAGING.md (Wave-4 top).
  */
 import Base from 'wicked-web/layouts/Base.astro';
@@ -33,55 +34,55 @@ const repo = 'https://github.com/mikeparcewski/wicked-testing';
 // The eight AI CLIs the installer targets (install.mjs).
 const CLIS = ['Claude Code', 'Antigravity', 'Cursor', 'Codex', 'Kiro', 'Copilot', 'OpenCode', 'Pi'];
 
-// The 40 agents, grounded against agents/ (15 Tier-1) + agents/specialists/ (25).
-// `surface` = the Tier-1 orchestrator skill each agent serves (plan / authoring
-// / execution / review / insight). tier 1 = stable public contract.
-const AGENTS = [
+// The 40 specialist skills, grounded against wicked-testing/skills (48 SKILL.md
+// dirs: 40 specialists + 8 Tier-1 workflow skills). surface = the orchestrator
+// each specialist routes under (plan / authoring / execution / review / insight).
+const SKILLS = [
   // plan
-  { n: 'test-strategist', s: 'plan', t: 1 },
-  { n: 'risk-assessor', s: 'plan', t: 1 },
-  { n: 'testability-reviewer', s: 'plan', t: 1 },
-  { n: 'requirements-quality-analyst', s: 'plan', t: 1 },
-  { n: 'code-analyzer', s: 'plan', t: 1 },
-  { n: 'coverage-archaeologist', s: 'plan', t: 2 },
-  { n: 'test-impact-analyzer', s: 'plan', t: 2 },
+  { n: 'test-strategist', s: 'plan' },
+  { n: 'risk-assessor', s: 'plan' },
+  { n: 'testability-reviewer', s: 'plan' },
+  { n: 'requirements-quality-analyst', s: 'plan' },
+  { n: 'code-analyzer', s: 'plan' },
+  { n: 'coverage-archaeologist', s: 'plan' },
+  { n: 'test-impact-analyzer', s: 'plan' },
   // authoring
-  { n: 'acceptance-test-writer', s: 'authoring', t: 1 },
-  { n: 'test-designer', s: 'authoring', t: 1 },
-  { n: 'test-automation-engineer', s: 'authoring', t: 1 },
-  { n: 'contract-testing-engineer', s: 'authoring', t: 1 },
-  { n: 'ui-component-test-engineer', s: 'authoring', t: 2 },
-  { n: 'integration-test-engineer', s: 'authoring', t: 2 },
-  { n: 'e2e-orchestrator', s: 'authoring', t: 2 },
-  { n: 'fuzz-property-engineer', s: 'authoring', t: 2 },
-  { n: 'test-data-manager', s: 'authoring', t: 2 },
-  { n: 'incident-to-scenario-synthesizer', s: 'authoring', t: 2 },
+  { n: 'acceptance-test-writer', s: 'authoring' },
+  { n: 'test-designer', s: 'authoring' },
+  { n: 'test-automation-engineer', s: 'authoring' },
+  { n: 'contract-testing-engineer', s: 'authoring' },
+  { n: 'ui-component-test-engineer', s: 'authoring' },
+  { n: 'integration-test-engineer', s: 'authoring' },
+  { n: 'e2e-orchestrator', s: 'authoring' },
+  { n: 'fuzz-property-engineer', s: 'authoring' },
+  { n: 'test-data-manager', s: 'authoring' },
+  { n: 'incident-to-scenario-synthesizer', s: 'authoring' },
   // execution
-  { n: 'acceptance-test-executor', s: 'execution', t: 1 },
-  { n: 'scenario-executor', s: 'execution', t: 1 },
-  { n: 'load-performance-engineer', s: 'execution', t: 2 },
-  { n: 'chaos-test-engineer', s: 'execution', t: 2 },
-  { n: 'security-test-engineer', s: 'execution', t: 2 },
-  { n: 'a11y-test-engineer', s: 'execution', t: 2 },
-  { n: 'mutation-test-engineer', s: 'execution', t: 2 },
-  { n: 'ai-feature-test-engineer', s: 'execution', t: 2 },
-  { n: 'iac-test-engineer', s: 'execution', t: 2 },
-  { n: 'localization-test-engineer', s: 'execution', t: 2 },
-  { n: 'observability-test-engineer', s: 'execution', t: 2 },
-  { n: 'data-quality-tester', s: 'execution', t: 2 },
-  { n: 'visual-regression-engineer', s: 'execution', t: 2 },
-  { n: 'exploratory-tester', s: 'execution', t: 2 },
+  { n: 'acceptance-test-executor', s: 'execution' },
+  { n: 'scenario-executor', s: 'execution' },
+  { n: 'load-performance-engineer', s: 'execution' },
+  { n: 'chaos-test-engineer', s: 'execution' },
+  { n: 'security-test-engineer', s: 'execution' },
+  { n: 'a11y-test-engineer', s: 'execution' },
+  { n: 'mutation-test-engineer', s: 'execution' },
+  { n: 'ai-feature-test-engineer', s: 'execution' },
+  { n: 'iac-test-engineer', s: 'execution' },
+  { n: 'localization-test-engineer', s: 'execution' },
+  { n: 'observability-test-engineer', s: 'execution' },
+  { n: 'data-quality-tester', s: 'execution' },
+  { n: 'visual-regression-engineer', s: 'execution' },
+  { n: 'exploratory-tester', s: 'execution' },
   // review
-  { n: 'acceptance-test-reviewer', s: 'review', t: 1 },
-  { n: 'semantic-reviewer', s: 'review', t: 1 },
-  { n: 'test-code-quality-auditor', s: 'review', t: 2 },
-  { n: 'snapshot-hygiene-auditor', s: 'review', t: 2 },
-  { n: 'flaky-test-hunter', s: 'review', t: 2 },
-  { n: 'release-readiness-engineer', s: 'review', t: 2 },
+  { n: 'acceptance-test-reviewer', s: 'review' },
+  { n: 'semantic-reviewer', s: 'review' },
+  { n: 'test-code-quality-auditor', s: 'review' },
+  { n: 'snapshot-hygiene-auditor', s: 'review' },
+  { n: 'flaky-test-hunter', s: 'review' },
+  { n: 'release-readiness-engineer', s: 'review' },
   // insight
-  { n: 'test-oracle', s: 'insight', t: 1 },
-  { n: 'production-quality-engineer', s: 'insight', t: 1 },
-  { n: 'compliance-test-engineer', s: 'insight', t: 2 },
+  { n: 'test-oracle', s: 'insight' },
+  { n: 'production-quality-engineer', s: 'insight' },
+  { n: 'compliance-test-engineer', s: 'insight' },
 ];
 
 const SURFACES = [
@@ -91,7 +92,7 @@ const SURFACES = [
   { key: 'review', line: 'Independent verdict from cold evidence. Gap Report per criterion.' },
   { key: 'insight', line: 'Domain health and history, answered by a fixed-SQL oracle.' },
 ];
-const surfaceCount = (k) => AGENTS.filter((a) => a.s === k).length;
+const surfaceCount = (k) => SKILLS.filter((a) => a.s === k).length;
 
 // Evidence that crosses the wall vs signals blocked at it.
 const CROSSES = ['manifest.json', 'evidence.json', 'step-N.json', 'context.md'];
@@ -185,7 +186,7 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
         <span class="kicker">The differentiator · reviewer isolation</span>
         <h2>The reviewer never sees who did the work.</h2>
         <p class="sec-sub">
-          The 3-agent acceptance pipeline gives each role its own tool boundary.
+          The 3-skill acceptance pipeline gives each role its own tool boundary.
           The reviewer reads <b>cold evidence files only</b> — never the
           executor's context, reasoning, or stdout — so the self-grading that
           inflates AI PASS rates has nowhere to hide. Watch what crosses the wall.
@@ -250,21 +251,21 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
     </div>
   </section>
 
-  <!-- ── The fleet — 40 agents, filter by orchestrator surface ────────────── -->
+  <!-- ── The fleet — 40 specialist skills, filter by orchestrator surface ─── -->
   <section class="band fleet-band">
     <div class="wrap">
       <div class="head-top">
         <span class="kicker">A complete QE team</span>
-        <h2>Forty specialist agents. Five orchestrators. One contract.</h2>
+        <h2>Forty specialist skills. Five orchestrators. One contract.</h2>
         <p class="sec-sub">
-          <b>40 agents</b> behind five Tier-1 orchestrator skills, shipped as
-          <b>47 installable skills</b>. The <b>15 Tier-1</b> agents are a stable
-          public contract; <b>25 Tier-2</b> specialists route beneath them. Pick a
-          surface — see who reports to it.
+          Forty specialist skills route beneath five orchestrator surfaces — part
+          of a <b>48-skill</b> toolkit whose <b>8 Tier-1</b> workflow skills form a
+          stable public contract. Every specialist runs in an <b>isolated forked
+          context</b>. Pick a surface — see who reports to it.
         </p>
       </div>
 
-      <div class="fleet-filter" id="fleetFilter" role="tablist" aria-label="Filter agents by orchestrator surface">
+      <div class="fleet-filter" id="fleetFilter" role="tablist" aria-label="Filter skills by orchestrator surface">
         <span class="fleet-lbl">Surface</span>
         <button class="f-btn is-on" role="tab" type="button" data-surf="all" aria-selected="true">all<span class="f-n">40</span></button>
         {SURFACES.map((s) => (
@@ -275,8 +276,8 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
       </div>
 
       <div class="fleet-grid" id="fleetGrid">
-        {AGENTS.map((a) => (
-          <div class="agent" data-surf={a.s} data-tier={a.t} title={a.n}>
+        {SKILLS.map((a) => (
+          <div class="agent" data-surf={a.s} title={a.n}>
             <span class="agent-dot" aria-hidden="true"></span>
             <span class="agent-name">{a.n}</span>
           </div>
@@ -284,8 +285,8 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
       </div>
 
       <div class="fleet-legend">
-        <span><span class="fl-dot fl-dot--t1"></span>Tier-1 · public contract (15)</span>
-        <span><span class="fl-dot fl-dot--t2"></span>Tier-2 · internal specialists (25)</span>
+        <span>48 skills · 40 specialists + 8 Tier-1 workflow skills</span>
+        <span>five surfaces coordinate them</span>
         <span>every skill ships with <code>context: fork</code></span>
       </div>
     </div>
@@ -397,12 +398,12 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
         });
       }
 
-      /* ── Fleet filter: pick a surface, matching agents light up ──────── */
+      /* ── Fleet filter: pick a surface, matching skills light up ──────── */
       var grid = document.getElementById('fleetGrid');
       var filter = document.getElementById('fleetFilter');
       if (grid && filter) {
         var fbtns = Array.prototype.slice.call(filter.querySelectorAll('.f-btn'));
-        var agents = Array.prototype.slice.call(grid.querySelectorAll('.agent'));
+        var skills = Array.prototype.slice.call(grid.querySelectorAll('.agent'));
         var cycle = null;
 
         function apply(surf) {
@@ -413,10 +414,10 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
           });
           if (surf === 'all') {
             grid.classList.remove('is-filtered');
-            agents.forEach(function (a) { a.classList.remove('is-match'); });
+            skills.forEach(function (a) { a.classList.remove('is-match'); });
           } else {
             grid.classList.add('is-filtered');
-            agents.forEach(function (a) { a.classList.toggle('is-match', a.getAttribute('data-surf') === surf); });
+            skills.forEach(function (a) { a.classList.toggle('is-match', a.getAttribute('data-surf') === surf); });
           }
         }
         function stopCycle() { if (cycle) { clearInterval(cycle); cycle = null; } }

@@ -422,7 +422,7 @@ b { color: var(--ink); font-weight: 700; }
 }
 .wall-foot b { color: var(--ink); }
 
-/* ── THE FLEET — 40 agents, filter by orchestrator surface ──────────────── */
+/* ── THE FLEET — 40 specialist skills, filter by orchestrator surface ───── */
 .fleet-band .head-top { margin-bottom: clamp(20px, 3.2vh, 34px); }
 .fleet-band .head-top .sec-sub { margin-top: 12px; }
 .fleet-band .head-top .kicker { color: var(--accent); }
@@ -455,9 +455,8 @@ b { color: var(--ink); font-weight: 700; }
 }
 .agent-dot {
   width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto;
-  background: var(--faint);
+  background: var(--accent);
 }
-.agent[data-tier="1"] .agent-dot { background: var(--accent); }
 .agent-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fleet-grid.is-filtered .agent { opacity: .2; }
 .fleet-grid.is-filtered .agent.is-match {
@@ -468,9 +467,6 @@ b { color: var(--ink); font-weight: 700; }
   display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px;
   font-family: var(--font-mono); font-size: .64rem; color: var(--muted); letter-spacing: .04em;
 }
-.fleet-legend .fl-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
-.fleet-legend .fl-dot--t1 { background: var(--accent); }
-.fleet-legend .fl-dot--t2 { background: var(--faint); }
 
 /* ── THE LEDGER — evidence (side-by-side) ───────────────────────────────── */
 .ledger-grid {
