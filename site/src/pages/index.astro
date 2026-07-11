@@ -287,7 +287,7 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
       <div class="fleet-legend">
         <span>48 skills · 40 specialists + 8 Tier-1 workflow skills</span>
         <span>five surfaces coordinate them</span>
-        <span>every skill ships with <code>context: fork</code></span>
+        <span>every specialist ships with <code>context: fork</code></span>
       </div>
     </div>
   </section>
@@ -369,8 +369,8 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
 
       /* ── Self-grade vs reviewed reveal ─────────────────────────────── */
       var fig = document.getElementById('cardfig');
-      if (fig) {
-        var btn = fig.querySelector('[data-reveal]');
+      var btn = fig && fig.querySelector('[data-reveal]');
+      if (fig && btn) {
         var mark = fig.querySelector('[data-revmark]');
         var sub = fig.querySelector('[data-revsub]');
         btn.addEventListener('click', function () {
