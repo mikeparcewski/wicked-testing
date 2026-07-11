@@ -107,7 +107,16 @@ function checkSkills() {
   for (const d of dirs) {
     const skillFile = join(skillsRoot, d, "SKILL.md");
     const rel = relative(REPO, skillFile);
-    if (!existsSync(skillFile)) { err("skills", rel, "SKILL.md missing"); continue; }
+    if (!existsSync(skillFile)) {
+      // Namespace dir: no top-level SKILL.md but subdirs have SKILL.md files.
+      // install.mjs flattens these to `<namespace>-<subskill>/SKILL.md` at install time.
+      const isNamespace = readdirSync(join(skillsRoot, d)).some(sub => {
+        try { return statSync(join(skillsRoot, d, sub)).isDirectory() && existsSync(join(skillsRoot, d, sub, "SKILL.md")); }
+        catch { return false; }
+      });
+      if (!isNamespace) err("skills", rel, "SKILL.md missing");
+      continue;
+    }
     const fm = parseFrontmatter(readFileSync(skillFile, "utf8"));
     if (!fm) { err("skills", rel, "malformed frontmatter"); continue; }
     for (const k of requiredFields) {
@@ -143,7 +152,7 @@ function checkSkills() {
     if (fm.name !== expectedName) {
       err("skills", rel,
         `frontmatter name '${fm.name}' must equal '${expectedName}' — ` +
-        `Claude Code's skill resolver requires the plugin-namespaced form.`);
+        `dash separator required for cross-CLI compatibility.`);
     }
   }
 }
@@ -174,17 +183,9 @@ function checkPluginJson() {
     }
   }
 
-  const skillPaths = new Set((data.skills || []).map(s => s.path));
-  const skillDirs = existsSync(join(REPO, "skills"))
-    ? readdirSync(join(REPO, "skills"))
-        .filter(d => {
-          try { return statSync(join(REPO, "skills", d)).isDirectory(); } catch { return false; }
-        })
-        .map(d => `skills/${d}/SKILL.md`)
-    : [];
-  for (const p of skillDirs) {
-    if (!skillPaths.has(p)) warn("plugin.json", rel, `skill present on disk but not registered: ${p}`);
-  }
+  // Note: Tier-2 specialist skills are intentionally absent from plugin.json.
+  // install.mjs distributes all 47 skills by scanning skills/ directly.
+  // Only check that skills already registered in plugin.json still exist.
 }
 
 function checkEvidenceSchema() {

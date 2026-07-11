@@ -13,7 +13,9 @@
 npx wicked-testing install
 ```
 
-Works with **Claude Code**, **Gemini CLI**, **Cursor**, **Codex**, and **Kiro**.
+Works with **Claude Code**, **Antigravity**, **Cursor**, **Codex**, **Kiro**, **Copilot**, **OpenCode**, and **Pi**.
+
+Published to npm as [`wicked-testing`](https://www.npmjs.com/package/wicked-testing) v0.7.3 · site at [wt.wickedagile.com](https://wt.wickedagile.com). The `wicked-qe` rename is pending — the `wicked-qe` bin alias already ships.
 
 ---
 
@@ -71,7 +73,7 @@ The 15 Tier-1 specialist skills form the stable integration surface. wicked-gard
 | `code-analyzer` | `authoring` | Static quality + testability signals, ship/fix/refactor verdict |
 | `acceptance-test-writer` | `execution` | Evidence-gated test plan — every step declares expected evidence and an assertion |
 | `acceptance-test-executor` | `execution` | Executes plan mechanically, captures artifacts, makes no judgment |
-| `acceptance-test-reviewer` | `review` | Reads cold evidence only (`allowed-tools: Read`) — never sees executor context |
+| `acceptance-test-reviewer` | `review` | Reads cold evidence only (advisory `allowed-tools: Read`) — never sees executor context |
 | `scenario-executor` | `execution` | Runs a scenario markdown file step-by-step |
 | `semantic-reviewer` | `review` | Gap Report per AC: aligned / divergent / missing |
 | `production-quality-engineer` | `insight` | Post-deploy health: healthy / degraded / unhealthy + next action |
@@ -201,7 +203,7 @@ When wicked-brain is present, wicked-testing writes memories on high-signal even
 npx wicked-testing install
 ```
 
-Detects which AI CLIs are present via identity markers (`config.json`, `settings.json`, `plugins/`, etc.), copies all 48 skills into each CLI's home-relative skill directory (`~/.claude/skills/`, `~/.gemini/skills/`, `~/.codex/skills/`, `~/.cursor/skills/`, `~/.kiro/skills/`), runs a bootstrap self-test, and prints a per-target isolation-tier note (hard-enforced on Claude Code, advisory on everyone else). Idempotent — safe to run multiple times.
+Detects which AI CLIs are present via identity markers (`config.json`, `settings.json`, `plugins/`, etc.), copies all 48 skills (all specialists run with `context: fork`) into each CLI's home-relative skill directory (`~/.claude/skills/`, `~/.gemini/antigravity-cli/plugins/wicked-testing/skills/`, `~/.codex/skills/`, `~/.cursor/skills/`, `~/.kiro/skills/`), installs lifecycle hooks (JSON hooks for Claude Code, Antigravity, Codex, Cursor, Kiro, and Copilot; TypeScript plugins for OpenCode and Pi), runs a bootstrap self-test, and prints a per-target isolation-tier note (hard-enforced on Claude Code, advisory on everyone else). Idempotent — safe to run multiple times.
 
 **Claude Code users:** `npx wicked-testing install` is the preferred path and drops everything where Claude Code's skill resolver already looks. A `.claude-plugin/marketplace.json` also ships so you can register via the plugin-system install if you prefer:
 
@@ -294,10 +296,10 @@ See [SCENARIO-FORMAT.md](SCENARIO-FORMAT.md) for the full spec. Working examples
 ## Requirements
 
 - Node.js ≥ 20
-- One of: Claude Code, Gemini CLI, Codex, Cursor, Kiro (Copilot support removed — no verified integration point; see [#59](https://github.com/mikeparcewski/wicked-testing/issues/59))
+- One of: Claude Code, Antigravity, Codex, Cursor, Kiro, Copilot, OpenCode, or Pi
 - `better-sqlite3` — installed via `npm install`, pre-built binaries for macOS x64/arm64, Linux x64/arm64, Windows x64. On unsupported platforms, `npm install` falls back to `node-gyp rebuild` which requires a C++ toolchain.
 
-Windows (Git Bash / WSL) is fully supported. Native PowerShell hook support is planned for v2.
+Windows (Git Bash / WSL) is fully supported.
 
 ## License
 

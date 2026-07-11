@@ -1,0 +1,549 @@
+/* wicked-testing content styles (wt.wickedagile.com) — Wave-4 reimagination.
+   The shared wicked-web chrome (Base/Topbar/Footer/SameGarden + tokens.css)
+   owns the chrome, family palette, fixed grid+glow background, and theming via
+   [data-theme]. Only page-specific content styles live here, using the same
+   token NAMES as tokens.css so the page stays on-brand.
+
+   Concept: THE WALL. wicked-testing's one idea is that the agent that runs the
+   tests can never be the one that grades them — an enforced wall between
+   authorship and judgment. A dashed accent barrier is the recurring motif;
+   the reviewer-isolation band is the centerpiece (a live evidence handoff
+   across that wall). Distinct from the family's graph / terminal / console
+   techniques. */
+
+/* The shared Topbar is position:fixed; offset content below it. */
+body { padding-top: var(--topbar-h); }
+
+/* ── Scroll-lock to section + per-section viewport sizing ──────────────────
+   The validated family pattern (crew / interactive): every top-level content
+   section fills the viewport and the document snaps section-to-section.
+   `mandatory` hard-locks section-to-section — every testing section fits the
+   viewport, so it never traps the user; `safe center` aligns it to the top
+   instead of clipping. scroll-padding offsets the fixed topbar. Mobile falls
+   back to free scroll. */
+html { scroll-snap-type: y mandatory; scroll-padding-top: var(--topbar-h); }
+.hero, .band, .wall-band, .closer {
+  min-height: 100vh;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  justify-content: safe center;
+}
+@media (max-width: 760px) {
+  html { scroll-snap-type: none; }
+  .hero, .band, .wall-band, .closer { min-height: 0; }
+}
+
+/* Translucent alternating bands — base sections transparent so the fixed
+   isolation-chamber background shows through; every-other section gets a
+   faint darkening overlay (never an opaque fill). */
+.hero, .wall-band, .ledger-band { background: transparent; }
+.gap-band, .fleet-band, .closer { background: color-mix(in oklab, #000 7%, transparent); }
+
+/* ── UNIQUE BACKGROUND — illustrative QE line-art ──────────────────────────
+   Overrides the shared family grid+glow (tokens.css body::before/::after, in
+   @layer base — these unlayered rules win). ::before is a fixed, ink-coloured,
+   mask-driven layer of faint recognizable QE/testing icon schematics scattered
+   like garden's tool cards: magnifier-over-code, checklist clipboards, shield-
+   checks, bugs, an Erlenmeyer flask, a PASS seal/stamp, evidence documents, a
+   test target/bullseye, and the isolation motif — two figures split by a dashed
+   WALL — plus evidence-handoff arrows and recurring dashed isolation walls.
+   ::after keeps the family's dashed accent WALL + author/reviewer chamber glows.
+   Kept low-opacity so text stays readable through the translucent bands. */
+body::before {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-color: var(--ink);
+  background-image: none;
+  opacity: .10;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg width='1600' height='900' viewBox='0 0 1600 900' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(120,120) scale(1.15)'%3E%3Ccircle cx='34' cy='34' r='26'/%3E%3Cpath d='M53 53 L77 77' stroke-width='3.4'/%3E%3Cpath d='M28 26 l-9 8 l9 8'/%3E%3Cpath d='M40 26 l9 8 l-9 8'/%3E%3Cpath d='M38 23 l-4 22'/%3E%3C/g%3E%3Cg transform='translate(430,108) scale(1.15)'%3E%3Crect x='8' y='12' width='62' height='78' rx='8'/%3E%3Crect x='28' y='5' width='22' height='13' rx='4'/%3E%3Cpath d='M17 36 l6 6 l10 -13'/%3E%3Cpath d='M40 38 h24'/%3E%3Cpath d='M17 56 l6 6 l10 -13'/%3E%3Cpath d='M40 58 h24'/%3E%3Cpath d='M17 76 l6 6 l10 -13'/%3E%3Cpath d='M40 78 h20'/%3E%3C/g%3E%3Cg transform='translate(745,116) scale(1.15)'%3E%3Cpath d='M40 6 L72 18 V44 C72 66 58 80 40 92 C22 80 8 66 8 44 V18 Z'/%3E%3Cpath d='M24 46 l12 12 l22 -26'/%3E%3C/g%3E%3Cg transform='translate(1065,120) scale(1.15)'%3E%3Cellipse cx='40' cy='48' rx='20' ry='24'/%3E%3Cpath d='M40 26 V72'/%3E%3Ccircle cx='40' cy='20' r='8'/%3E%3Cpath d='M34 14 l-9 -8'/%3E%3Cpath d='M46 14 l9 -8'/%3E%3Cpath d='M20 38 l-14 -6'/%3E%3Cpath d='M18 50 h-16'/%3E%3Cpath d='M20 62 l-14 8'/%3E%3Cpath d='M60 38 l14 -6'/%3E%3Cpath d='M62 50 h16'/%3E%3Cpath d='M60 62 l14 8'/%3E%3C/g%3E%3Cg transform='translate(1405,118) scale(1.15)'%3E%3Cpath d='M32 8 h16'/%3E%3Cpath d='M35 8 V33 L17 73 C14 81 19 87 27 87 H53 C61 87 66 81 63 73 L45 33 V8'/%3E%3Cpath d='M24 64 H56'/%3E%3Ccircle cx='34' cy='75' r='3'/%3E%3Ccircle cx='45' cy='69' r='2.4'/%3E%3Ccircle cx='40' cy='81' r='2'/%3E%3C/g%3E%3Cg transform='translate(175,432) scale(1.15) rotate(-8 40 40)'%3E%3Ccircle cx='40' cy='40' r='31'/%3E%3Ccircle cx='40' cy='40' r='24'/%3E%3Cpath d='M27 40 l9 10 l17 -21'/%3E%3C/g%3E%3Cg transform='translate(470,415) scale(1.15)'%3E%3Cpath d='M14 6 H50 L66 22 V88 H14 Z'/%3E%3Cpath d='M50 6 V22 H66'/%3E%3Cpath d='M24 36 H56'/%3E%3Cpath d='M24 46 H56'/%3E%3Cpath d='M24 56 H48'/%3E%3Ccircle cx='30' cy='72' r='10'/%3E%3Cpath d='M25 72 l4 4 l7 -9'/%3E%3C/g%3E%3Cg transform='translate(805,448) scale(1.28)'%3E%3Ccircle cx='22' cy='24' r='10'/%3E%3Cpath d='M5 66 C5 47 39 47 39 66'/%3E%3Ccircle cx='78' cy='24' r='10'/%3E%3Cpath d='M61 66 C61 47 95 47 95 66'/%3E%3Cpath d='M50 2 V72' stroke-dasharray='4 7'/%3E%3C/g%3E%3Cg transform='translate(1165,436) scale(1.15)'%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3Ccircle cx='40' cy='40' r='19'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Ccircle cx='40' cy='40' r='2.4'/%3E%3C/g%3E%3Cg transform='translate(1445,438) scale(1.15)'%3E%3Ccircle cx='34' cy='34' r='26'/%3E%3Cpath d='M53 53 L77 77' stroke-width='3.4'/%3E%3Cpath d='M28 26 l-9 8 l9 8'/%3E%3Cpath d='M40 26 l9 8 l-9 8'/%3E%3Cpath d='M38 23 l-4 22'/%3E%3C/g%3E%3Cg transform='translate(150,726) scale(1.15)'%3E%3Crect x='8' y='12' width='62' height='78' rx='8'/%3E%3Crect x='28' y='5' width='22' height='13' rx='4'/%3E%3Cpath d='M17 36 l6 6 l10 -13'/%3E%3Cpath d='M40 38 h24'/%3E%3Cpath d='M17 56 l6 6 l10 -13'/%3E%3Cpath d='M40 58 h24'/%3E%3Cpath d='M17 76 l6 6 l10 -13'/%3E%3Cpath d='M40 78 h20'/%3E%3C/g%3E%3Cg transform='translate(520,730) scale(1.15)'%3E%3Cellipse cx='40' cy='48' rx='20' ry='24'/%3E%3Cpath d='M40 26 V72'/%3E%3Ccircle cx='40' cy='20' r='8'/%3E%3Cpath d='M34 14 l-9 -8'/%3E%3Cpath d='M46 14 l9 -8'/%3E%3Cpath d='M20 38 l-14 -6'/%3E%3Cpath d='M18 50 h-16'/%3E%3Cpath d='M20 62 l-14 8'/%3E%3Cpath d='M60 38 l14 -6'/%3E%3Cpath d='M62 50 h16'/%3E%3Cpath d='M60 62 l14 8'/%3E%3C/g%3E%3Cg transform='translate(790,742) scale(0.95)'%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3Ccircle cx='40' cy='40' r='19'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Ccircle cx='40' cy='40' r='2.4'/%3E%3C/g%3E%3Cg transform='translate(1105,716) scale(1.15)'%3E%3Cpath d='M40 6 L72 18 V44 C72 66 58 80 40 92 C22 80 8 66 8 44 V18 Z'/%3E%3Cpath d='M24 46 l12 12 l22 -26'/%3E%3C/g%3E%3Cg transform='translate(1440,700) scale(1.15)'%3E%3Cpath d='M14 6 H50 L66 22 V88 H14 Z'/%3E%3Cpath d='M50 6 V22 H66'/%3E%3Cpath d='M24 36 H56'/%3E%3Cpath d='M24 46 H56'/%3E%3Cpath d='M24 56 H48'/%3E%3Ccircle cx='30' cy='72' r='10'/%3E%3Cpath d='M25 72 l4 4 l7 -9'/%3E%3C/g%3E%3Cpath d='M368 250 V600' stroke-dasharray='5 9'/%3E%3Cpath d='M1010 560 V850' stroke-dasharray='5 9'/%3E%3Cpath d='M300 175 h96'/%3E%3Cpath d='M388 168 l10 7 l-10 7'/%3E%3Cpath d='M600 470 h150'/%3E%3Cpath d='M742 463 l10 7 l-10 7'/%3E%3Cpath d='M980 175 h70'/%3E%3Cpath d='M1042 168 l10 7 l-10 7'/%3E%3Cpath d='M690 760 h70'/%3E%3Cpath d='M752 753 l10 7 l-10 7'/%3E%3C/g%3E%3C/svg%3E");
+          mask-image: url("data:image/svg+xml,%3Csvg width='1600' height='900' viewBox='0 0 1600 900' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round' stroke-linejoin='round'%3E%3Cg transform='translate(120,120) scale(1.15)'%3E%3Ccircle cx='34' cy='34' r='26'/%3E%3Cpath d='M53 53 L77 77' stroke-width='3.4'/%3E%3Cpath d='M28 26 l-9 8 l9 8'/%3E%3Cpath d='M40 26 l9 8 l-9 8'/%3E%3Cpath d='M38 23 l-4 22'/%3E%3C/g%3E%3Cg transform='translate(430,108) scale(1.15)'%3E%3Crect x='8' y='12' width='62' height='78' rx='8'/%3E%3Crect x='28' y='5' width='22' height='13' rx='4'/%3E%3Cpath d='M17 36 l6 6 l10 -13'/%3E%3Cpath d='M40 38 h24'/%3E%3Cpath d='M17 56 l6 6 l10 -13'/%3E%3Cpath d='M40 58 h24'/%3E%3Cpath d='M17 76 l6 6 l10 -13'/%3E%3Cpath d='M40 78 h20'/%3E%3C/g%3E%3Cg transform='translate(745,116) scale(1.15)'%3E%3Cpath d='M40 6 L72 18 V44 C72 66 58 80 40 92 C22 80 8 66 8 44 V18 Z'/%3E%3Cpath d='M24 46 l12 12 l22 -26'/%3E%3C/g%3E%3Cg transform='translate(1065,120) scale(1.15)'%3E%3Cellipse cx='40' cy='48' rx='20' ry='24'/%3E%3Cpath d='M40 26 V72'/%3E%3Ccircle cx='40' cy='20' r='8'/%3E%3Cpath d='M34 14 l-9 -8'/%3E%3Cpath d='M46 14 l9 -8'/%3E%3Cpath d='M20 38 l-14 -6'/%3E%3Cpath d='M18 50 h-16'/%3E%3Cpath d='M20 62 l-14 8'/%3E%3Cpath d='M60 38 l14 -6'/%3E%3Cpath d='M62 50 h16'/%3E%3Cpath d='M60 62 l14 8'/%3E%3C/g%3E%3Cg transform='translate(1405,118) scale(1.15)'%3E%3Cpath d='M32 8 h16'/%3E%3Cpath d='M35 8 V33 L17 73 C14 81 19 87 27 87 H53 C61 87 66 81 63 73 L45 33 V8'/%3E%3Cpath d='M24 64 H56'/%3E%3Ccircle cx='34' cy='75' r='3'/%3E%3Ccircle cx='45' cy='69' r='2.4'/%3E%3Ccircle cx='40' cy='81' r='2'/%3E%3C/g%3E%3Cg transform='translate(175,432) scale(1.15) rotate(-8 40 40)'%3E%3Ccircle cx='40' cy='40' r='31'/%3E%3Ccircle cx='40' cy='40' r='24'/%3E%3Cpath d='M27 40 l9 10 l17 -21'/%3E%3C/g%3E%3Cg transform='translate(470,415) scale(1.15)'%3E%3Cpath d='M14 6 H50 L66 22 V88 H14 Z'/%3E%3Cpath d='M50 6 V22 H66'/%3E%3Cpath d='M24 36 H56'/%3E%3Cpath d='M24 46 H56'/%3E%3Cpath d='M24 56 H48'/%3E%3Ccircle cx='30' cy='72' r='10'/%3E%3Cpath d='M25 72 l4 4 l7 -9'/%3E%3C/g%3E%3Cg transform='translate(805,448) scale(1.28)'%3E%3Ccircle cx='22' cy='24' r='10'/%3E%3Cpath d='M5 66 C5 47 39 47 39 66'/%3E%3Ccircle cx='78' cy='24' r='10'/%3E%3Cpath d='M61 66 C61 47 95 47 95 66'/%3E%3Cpath d='M50 2 V72' stroke-dasharray='4 7'/%3E%3C/g%3E%3Cg transform='translate(1165,436) scale(1.15)'%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3Ccircle cx='40' cy='40' r='19'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Ccircle cx='40' cy='40' r='2.4'/%3E%3C/g%3E%3Cg transform='translate(1445,438) scale(1.15)'%3E%3Ccircle cx='34' cy='34' r='26'/%3E%3Cpath d='M53 53 L77 77' stroke-width='3.4'/%3E%3Cpath d='M28 26 l-9 8 l9 8'/%3E%3Cpath d='M40 26 l9 8 l-9 8'/%3E%3Cpath d='M38 23 l-4 22'/%3E%3C/g%3E%3Cg transform='translate(150,726) scale(1.15)'%3E%3Crect x='8' y='12' width='62' height='78' rx='8'/%3E%3Crect x='28' y='5' width='22' height='13' rx='4'/%3E%3Cpath d='M17 36 l6 6 l10 -13'/%3E%3Cpath d='M40 38 h24'/%3E%3Cpath d='M17 56 l6 6 l10 -13'/%3E%3Cpath d='M40 58 h24'/%3E%3Cpath d='M17 76 l6 6 l10 -13'/%3E%3Cpath d='M40 78 h20'/%3E%3C/g%3E%3Cg transform='translate(520,730) scale(1.15)'%3E%3Cellipse cx='40' cy='48' rx='20' ry='24'/%3E%3Cpath d='M40 26 V72'/%3E%3Ccircle cx='40' cy='20' r='8'/%3E%3Cpath d='M34 14 l-9 -8'/%3E%3Cpath d='M46 14 l9 -8'/%3E%3Cpath d='M20 38 l-14 -6'/%3E%3Cpath d='M18 50 h-16'/%3E%3Cpath d='M20 62 l-14 8'/%3E%3Cpath d='M60 38 l14 -6'/%3E%3Cpath d='M62 50 h16'/%3E%3Cpath d='M60 62 l14 8'/%3E%3C/g%3E%3Cg transform='translate(790,742) scale(0.95)'%3E%3Ccircle cx='40' cy='40' r='30'/%3E%3Ccircle cx='40' cy='40' r='19'/%3E%3Ccircle cx='40' cy='40' r='8'/%3E%3Ccircle cx='40' cy='40' r='2.4'/%3E%3C/g%3E%3Cg transform='translate(1105,716) scale(1.15)'%3E%3Cpath d='M40 6 L72 18 V44 C72 66 58 80 40 92 C22 80 8 66 8 44 V18 Z'/%3E%3Cpath d='M24 46 l12 12 l22 -26'/%3E%3C/g%3E%3Cg transform='translate(1440,700) scale(1.15)'%3E%3Cpath d='M14 6 H50 L66 22 V88 H14 Z'/%3E%3Cpath d='M50 6 V22 H66'/%3E%3Cpath d='M24 36 H56'/%3E%3Cpath d='M24 46 H56'/%3E%3Cpath d='M24 56 H48'/%3E%3Ccircle cx='30' cy='72' r='10'/%3E%3Cpath d='M25 72 l4 4 l7 -9'/%3E%3C/g%3E%3Cpath d='M368 250 V600' stroke-dasharray='5 9'/%3E%3Cpath d='M1010 560 V850' stroke-dasharray='5 9'/%3E%3Cpath d='M300 175 h96'/%3E%3Cpath d='M388 168 l10 7 l-10 7'/%3E%3Cpath d='M600 470 h150'/%3E%3Cpath d='M742 463 l10 7 l-10 7'/%3E%3Cpath d='M980 175 h70'/%3E%3Cpath d='M1042 168 l10 7 l-10 7'/%3E%3Cpath d='M690 760 h70'/%3E%3Cpath d='M752 753 l10 7 l-10 7'/%3E%3C/g%3E%3C/svg%3E");
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: center;  mask-position: center;
+  -webkit-mask-size: cover;       mask-size: cover;
+}
+[data-theme="dark"] body::before { opacity: .13; }
+body::after {
+  content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    /* THE WALL — a faint dashed vertical barrier splitting author | reviewer */
+    repeating-linear-gradient(to bottom,
+      color-mix(in oklab, var(--accent) 24%, transparent) 0 11px,
+      transparent 11px 24px),
+    /* author chamber — warm accent glow, upper-left */
+    radial-gradient(ellipse 42% 50% at 13% 6%,  color-mix(in oklab, var(--accent) 13%, transparent), transparent 60%),
+    /* reviewer chamber — cool, isolated, lower-right */
+    radial-gradient(ellipse 44% 52% at 88% 96%, color-mix(in oklab, var(--link) 12%, transparent), transparent 62%);
+  background-size: 2px 100%, auto, auto;
+  background-position: 61% 0, 0 0, 0 0;
+  background-repeat: no-repeat, no-repeat, no-repeat;
+  -webkit-mask: linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+          mask: linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-stretch: 125%;
+  letter-spacing: -0.02em;
+  line-height: 1.0;
+  margin: 0;
+  color: var(--ink);
+  text-wrap: balance;
+}
+p { margin: 0; }
+code { font-family: var(--font-mono); }
+.y { color: var(--accent); }
+b { color: var(--ink); font-weight: 700; }
+
+/* ── section rhythm ─────────────────────────────────────────────────────── */
+.band {
+  border-top: 1px solid var(--hairline);
+  padding: clamp(40px, 6.5vh, 96px) 0;
+  position: relative;
+}
+.wrap { max-width: 1240px; margin: 0 auto; padding: 0 28px; }
+
+/* full-width section header — for titles/intros that sit ON TOP of content */
+.head-top {
+  max-width: 1184px;
+  margin: 0 0 clamp(36px, 6vh, 64px);
+}
+.head-top h2 { font-size: clamp(2rem, 4.4vw, 3.4rem); margin-top: 16px; max-width: 20ch; }
+.head-top .sec-sub { max-width: 66ch; }
+.sec-sub {
+  font-family: var(--font-mono);
+  font-size: .86rem; line-height: 1.75; color: var(--muted);
+  margin-top: 18px;
+}
+.sec-sub b { color: var(--ink); }
+.sec-sub em, .band h2 em { font-style: normal; color: var(--accent); }
+
+/* ── HERO — full-width title on top; slim intro + LARGE imagery below ────── */
+.hero {
+  position: relative;
+  padding: clamp(48px, 8vh, 96px) 0;
+  overflow: hidden;
+}
+/* the wall motif, faint, splitting the hero (reinforces the page wall bg) */
+.hero::before {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 61%;
+  width: 2px; pointer-events: none; opacity: .5;
+  background: repeating-linear-gradient(to bottom, color-mix(in oklab, var(--accent) 40%, transparent) 0 9px, transparent 9px 20px);
+  mask: linear-gradient(to bottom, transparent, #000 18%, #000 82%, transparent);
+}
+@media (max-width: 900px) { .hero::before { display: none; } }
+
+/* the whole hero stacks: title head (full width) over a two-column body */
+.hero-inner {
+  display: flex; flex-direction: column;
+  gap: clamp(28px, 4.5vh, 54px); width: 100%;
+}
+.hero-head { width: 100%; }               /* title spans the full container */
+.hero h1 {
+  font-size: clamp(2.7rem, 6.6vw, 5.6rem); line-height: .95;
+  margin: 14px 0 0; max-width: 20ch;
+}
+/* below the title: a slim intro column beside the large imagery */
+.hero-body {
+  display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.6fr);
+  gap: clamp(28px, 4vw, 64px); align-items: center; width: 100%;
+}
+.hero .lede {
+  font-family: var(--font-sans, var(--font-display));
+  font-size: clamp(1.02rem, 1.55vw, 1.24rem); line-height: 1.6;
+  color: var(--muted); max-width: 40ch; margin: 0;
+}
+.hero .lede b { color: var(--ink); }
+/* the imagery — install block + CLI chips — gets the bulk of the width */
+.hero-side { min-width: 0; }
+.hero-side .install__code { padding: 22px 22px; }
+.hero-side .install__code code { font-size: 1.16rem; }
+
+/* install block (family pattern) */
+.install {
+  border: 1px solid var(--hairline-strong); border-radius: 14px; overflow: hidden;
+  background: color-mix(in oklab, var(--surface) 84%, transparent);
+  box-shadow: 0 30px 70px -46px rgba(0,0,0,.7);
+}
+.install__bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 15px; border-bottom: 1px solid var(--hairline); background: var(--surface-2);
+}
+.install__label {
+  font-family: var(--font-mono); font-size: .62rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--muted);
+}
+.install__copy {
+  font-family: var(--font-mono); font-size: .64rem; letter-spacing: .06em;
+  color: var(--muted); background: transparent; cursor: pointer;
+  border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 4px 12px;
+  transition: border-color .2s var(--ease), color .2s var(--ease);
+}
+.install__copy:hover { border-color: var(--accent); color: var(--accent); }
+.install__code { margin: 0; padding: 17px 18px; overflow-x: auto; }
+.install__code code {
+  font-family: var(--font-mono); font-size: .96rem; color: var(--ink);
+  line-height: 1.7; white-space: pre;
+}
+.install__code .p { color: var(--accent); }
+.install__code .c { color: var(--faint); }
+.install__alt {
+  font-family: var(--font-mono); font-size: .68rem; line-height: 1.75; color: var(--faint);
+  padding: 11px 18px 15px; margin: 0; border-top: 1px solid var(--hairline);
+}
+.install__alt code { color: var(--muted); }
+.install__or { display: inline-block; color: var(--muted); font-weight: 600; letter-spacing: .04em; margin-right: 2px; }
+
+/* CLI chip row (under the install, in the side column) */
+.cli-row { margin: 20px 0 0; display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
+.cli-lbl {
+  width: 100%; font-family: var(--font-mono); font-size: .6rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--faint); margin-bottom: 4px;
+}
+.cli-chip {
+  font-family: var(--font-mono); font-size: .68rem; color: var(--muted);
+  border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 4px 11px;
+}
+
+/* ── THE GAP — the self-grading problem (side-by-side, stays side-by-side) ─ */
+.gap-grid {
+  display: grid; grid-template-columns: minmax(280px, 420px) 1fr;
+  gap: clamp(36px, 6vw, 84px); align-items: center;
+}
+.gap-copy .kicker { color: var(--accent); }
+.gap-copy h2 { font-size: clamp(1.8rem, 3.4vw, 2.7rem); margin-top: 14px; max-width: 18ch; }
+.gap-copy p { color: var(--muted); line-height: 1.75; margin-top: 20px; max-width: 52ch; }
+.gap-copy .kick { color: var(--ink); font-weight: 600; margin-top: 22px; }
+.gap-copy em { font-style: normal; color: var(--accent); }
+
+/* the report-card figure — self-reported vs independently reviewed */
+.card-fig {
+  border: 1px solid var(--hairline-strong); border-radius: 18px;
+  padding: 26px 26px 22px; position: relative; overflow: hidden;
+  background:
+    radial-gradient(ellipse 78% 70% at 50% -10%, color-mix(in oklab, var(--accent) 15%, transparent), transparent 70%),
+    color-mix(in oklab, var(--surface) 74%, transparent);
+}
+.card-fig-h {
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: var(--font-mono); font-size: .6rem; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--faint);
+  border-bottom: 1px solid var(--hairline); padding-bottom: 12px;
+}
+.grades { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+.grade-cell {
+  min-width: 0;
+  border: 1px solid var(--hairline); border-radius: 12px; padding: 16px 10px 14px;
+  text-align: center; background: color-mix(in oklab, var(--surface-2) 60%, transparent);
+  position: relative;
+}
+.grade-cell--rev { border-color: color-mix(in oklab, var(--accent) 34%, var(--hairline-strong)); }
+.grade-tag {
+  font-family: var(--font-mono); font-size: .56rem; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--muted);
+}
+.grade-mark {
+  font-family: var(--font-display); font-weight: 900; font-stretch: 115%;
+  font-size: clamp(2rem, 4.4vw, 2.8rem); line-height: 1; letter-spacing: -.03em;
+  margin-top: 10px; color: var(--accent);
+  transition: color .4s var(--ease), opacity .4s var(--ease);
+}
+.grade-mark--rev { color: var(--muted); }
+.grade-sub { font-family: var(--font-mono); font-size: .58rem; color: var(--faint); margin-top: 8px; letter-spacing: .04em; }
+.card-fig[data-revealed="true"] .grade-mark--rev { color: var(--accent); }
+.stamp {
+  position: absolute; top: 10px; right: 10px;
+  font-family: var(--font-mono); font-size: .56rem; letter-spacing: .12em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 5px; border: 1px solid;
+  opacity: 0; transform: rotate(-7deg) scale(.9); transition: opacity .3s var(--ease), transform .3s var(--ease);
+}
+.grade-cell--self .stamp { color: var(--accent); border-color: color-mix(in oklab, var(--accent) 50%, transparent); }
+.grade-cell--rev .stamp { color: #ff6b5e; border-color: color-mix(in oklab, #ff6b5e 55%, transparent); }
+.card-fig[data-revealed="true"] .stamp { opacity: 1; transform: rotate(-7deg) scale(1); }
+.gap-delta {
+  margin-top: 20px; text-align: center; font-family: var(--font-mono);
+  font-size: .64rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+  opacity: 0; transition: opacity .5s var(--ease);
+}
+.card-fig[data-revealed="true"] .gap-delta { opacity: 1; }
+.gap-delta b {
+  font-family: var(--font-display); font-weight: 900; font-stretch: 125%;
+  font-size: 1.5rem; color: var(--accent); letter-spacing: -.02em; margin-right: 5px;
+}
+.gap-btn {
+  margin-top: 18px; width: 100%; cursor: pointer;
+  font-family: var(--font-mono); font-size: .74rem; letter-spacing: .04em;
+  color: var(--accent-ink); background: var(--accent);
+  border: 1px solid var(--accent); border-radius: 999px; padding: 10px 20px;
+  transition: filter .2s var(--ease);
+}
+.gap-btn:hover { filter: brightness(1.08); }
+.gap-note { font-family: var(--font-mono); font-size: .56rem; letter-spacing: .04em; color: var(--faint); margin-top: 12px; text-align: center; }
+
+/* ── THE WALL — reviewer isolation (ONE SCREEN) ─────────────────────────── */
+.wall-band {
+  justify-content: safe center;
+  padding: clamp(40px, 6vh, 72px) 0;
+  border-top: 1px solid var(--hairline);
+}
+.wall-band .head-top { margin-bottom: clamp(18px, 2.6vh, 30px); }
+.wall-band .head-top h2 { margin-top: 12px; }
+.wall-band .head-top .sec-sub { margin-top: 12px; font-size: .82rem; line-height: 1.6; max-width: 84ch; }
+.wall-band .head-top .kicker { color: var(--accent); }
+
+/* the three-role stage */
+.stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2px 1fr;
+  gap: clamp(12px, 1.6vw, 22px); align-items: stretch;
+  max-width: 1184px; position: relative;
+}
+.role {
+  border: 1px solid var(--hairline-strong); border-radius: 14px;
+  padding: 15px 16px 14px; display: flex; flex-direction: column; gap: 7px;
+  background: color-mix(in oklab, var(--surface) 80%, transparent);
+  transition: border-color .3s var(--ease), box-shadow .3s var(--ease), opacity .3s var(--ease);
+}
+.role--reviewer { border-color: color-mix(in oklab, var(--accent) 42%, var(--hairline-strong)); }
+.role-n {
+  font-family: var(--font-mono); font-size: .58rem; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--faint);
+}
+.role-name { font-family: var(--font-display); font-weight: 900; font-stretch: 115%; font-size: 1.28rem; color: var(--ink); }
+.role--reviewer .role-name { color: var(--accent); }
+.role-tools { display: flex; flex-wrap: wrap; gap: 5px; }
+.role-tool {
+  font-family: var(--font-mono); font-size: .58rem; letter-spacing: .02em; color: var(--accent);
+  border: 1px solid color-mix(in oklab, var(--accent) 24%, var(--hairline-strong));
+  border-radius: 5px; padding: 2px 7px;
+}
+.role p { font-size: .78rem; line-height: 1.55; color: var(--muted); margin-top: auto; }
+.role.is-lit {
+  border-color: color-mix(in oklab, var(--accent) 60%, var(--hairline-strong));
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--accent) 28%, transparent),
+              0 20px 44px -26px color-mix(in oklab, var(--accent) 60%, transparent);
+}
+
+/* the wall itself — the dashed barrier between executor and reviewer */
+.wall {
+  position: relative; align-self: stretch; min-height: 150px;
+  background: repeating-linear-gradient(to bottom, var(--accent) 0 8px, transparent 8px 17px);
+  border-radius: 2px; opacity: .85;
+}
+.wall-tag {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(180deg);
+  writing-mode: vertical-rl; white-space: nowrap;
+  font-family: var(--font-mono); font-size: .58rem; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--accent-ink);
+  background: var(--accent); padding: 8px 4px; border-radius: 4px;
+}
+
+/* the evidence channel — chips crossing / bouncing off the wall.
+   Spans the executor→reviewer gap; sits behind the wall visually. */
+/* absolutely overlaid on the executor→reviewer span so it never adds a grid
+   row (grid placement forced a phantom 2nd row that ballooned the stage). */
+.channel {
+  position: absolute; top: 0; bottom: 0; left: 34%; right: 0;
+  pointer-events: none; overflow: hidden; z-index: 2;
+}
+.chip {
+  position: absolute; top: 50%; left: 4%;
+  font-family: var(--font-mono); font-size: .6rem; letter-spacing: .02em;
+  padding: 3px 8px; border-radius: 6px; white-space: nowrap;
+  transform: translateY(-50%); opacity: 0;
+}
+.chip--pass {
+  color: var(--accent-ink); background: var(--accent);
+  border: 1px solid var(--accent);
+}
+.chip--block {
+  color: #ff6b5e; background: color-mix(in oklab, #ff6b5e 14%, var(--surface-2));
+  border: 1px solid color-mix(in oklab, #ff6b5e 40%, transparent);
+  text-decoration: line-through; text-decoration-color: color-mix(in oklab, #ff6b5e 60%, transparent);
+}
+/* animations run only when the stage is playing */
+.stage.is-playing .chip--pass { animation: chip-pass 5.2s var(--ease) infinite; }
+.stage.is-playing .chip--block { animation: chip-block 5.2s var(--ease) infinite; }
+@keyframes chip-pass {
+  0%   { opacity: 0; transform: translate(0, -50%) scale(.9); }
+  8%   { opacity: 1; transform: translate(0, -50%) scale(1); }
+  46%  { opacity: 1; }
+  62%  { opacity: 1; left: 92%; transform: translate(0, -50%) scale(1); }
+  74%  { opacity: 0; left: 92%; }
+  100% { opacity: 0; left: 92%; }
+}
+@keyframes chip-block {
+  0%   { opacity: 0; transform: translate(0, -50%) scale(.9); }
+  10%  { opacity: 1; transform: translate(0, -50%); }
+  40%  { opacity: 1; left: 43%; }         /* reaches the wall */
+  52%  { opacity: 1; left: 40%; }         /* bounces */
+  80%  { opacity: 1; left: 4%; }          /* returns */
+  92%  { opacity: 0; left: 4%; }
+  100% { opacity: 0; left: 4%; }
+}
+
+/* the wall legend — what crosses vs what is blocked (compact, one row) */
+.wall-legend {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  max-width: 1184px; margin: clamp(16px, 2.4vh, 26px) 0 0;
+}
+.leg {
+  border: 1px solid var(--hairline-strong); border-radius: 12px;
+  padding: 14px 18px; background: color-mix(in oklab, var(--surface) 62%, transparent);
+}
+.leg--pass { border-color: color-mix(in oklab, var(--accent) 36%, var(--hairline-strong)); }
+.leg--block { background: color-mix(in oklab, var(--surface-2) 68%, transparent); }
+.leg-h {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-mono); font-size: .62rem; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+}
+.leg-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; background: var(--faint); }
+.leg--pass .leg-dot { background: var(--accent); }
+.leg--block .leg-dot { background: #ff6b5e; }
+.leg-items { display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.leg-items span {
+  font-family: var(--font-mono); font-size: .68rem; color: var(--ink);
+  border: 1px solid var(--hairline); border-radius: 6px; padding: 3px 9px;
+  background: color-mix(in oklab, var(--surface) 50%, transparent);
+}
+.leg--block .leg-items span { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--faint); }
+.leg--pass .leg-items span code, .leg-items code { color: var(--accent); font-size: .95em; }
+
+.wall-foot {
+  font-family: var(--font-mono); font-size: .72rem; line-height: 1.65;
+  color: var(--muted); max-width: 108ch; margin: clamp(14px, 2.2vh, 24px) 0 0;
+}
+.wall-foot code {
+  font-size: .86em; color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  padding: 1px 6px; border-radius: 5px;
+}
+.wall-foot b { color: var(--ink); }
+
+/* ── THE FLEET — 40 agents, filter by orchestrator surface ──────────────── */
+.fleet-band .head-top { margin-bottom: clamp(20px, 3.2vh, 34px); }
+.fleet-band .head-top .sec-sub { margin-top: 12px; }
+.fleet-band .head-top .kicker { color: var(--accent); }
+.fleet-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; align-items: center; }
+.fleet-lbl {
+  font-family: var(--font-mono); font-size: .6rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--faint); margin-right: 4px;
+}
+.f-btn {
+  font-family: var(--font-mono); font-size: .72rem; letter-spacing: .02em;
+  color: var(--muted); cursor: pointer;
+  background: color-mix(in oklab, var(--surface) 60%, transparent);
+  border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 7px 15px;
+  transition: border-color .22s var(--ease), color .22s var(--ease), background .22s var(--ease);
+}
+.f-btn:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--hairline-strong)); color: var(--ink); }
+.f-btn.is-on { color: var(--accent-ink); background: var(--accent); border-color: var(--accent); font-weight: 600; }
+.f-btn .f-n { opacity: .7; margin-left: 5px; }
+
+.fleet-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px; max-width: 1184px;
+}
+.agent {
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid var(--hairline); border-radius: 9px; padding: 7px 11px;
+  background: color-mix(in oklab, var(--surface) 46%, transparent);
+  font-family: var(--font-mono); font-size: .68rem; color: var(--ink);
+  transition: opacity .3s var(--ease), border-color .3s var(--ease), background .3s var(--ease), transform .3s var(--ease);
+}
+.agent-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex: 0 0 auto;
+  background: var(--faint);
+}
+.agent[data-tier="1"] .agent-dot { background: var(--accent); }
+.agent-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fleet-grid.is-filtered .agent { opacity: .2; }
+.fleet-grid.is-filtered .agent.is-match {
+  opacity: 1; border-color: color-mix(in oklab, var(--accent) 42%, var(--hairline-strong));
+  background: color-mix(in oklab, var(--surface) 74%, transparent); transform: translateY(-2px);
+}
+.fleet-legend {
+  display: flex; flex-wrap: wrap; gap: 16px; margin-top: 14px;
+  font-family: var(--font-mono); font-size: .64rem; color: var(--muted); letter-spacing: .04em;
+}
+.fleet-legend .fl-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+.fleet-legend .fl-dot--t1 { background: var(--accent); }
+.fleet-legend .fl-dot--t2 { background: var(--faint); }
+
+/* ── THE LEDGER — evidence (side-by-side) ───────────────────────────────── */
+.ledger-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: clamp(36px, 5vw, 68px); align-items: center;
+}
+.ledger-grid .kicker { color: var(--accent); }
+.ledger-grid h2 { font-size: clamp(1.7rem, 3.2vw, 2.5rem); margin-top: 14px; max-width: 20ch; }
+.ledger-grid p { color: var(--muted); line-height: 1.75; margin-top: 20px; max-width: 52ch; }
+.ledger-grid p code, .closer code {
+  font-size: .86em; color: var(--accent);
+  background: color-mix(in oklab, var(--accent) 12%, transparent);
+  padding: 1px 6px; border-radius: 5px;
+}
+.ledger-tree {
+  border: 1px solid var(--hairline-strong); border-radius: 14px; overflow: hidden;
+  background: var(--surface-2); box-shadow: 0 30px 70px -46px rgba(0,0,0,.7);
+}
+.ledger-tree-bar {
+  display: flex; align-items: center; gap: 7px; padding: 11px 15px;
+  border-bottom: 1px solid var(--hairline); background: color-mix(in oklab, var(--surface) 60%, transparent);
+}
+.ledger-tree-bar i { width: 10px; height: 10px; border-radius: 50%; background: var(--hairline-strong); }
+.ledger-tree-bar span { font-family: var(--font-mono); font-size: .6rem; letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-left: 6px; }
+.ledger-tree pre { margin: 0; padding: 22px; overflow-x: auto; }
+.ledger-tree code {
+  font-family: var(--font-mono); font-size: .8rem; line-height: 1.9; color: var(--ink);
+  white-space: pre; background: none; padding: 0;
+}
+.ledger-tree .c { color: var(--faint); }
+.ledger-tree .k { color: var(--accent); }
+
+/* ── CLOSER / install ───────────────────────────────────────────────────── */
+.finale { border-top: 1px solid var(--hairline); }
+.closer { padding: clamp(64px, 11vh, 120px) 0; scroll-snap-align: start; }
+.closer-grid {
+  display: grid; grid-template-columns: 1.1fr .9fr; gap: clamp(30px, 4vw, 60px); align-items: center;
+}
+.closer .kicker { color: var(--accent); }
+.closer-intro h2 { font-size: clamp(2rem, 3.8vw, 3rem); margin-top: 14px; max-width: 16ch; }
+.closer-intro p { color: var(--muted); line-height: 1.75; margin-top: 20px; max-width: 46ch; }
+.gh-pill {
+  grid-column: 1 / -1; justify-self: start; margin-top: 4px;
+  display: inline-flex; align-items: center; gap: 14px;
+  color: var(--ink); text-decoration: none;
+  border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 10px 22px 10px 14px;
+  font-family: var(--font-mono); font-size: .82rem; letter-spacing: .06em;
+  transition: border-color .22s var(--ease), color .22s var(--ease);
+}
+.gh-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .hero-body { grid-template-columns: 1fr; gap: 32px; }
+  .hero .lede { max-width: none; }
+  .gap-grid { grid-template-columns: 1fr; }
+  .ledger-grid { grid-template-columns: 1fr; }
+  .closer-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 820px) {
+  .wall-band { min-height: 0; }
+  .stage { grid-template-columns: 1fr; gap: 12px; }
+  .wall { display: none; }
+  .channel { display: none; }
+  .wall-legend { grid-template-columns: 1fr; }
+  .stage .role { order: 0; }
+}
+@media (max-width: 560px) {
+  .grades { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage.is-playing .chip--pass, .stage.is-playing .chip--block { animation: none; opacity: 1; }
+  .chip--block { left: 4%; }
+  .chip--pass { left: 92%; }
+  .agent, .role, .grade-mark, .stamp, .gap-delta { transition: none; }
+}

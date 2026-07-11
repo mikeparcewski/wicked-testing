@@ -13,9 +13,10 @@ npx wicked-testing install
 ```
 
 The installer detects any AI CLI directory in your home (Claude Code,
-Gemini CLI, Codex, Cursor, Kiro) and copies all 48 skills into
-`~/.<cli>/skills/` — 8 workflow skills plus 40 forked specialist skills.
-There are no separate agent or command directories to install.
+Antigravity, Codex, Cursor, Kiro, Copilot, OpenCode, Pi) and copies all 48
+skills into `~/.<cli>/skills/wicked-testing-*/` — 8 workflow skills plus 40
+forked specialist skills. There are no separate agent or command directories
+to install.
 
 Run `npx wicked-testing status` to confirm:
 

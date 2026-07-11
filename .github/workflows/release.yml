@@ -12,9 +12,19 @@ permissions:
   pull-requests: write
 
 jobs:
+  # Gate: verify CHANGELOG has an entry for the version being released.
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+      - name: CHANGELOG entry check
+        run: node scripts/dev/release-check.mjs "${GITHUB_REF_NAME#v}"
+
   release:
+    needs: preflight
     uses: mikeparcewski/wicked-ci/.github/workflows/node-release.yml@d8c9b0a14fb91c2d13f5da0468eeeff983c27e5a # v1.1.2
     with:
       package_name: wicked-testing
+      test_cmd: 'npm test && npm run test:unit'
       enable_sync_pr: true
     secrets: inherit

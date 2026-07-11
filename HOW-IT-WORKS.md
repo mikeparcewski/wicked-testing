@@ -101,7 +101,7 @@ User: /wicked-testing:acceptance-testing scenarios/test-runner.md
 
 ### install.mjs
 
-Runs `node install.mjs`. Detects installed AI CLIs (claude, gemini, codex, kiro, cursor). Copies each `skills/<name>/` directory into the CLI's skills directory as `wicked-testing-<name>/` (skills are the only distributed surface — former `agents/` and `commands/` files from pre-skills-only installs are swept by the legacy-layout migration). Runs the bootstrap self-test: initializes the SQLite store, creates a bootstrap project/scenario/run/verdict, verifies the schema. Exits 0 on success.
+Runs `node install.mjs`. Detects installed AI CLIs (claude, antigravity, codex, kiro, cursor, copilot, opencode, pi). Copies each `skills/<name>/` directory into the CLI's skills directory as `wicked-testing-<name>/` (skills are the only distributed surface — former `agents/` and `commands/` files from pre-skills-only installs are swept by the legacy-layout migration). Runs the bootstrap self-test: initializes the SQLite store, creates a bootstrap project/scenario/run/verdict, verifies the schema. Exits 0 on success.
 
 ### .wicked-testing/config.json
 

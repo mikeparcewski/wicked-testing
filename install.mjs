@@ -6,7 +6,7 @@ import {
   existsSync, mkdirSync, mkdtempSync, cpSync, readdirSync, rmSync,
   readFileSync, writeFileSync, accessSync, statSync, constants as FS_CONST,
 } from "node:fs";
-import { join, resolve, basename } from "node:path";
+import { join, resolve, basename, dirname } from "node:path";
 import { homedir, tmpdir } from "node:os";
 import { argv, exit } from "node:process";
 import { fileURLToPath } from "node:url";
@@ -44,10 +44,21 @@ const LEGACY_BARE_SKILL_DIRS = [
 // non-Claude hosts know the reviewer isolation is backed by prompt
 // discipline, not tool-restriction.
 //
-// Copilot was formerly targeted at `~/.github/skills` — wrong and dangerous
-// (collides with common GitHub dotfiles, and `gh copilot` does not read
-// that path). Removed until a real integration point exists; tracked in
-// #59.
+// Copilot: previously targeted at `~/.github/skills` — wrong path (collides
+// with gh CLI auth/config dotfiles). Correct personal-skills path is
+// ~/.copilot/skills/ per GitHub Copilot docs (added April 2026 agent mode).
+// First install requires --assume-cli=copilot since ~/.copilot/ won't exist
+// until skills are first written; subsequent installs detect via "skills" dir.
+//
+// Gemini CLI removed — superseded by Antigravity (Google's next-gen terminal
+// coding agent). Antigravity lives under ~/.gemini/antigravity-cli/, a
+// subdirectory of the same root, so the two never conflicted at the file
+// level — but maintaining a dead target creates confusion.
+//
+// pi (pi-mono) note: skills are installed to ~/.pi/agent/skills/. pi resolves
+// skill paths from ~/.pi/agent/settings.json; if auto-discovery of that dir
+// is not enabled by default the user may need to add `"skills": ["skills/"]`
+// to their global settings.json. Tracked in #61.
 //
 // Claude Code is special: its config root is redirectable via
 // $CLAUDE_CONFIG_DIR (used for multi-tenant setups, alt-config layouts
@@ -61,40 +72,124 @@ const CLI_TARGETS = [
     dir: join(home, ".claude", "skills"),
     platform: "claude",
     identityMarkers: ["settings.json", "plugins", "projects"],
-    isolationTier: "hard", // allowed-tools is host-enforced
+    isolationTier: "hard", // Claude Code reads allowed-tools; all CLIs rely on context:fork
   },
   {
-    name: "gemini",
-    rootDir: join(home, ".gemini"),
-    dir: join(home, ".gemini", "skills"),
-    platform: "gemini",
-    identityMarkers: ["config.json", "auth", "settings.json"],
+    name: "antigravity",
+    // Google's terminal coding agent (replaced Gemini CLI, May 2026). Uses a
+    // plugin-registry model: each plugin gets its own subdir under plugins/.
+    // Skills-only install — agents and commands are Claude Code concepts that
+    // don't map cleanly to other CLIs. Agent/command functionality is covered
+    // by the agent skills installed into the skills dir.
+    // Hooks: single ~/.gemini/antigravity-cli/hooks.json with outer key = hook name.
+    rootDir: join(home, ".gemini", "antigravity-cli"),
+    dir: join(home, ".gemini", "antigravity-cli", "plugins", "wicked-testing", "skills"),
+
+
+    hookPath: join(home, ".gemini", "antigravity-cli", "hooks.json"),
+    hookMode: "merge",
+    platform: "antigravity",
+    identityMarkers: ["plugins"],
     isolationTier: "advisory",
   },
   {
     name: "codex",
+    // Skills-only: agents and commands are Claude Code-native concepts.
+    // Hooks: single ~/.codex/hooks.json, same schema as Claude Code.
     rootDir: join(home, ".codex"),
     dir: join(home, ".codex", "skills"),
+
+
+    hookPath: join(home, ".codex", "hooks.json"),
+    hookMode: "merge",
     platform: "codex",
-    // Codex stores config in TOML and maintains a plugins/ directory; check
-    // for either plus its auth blob.
     identityMarkers: ["config.toml", "config.json", "auth.json", "plugins"],
     isolationTier: "advisory",
   },
   {
     name: "cursor",
+    // Skills-only: agents and commands are Claude Code-native concepts.
+    // Hooks: single ~/.cursor/hooks.json, version:1 schema, lowercase event names.
     rootDir: join(home, ".cursor"),
     dir: join(home, ".cursor", "skills"),
+
+
+    hookPath: join(home, ".cursor", "hooks.json"),
+    hookMode: "merge",
     platform: "cursor",
     identityMarkers: ["User", "extensions", "settings.json"],
     isolationTier: "advisory",
   },
   {
     name: "kiro",
+    // Skills-only: agents and commands are Claude Code-native concepts.
+    // Hooks: ~/.kiro/hooks/ directory — drop wicked-testing.json there.
     rootDir: join(home, ".kiro"),
     dir: join(home, ".kiro", "skills"),
+
+
+    hookPath: join(home, ".kiro", "hooks"),
+    hookMode: "dir",
     platform: "kiro",
     identityMarkers: ["config.json", "settings.json"],
+    isolationTier: "advisory",
+  },
+  {
+    name: "opencode",
+    // SST's open-source terminal coding agent. Global config root is
+    // ~/.config/opencode/ with opencode.json as the main config file.
+    // Skills-only: opencode supports agents/ and commands/ natively, but the
+    // formats diverge (opencode uses tools: {write, edit, bash, ...} booleans;
+    // we use Claude Code's allowed-tools string). Agent/command functionality
+    // is covered by the agent skills installed into skills/.
+    // Hooks: opencode uses TypeScript plugins only — no JSON hook format.
+    rootDir: join(home, ".config", "opencode"),
+    dir: join(home, ".config", "opencode", "skills"),
+
+
+    hookPath: null,  // TS plugin system only — not installable via hooks.json
+    pluginSrcFile: join(__dirname, "hooks", "opencode-plugin.ts"),
+    pluginPath: join(home, ".config", "opencode", "plugins", "wicked-testing.ts"),
+    pluginHooksDir: join(home, ".config", "opencode", "plugins", "wicked-testing-hooks"),
+    platform: "opencode",
+    identityMarkers: ["opencode.json"],
+    isolationTier: "advisory",
+  },
+  {
+    name: "pi",
+    // pi-mono coding agent CLI (earendil-works/pi). Global config at
+    // ~/.pi/agent/ (settings.json, auth.json confirmed).
+    // Skills-only: pi agent extensions are TypeScript-only (no markdown).
+    // Hooks: pi uses TypeScript extensions only — no JSON hook format.
+    rootDir: join(home, ".pi", "agent"),
+    dir: join(home, ".pi", "agent", "skills"),
+
+
+    hookPath: null,  // TS extension system only — not installable via hooks.json
+    pluginSrcFile: join(__dirname, "hooks", "pi-extension.ts"),
+    pluginPath: join(home, ".pi", "agent", "extensions", "wicked-testing.ts"),
+    pluginHooksDir: join(home, ".pi", "agent", "extensions", "wicked-testing-hooks"),
+    platform: "pi",
+    identityMarkers: ["settings.json", "auth.json"],
+    isolationTier: "advisory",
+  },
+  {
+    name: "copilot",
+    // GitHub Copilot agent skills (added April 2026). Personal skills live at
+    // ~/.copilot/skills/ (docs: docs.github.com/en/copilot).
+    // Skills-only: Copilot agents require .agent.md extension and a different
+    // tools schema. Agent/command functionality is covered by agent skills.
+    // Hooks: ~/.copilot/hooks/ directory, agentStop event name.
+    // First install requires --assume-cli=copilot since ~/.copilot/ doesn't
+    // exist until files are first written there.
+    rootDir: join(home, ".copilot"),
+    dir: join(home, ".copilot", "skills"),
+
+
+    hookPath: join(home, ".copilot", "hooks"),
+    hookMode: "dir",
+    platform: "copilot",
+    identityMarkers: ["skills"],
     isolationTier: "advisory",
   },
 ];
@@ -123,6 +218,144 @@ function buildClaudeTarget(rootDir, source, { trusted = false } = {}) {
     source,    // for doctor output ("env:CLAUDE_CONFIG_DIR" / "default" / "alt-configs" / "xdg")
     trusted,   // skip identity-marker check when true
   };
+}
+
+// ---------------------------------------------------------------------------
+// Hook installation helpers
+// ---------------------------------------------------------------------------
+
+// Build the CLI-specific hooks.json content for a given target.
+// hooksDir must be the absolute path to the hooks/ directory.
+// Returns null if the CLI uses a TypeScript extension system (hookPath null).
+function buildHookJson(targetName, hooksDir, timeout = 5000) {
+  const claimNudgeCmd     = `node "${join(hooksDir, "claim-nudge.mjs")}"`;
+  const sessionStartCmd   = `node "${join(hooksDir, "session-start.mjs")}"`;
+  const subagentVerdictCmd = `node "${join(hooksDir, "subagent-verdict.mjs")}"`;
+  switch (targetName) {
+    case "cursor":
+      // Cursor: version:1, camelCase event names, flat handler array per event.
+      return {
+        version: 1,
+        hooks: {
+          stop:         [{ command: claimNudgeCmd,      timeout, matcher: "*" }],
+          sessionStart: [{ command: sessionStartCmd,    timeout, matcher: "*" }],
+          subagentStop: [{ command: subagentVerdictCmd, timeout, matcher: "*" }],
+        },
+      };
+    case "kiro":
+      // Kiro: version:"v1" (string), array of hook objects with trigger + action.
+      // Kiro timeout is in seconds; convert from the millisecond default.
+      // Kiro supports SessionStart but NOT SubagentStop.
+      return {
+        version: "v1",
+        hooks: [
+          {
+            name: "wicked-testing-claim-nudge",
+            trigger: "Stop",
+            action: { type: "command", command: claimNudgeCmd },
+            timeout: Math.ceil(timeout / 1000),
+            enabled: true,
+          },
+          {
+            name: "wicked-testing-session-start",
+            trigger: "SessionStart",
+            action: { type: "command", command: sessionStartCmd },
+            timeout: Math.ceil(timeout / 1000),
+            enabled: true,
+          },
+        ],
+      };
+    case "copilot":
+      // Copilot: version:1, events named agentStop/sessionStart/subagentStop.
+      // bash + powershell + command for proper cross-platform per Copilot docs.
+      return {
+        version: 1,
+        hooks: {
+          agentStop:    [{ type: "command", bash: claimNudgeCmd,      powershell: claimNudgeCmd,      command: claimNudgeCmd      }],
+          sessionStart: [{ type: "command", bash: sessionStartCmd,    powershell: sessionStartCmd,    command: sessionStartCmd    }],
+          subagentStop: [{ type: "command", bash: subagentVerdictCmd, powershell: subagentVerdictCmd, command: subagentVerdictCmd }],
+        },
+      };
+    case "antigravity":
+      // Antigravity: outer key = hook name (not event). Inner key = event name.
+      // PreInvocation is the session-start equivalent; no SubagentStop support.
+      return {
+        "wicked-testing-claim-nudge": {
+          Stop: [{ matcher: "*", hooks: [{ type: "command", command: claimNudgeCmd, timeout }] }],
+        },
+        "wicked-testing-session-start": {
+          PreInvocation: [{ matcher: "*", hooks: [{ type: "command", command: sessionStartCmd, timeout }] }],
+        },
+      };
+    default:
+      // Codex and any future Claude Code-compatible CLIs: standard schema.
+      return {
+        hooks: {
+          Stop:         [{ matcher: "*", hooks: [{ type: "command", command: claimNudgeCmd,      timeout }] }],
+          SessionStart: [{ matcher: "*", hooks: [{ type: "command", command: sessionStartCmd,    timeout }] }],
+          SubagentStop: [{ matcher: "*", hooks: [{ type: "command", command: subagentVerdictCmd, timeout }] }],
+        },
+      };
+  }
+}
+
+// Merge our hook config into an existing one, replacing any prior wicked-testing
+// hook (identified by command string containing "wicked-testing") so re-install
+// is idempotent. Returns the merged object.
+function mergeHookJson(existing, ours, targetName) {
+  if (!existing) return ours;
+  if (targetName === "antigravity") {
+    // Outer key = hook name — overwrite all wicked-testing-* keys, leave others.
+    return { ...existing, ...ours };
+  }
+  if (targetName === "kiro") {
+    // Array-based: filter out all old wicked-testing entries by name, append ours.
+    const kept = (existing.hooks || []).filter(h => !h.name?.startsWith("wicked-testing-"));
+    return { ...existing, hooks: [...kept, ...ours.hooks] };
+  }
+  // Object-based (Cursor, Codex): merge by event key.
+  const mergedHooks = { ...(existing.hooks || {}) };
+  for (const [event, handlers] of Object.entries(ours.hooks || {})) {
+    const kept = (mergedHooks[event] || []).filter(h => !isWickedTestingHookEntry(h));
+    mergedHooks[event] = [...kept, ...handlers];
+  }
+  return { ...existing, hooks: mergedHooks };
+}
+
+// Remove wicked-testing entries from an existing hook file.
+// Returns the cleaned object (or null if the file is now empty and can be deleted).
+function removeHookJson(existing, targetName) {
+  if (!existing) return null;
+  if (targetName === "antigravity") {
+    const cleaned = { ...existing };
+    for (const key of Object.keys(cleaned)) {
+      if (key.startsWith("wicked-testing-")) delete cleaned[key];
+    }
+    return Object.keys(cleaned).length ? cleaned : null;
+  }
+  if (targetName === "kiro") {
+    const kept = (existing.hooks || []).filter(h => !h.name?.startsWith("wicked-testing-"));
+    return { ...existing, hooks: kept };
+  }
+  const mergedHooks = { ...(existing.hooks || {}) };
+  for (const event of Object.keys(mergedHooks)) {
+    mergedHooks[event] = (mergedHooks[event] || []).filter(h => !isWickedTestingHookEntry(h));
+    if (mergedHooks[event].length === 0) delete mergedHooks[event];
+  }
+  return { ...existing, hooks: mergedHooks };
+}
+
+function isWickedTestingHookEntry(h) {
+  if (typeof h.command === "string") return h.command.includes("wicked-testing");
+  if (Array.isArray(h.hooks)) return h.hooks.some(inner =>
+    typeof inner.command === "string" && inner.command.includes("wicked-testing")
+  );
+  return false;
+}
+
+// Read a JSON file safely; returns null on any error.
+function readJsonSafe(filePath) {
+  try { return JSON.parse(readFileSync(filePath, "utf8")); } catch { return null; }
 }
 
 function resolveClaudeCandidates() {
@@ -458,7 +691,7 @@ Commands:
   help          This message
 
 Options:
-  --cli=<list>        Comma-separated CLI names (claude, gemini, codex, cursor, kiro)
+  --cli=<list>        Comma-separated CLI names (claude, antigravity, codex, copilot, cursor, kiro, opencode, pi)
   --path=<dir>        Custom target path (e.g. --path=~/.claude). Also accepts --path <dir>.
   --assume-cli=<list> Force-detect a CLI even if its identity markers are missing
   --force             Overwrite even if versions match
@@ -558,7 +791,7 @@ async function cmdDoctor() {
         const suffix = d.source && d.source !== "default" ? ` @ ${d.rootDir} [${d.source}]` : "";
         return `${d.name}${suffix} (${d.isolationTier})`;
       }).join(", ") }
-    : { name: "cli-detection", status: "fail", message: "no AI CLIs detected in home directory", fix: "install Claude Code / Gemini / Codex / Cursor / Kiro, or use --path=<dir>" });
+    : { name: "cli-detection", status: "fail", message: "no AI CLIs detected in home directory", fix: "install Claude Code / Antigravity / Codex / Copilot / Cursor / Kiro / opencode / pi, or use --path=<dir>" });
 
   // better-sqlite3 native module
   let sqliteOk = false;
@@ -684,7 +917,6 @@ async function cmdInstall({ mode }) {
   }
 
   const skillsSrc = join(__dirname, "skills");
-
   const skillDirs = readdirSafe(skillsSrc).filter(d => !d.startsWith("."));
 
   let totalSkills = 0;
@@ -726,11 +958,79 @@ async function cmdInstall({ mode }) {
     }
 
     try {
-      for (const skill of skillDirs) copyTree(join(skillsSrc, skill), join(target.dir, `wicked-testing-${skill}`));
-      totalSkills += skillDirs.length;
+      // Install skills, distinguishing regular skill dirs from namespace dirs.
+      //
+      // Regular skill dir: has a SKILL.md at its own top level.
+      //   Source:      skills/acceptance-testing/SKILL.md
+      //   Installed:   {cli}/skills/wicked-testing-acceptance-testing/SKILL.md
+      //
+      // Namespace dir: no top-level SKILL.md; contains sub-skill dirs.
+      //   Example:     skills/wicked-vault/{init,record-evidence,...}/SKILL.md
+      //   Installed:   {cli}/skills/wicked-vault-init/SKILL.md
+      //                {cli}/skills/wicked-vault-record-evidence/SKILL.md  (etc.)
+      //
+      // CLI skill scanners only look one level deep, so the namespace must be
+      // flattened to a flat prefix at install time. A nested dir
+      // (wicked-testing-wicked-vault/init/) would be invisible.
+      let skillsInstalledThisTarget = 0;
+      for (const skill of skillDirs) {
+        const skillDir = join(skillsSrc, skill);
+        if (!existsSync(join(skillDir, "SKILL.md"))) {
+          // Namespace dir — flatten each subskill as {namespace}-{subskill}
+          const subSkills = readdirSafe(skillDir).filter(d => !d.startsWith("."));
+          for (const sub of subSkills) {
+            copyTree(join(skillDir, sub), join(target.dir, `${skill}-${sub}`));
+            skillsInstalledThisTarget++;
+          }
+        } else {
+          // Regular skill dir
+          copyTree(skillDir, join(target.dir, `wicked-testing-${skill}`));
+          skillsInstalledThisTarget++;
+        }
+      }
+      totalSkills += skillsInstalledThisTarget;
+
+      // Install hooks (opt-in claim-nudge). Claude Code uses the plugin's
+      // hooks/hooks.json (auto-registered by the plugin system — no action
+      // needed here). Other CLIs get a per-CLI hook config written to
+      // hookPath. opencode and pi use TypeScript extensions — hookPath null.
+      if (target.hookPath) {
+        const hooksDir = join(__dirname, "hooks");
+        const hookJson = buildHookJson(target.name, hooksDir);
+        try {
+          if (target.hookMode === "dir") {
+            mkdirSync(target.hookPath, { recursive: true });
+            writeFileSync(join(target.hookPath, "wicked-testing.json"), JSON.stringify(hookJson, null, 2));
+          } else {
+            // Merge into single hooks file; create if missing.
+            const existing = readJsonSafe(target.hookPath);
+            const merged = mergeHookJson(existing, hookJson, target.name);
+            writeFileSync(target.hookPath, JSON.stringify(merged, null, 2));
+          }
+          console.log(`[${target.name}] hooks installed (session-start, claim-nudge, subagent-verdict)`);
+        } catch (err) {
+          console.warn(`[${target.name}] hooks skipped — could not write to ${target.hookPath}: ${err?.code || err?.message}`);
+        }
+      }
+
+      // Install TypeScript plugin (opencode/pi only — JSON hook CLIs skip this).
+      if (target.pluginPath) {
+        try {
+          mkdirSync(dirname(target.pluginPath), { recursive: true });
+          writeFileSync(target.pluginPath, readFileSync(target.pluginSrcFile, "utf8"));
+          mkdirSync(target.pluginHooksDir, { recursive: true });
+          const hooksDir = join(__dirname, "hooks");
+          for (const f of ["claim-nudge.mjs", "claim-nudge.decision.mjs", "session-start.mjs", "subagent-verdict.mjs"]) {
+            writeFileSync(join(target.pluginHooksDir, f), readFileSync(join(hooksDir, f), "utf8"));
+          }
+          console.log(`[${target.name}] plugin installed (session-start, claim-nudge, subagent-verdict)`);
+        } catch (err) {
+          console.warn(`[${target.name}] plugin skipped — could not write to ${target.pluginPath}: ${err?.code || err?.message}`);
+        }
+      }
 
       writeMarker(target);
-      console.log(`[${target.name}] installed ${VERSION} (skills=${skillDirs.length})`);
+      console.log(`[${target.name}] installed ${VERSION} — ${skillsInstalledThisTarget} skills`);
 
       // Surface the isolation tier so users of non-Claude hosts know the
       // reviewer's `allowed-tools: [Read]` is prompt-enforced, not
@@ -770,6 +1070,32 @@ async function cmdInstall({ mode }) {
     }));
   }
 
+  // Register as a wicked-bus provider so downstream subscribers receive vault
+  // and testing events (wicked.evidence.captured, wicked.verdict.recorded, etc.).
+  // Absorbed from wicked-vault installer (ECOSYSTEM-RATIONALIZATION.md §5a Phase B).
+  // Non-fatal: wicked-testing emits events when wicked-bus is present and runs
+  // fully standalone when it isn't. Dynamic import keeps the bus optional.
+  try {
+    const bus = await import("wicked-bus");
+    const busConfig = typeof bus.loadConfig === "function" ? bus.loadConfig() : {};
+    const busDb = bus.openDb(busConfig);
+    try {
+      bus.register(busDb, { plugin: "wicked-testing", role: "provider", filter: "wicked.*" });
+      if (!jsonOut) console.log("\nwicked-bus: registered wicked-testing as a provider");
+    } catch (err) {
+      // Duplicate registration on re-install is a no-op — expected on update.
+      if (err.message && err.message.includes("UNIQUE")) {
+        if (!jsonOut) console.log("\nwicked-bus: wicked-testing already registered as a provider (re-install)");
+      } else {
+        if (!jsonOut) console.log(`\nwicked-bus: could not register (${err.message})`);
+      }
+    }
+    busDb.close();
+  } catch {
+    // wicked-bus not installed — fully expected in minimal setups.
+    if (!jsonOut) console.log("\nwicked-bus: not available (install wicked-bus to enable event emission)");
+  }
+
   // Non-zero exit if any target skipped due to a real failure (not just
   // "already installed"). This matches CI expectations — an install script
   // that partially succeeded should be a non-green build.
@@ -786,9 +1112,21 @@ function cmdUninstall() {
 
   for (const target of targets) {
     let removed = 0;
+    // Mirror the install logic: regular skills use the wicked-testing- prefix;
+    // namespace dirs (no top-level SKILL.md) are stored as flat {ns}-{subskill}/.
     for (const skill of skillDirs) {
-      const p = join(target.dir, `wicked-testing-${skill}`);
-      if (existsSync(p)) { rmSync(p, { recursive: true, force: true }); removed++; }
+      const skillDir = join(__dirname, "skills", skill);
+      if (!existsSync(join(skillDir, "SKILL.md"))) {
+        // Namespace dir — remove flat {ns}-{subskill} dirs
+        const subSkills = readdirSafe(skillDir).filter(d => !d.startsWith("."));
+        for (const sub of subSkills) {
+          const p = join(target.dir, `${skill}-${sub}`);
+          if (existsSync(p)) { rmSync(p, { recursive: true, force: true }); removed++; }
+        }
+      } else {
+        const p = join(target.dir, `wicked-testing-${skill}`);
+        if (existsSync(p)) { rmSync(p, { recursive: true, force: true }); removed++; }
+      }
     }
     // Also clean pre-0.3 bare-name skill dirs if they're still ours
     // (signature-checked — see migrateOneLegacyDir).
@@ -798,6 +1136,31 @@ function cmdUninstall() {
     // And the pre-skills-only agents/commands files (0.6.x and earlier) —
     // uninstall must leave nothing behind from any historical layout.
     removed += migrateLegacyAgentCommandLayout([target]).length;
+    if (target.hookPath) {
+      try {
+        if (target.hookMode === "dir") {
+          const p = join(target.hookPath, "wicked-testing.json");
+          if (existsSync(p)) { rmSync(p, { force: true }); removed++; }
+        } else {
+          const existing = readJsonSafe(target.hookPath);
+          if (existing) {
+            const cleaned = removeHookJson(existing, target.name);
+            if (cleaned && Object.keys(cleaned.hooks || cleaned).length > 0) {
+              writeFileSync(target.hookPath, JSON.stringify(cleaned, null, 2));
+            } else {
+              rmSync(target.hookPath, { force: true });
+            }
+            removed++;
+          }
+        }
+      } catch { /* leave hook file if we can't modify it */ }
+    }
+    if (target.pluginPath) {
+      try {
+        if (existsSync(target.pluginPath)) { rmSync(target.pluginPath, { force: true }); removed++; }
+        if (existsSync(target.pluginHooksDir)) { rmSync(target.pluginHooksDir, { recursive: true, force: true }); removed++; }
+      } catch { /* leave plugin files if we can't remove them */ }
+    }
     const marker = join(target.dir, INSTALLED_MARKER);
     if (existsSync(marker)) rmSync(marker, { force: true });
     console.log(`[${target.name}] uninstalled — ${removed} item${removed === 1 ? "" : "s"} removed`);

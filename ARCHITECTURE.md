@@ -47,7 +47,7 @@ specialist dispatch names. Adding Tier-2 specialists never breaks downstream.
 ## Component Diagram
 
 ```
-User --> AI CLI (Claude / Gemini / Codex / Cursor / Kiro)
+User --> AI CLI (Claude / Antigravity / Codex / Cursor / Kiro / Copilot / OpenCode / Pi)
               |
               v
          wicked-testing plugin  (48 skills, one flat wicked-testing:* namespace)
@@ -94,8 +94,8 @@ Mirrors [wicked-bus](https://github.com/mikeparcewski/wicked-bus):
 1. wicked-testing is published to npm with `bin` entries (`wicked-testing`,
    `wicked-testing-install`).
 2. `npx wicked-testing install` copies the `skills/` tree into the detected
-   AI CLI skill directories (`~/.claude/skills/`, `~/.gemini/skills/`, etc.).
-   Skills are the only distributed surface.
+   AI CLI skill directories (`~/.claude/skills/`, `~/.gemini/antigravity-cli/`,
+   etc.). Skills are the only distributed surface.
 3. Once copied, everything runs native in the host CLI — no per-call `npx`.
 4. `npx wicked-testing update` refreshes. `npx wicked-testing uninstall`
    removes.
@@ -170,7 +170,7 @@ written first. Test data survives SQLite issues.
 
 ### 3. Reviewer Isolation (3-Layer)
 `acceptance-test-reviewer` is the integrity boundary:
-- `allowed-tools: [Read]` only (hard on Claude Code; advisory on others)
+- `allowed-tools: [Read]` — advisory; isolation enforced by `context: fork` skill boundary
 - Evidence-only dispatch — no shared executor context
 - Separate forked-skill invocation (`context: fork`) — no shared conversation history
 

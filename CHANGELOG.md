@@ -29,18 +29,87 @@ All notable changes to `wicked-testing`. Format loosely follows
   written to either store) instead of silently diverging the canonical JSON
   from the SQLite index.
 
+## [0.7.3] — 2026-07-07
+
 ### Added
+- **wicked-vault absorbed**: vault CLI (`bin/wicked-vault.mjs`), 6 skills (`skills/wicked-vault/`), hash chain, verifier registry, and bus integration now ship as part of wicked-testing — no separate wicked-vault package needed
+- Migration `003_vault_evidence_sha.sql`: nullable `vault_payload_sha` column on verdicts table with partial index
+- Updated event names: `wicked.evidence.captured` (was `wicked.evidence.recorded`) and `wicked.contract.published` (was `wicked.contract.declared`)
+- Bus provider registration in `install.mjs` — vault events route correctly when wicked-bus is present
+- 10 new unit tests in `tests/unit/bus-emit.test.mjs` covering dual-event path and vault record integration
+
+### Changed
+- `bus-emit.mjs`: `verdicts.create` returns `[wicked.verdict.recorded, wicked.evidence.captured]` array when `vault_payload_sha` is present
+- `domain-store.mjs`: SCHEMA_VERSION 2→3; verdicts schema extended with `vault_payload_sha`
+
+## [0.7.2] — 2026-07-07
+
+### Fixed
+- Skill name separator changed from colon to dash across all 47 skills (`wicked-testing-X` not `wicked-testing:X`) — colons are rejected by CLIs outside Claude Code
+- `validate.mjs` updated to enforce dash format and updated `subagent_type` prefix check
+
+---
+
+## [0.7.1] — 2026-07-07
+
+### Changed
+- **`plugin.json` skills list removed** — Claude Code now auto-scans `skills/`
+  directory directly. All 47 skills are discovered automatically; the previous
+  explicit 7-entry list is no longer needed and was a maintenance liability.
+- `sync-plugin-version.mjs` — comment updated to reflect auto-scan behaviour.
+
+## [0.7.0] — 2026-07-06
+
+**Skills-only architecture.** Everything is now a skill — agents and commands
+are fully replaced. All 47 skills carry `context: fork` for cross-CLI isolation.
+Lifecycle hooks now fire on all 8 supported CLIs.
+
+### Changed
+- **Skills-only distribution.** `agents/` and `commands/` are no longer
+  installed. `install.mjs` distributes all 47 skills by scanning `skills/`
+  directly. `plugin.json` registers only the 7 Tier-1 user-invokeable
+  orchestrators; Tier-2 specialists are auto-discovered by the host CLI.
+- **`context: fork` on all 47 skills** — the isolation boundary that makes
+  skills behave like subagents in every supported CLI.
+- **`allowed-tools` is advisory, not hard-enforcement** — isolation comes from
+  the `context: fork` boundary, not from tool restriction. All skills updated.
+- **All 40 Tier-2 specialist skills rewritten to minimal playbooks** (40–80 lines).
+  Removed role-assignment framing, tool command sequences, reference tables,
+  and "Non-negotiable rules" sections. Skills now read as neutral process docs.
+
+### Added
+- **SessionStart + SubagentStop hooks** on all 6 JSON-hook CLIs (Claude Code,
+  Antigravity, Codex, Cursor, Kiro, Copilot). `session-start.mjs` shows QE
+  project status at session open; `subagent-verdict.mjs` surfaces reviewer
+  verdict when evidence landed in the last 60 seconds.
+- **TypeScript plugins for OpenCode and Pi.** `hooks/opencode-plugin.ts`
+  (`session.created` → session-start, `session.idle` → claim-nudge + verdict)
+  and `hooks/pi-extension.ts` (`session_start` → session-start, `agent_end` →
+  claim-nudge + verdict). Both are installed to the CLI's plugin/extensions dir
+  alongside the hook scripts they delegate to. Loaded via Bun (opencode) and
+  jiti (pi) — no compilation step.
+- **`wicked-qe gate` CLI** (`bin/wicked-qe.mjs`, `lib/gate.mjs`) — standalone
+  command for recording QE gate verdicts from agent scripts and CI pipelines.
+  Emits `wicked.qe.gate.passed/failed/conditional` bus events. Exit codes:
+  0 PASS / 1 FAIL / 2 CONDITIONAL / 3 SYSTEM_ERROR. `--dry-run` flag available.
 - **Equivalence / baseline-match as a first-class verdict facet.** Optional
-  `verdict.equivalence` block `{ baseline_ref, baseline_sha, method, diff_count,
-  tolerance, matched }` in the evidence schema (manifest minor bump
-  `1.0.0 → 1.1.0`); an `EQUIVALENT_TO_BASELINE` reviewer operator; scenario
-  `assertions[].baseline` / `method` / `tolerance` support + `equivalence`
-  category; a nullable `verdicts.equivalence_json` column (migration `002`); and
-  the fixed oracle query `baseline_matches_for_scenario`. All optional and
-  backward-compatible — existing rows, readers, and manifests are unaffected.
-- **Versioned migration `002_verdict_check_and_equivalence.sql`** — the first
-  follow-on migration; applies in numeric order via `lib/migrate.mjs` on both
-  fresh and pre-existing v1 databases. `SCHEMA_VERSION` bumped `1 → 2`.
+  `verdict.equivalence` block in the evidence schema (manifest `1.0.0 → 1.1.0`);
+  `EQUIVALENT_TO_BASELINE` reviewer operator; `baseline_matches_for_scenario`
+  oracle query. Backward-compatible — existing rows and manifests unaffected.
+- **Versioned migration `002`** — adds `CHECK` constraint on `verdicts.verdict`
+  and `equivalence_json` column. `SCHEMA_VERSION` bumped `1 → 2`.
+
+### Fixed
+- **`CONDITIONAL` verdict was missing from the manifest enum (latent contract
+  bug).** Four Tier-2 skills already emit `CONDITIONAL` but it was absent from
+  `schemas/evidence.json` and `lib/manifest.mjs` `validateShape`. Now added to
+  the enum, the prejudicial-content matcher, `docs/EVIDENCE.md`, and
+  `VERDICT_TO_STATUS` map. `DomainStore.create()` validates verdict before the
+  dual-write — out-of-enum values throw `ERR_INVALID_VERDICT` atomically.
+- **Requirements section in README** listed Copilot as removed; it is supported.
+  Updated to list all 8 CLIs.
+- **`sync-plugin-version.mjs`** no longer drifts on agents/commands (legacy dirs)
+  or Tier-2 skills (intentionally absent from `plugin.json`). Now version-only.
 
 ## [0.4.1] — 2026-06-10
 
