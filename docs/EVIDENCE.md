@@ -105,7 +105,7 @@ Formal JSON Schema: [`schemas/evidence.json`](../schemas/evidence.json)
 | `duration_ms`         | yes      | Integer milliseconds.                                |
 | `status`              | yes      | `passed | failed | partial | inconclusive | errored | skipped`. |
 | `verdict.value`       | yes      | `PASS | FAIL | PARTIAL | CONDITIONAL | INCONCLUSIVE | N-A | SKIP`.  |
-| `verdict.reviewer`    | yes      | Agent subagent_type that judged.                     |
+| `verdict.reviewer`    | yes      | Dispatch name of the reviewer skill that judged (e.g. `wicked-testing:acceptance-test-reviewer`; same string as the former agent `subagent_type`). |
 | `verdict.reason`      | when FAIL/N-A/SKIP | Free text. ≤ 500 chars recommended.        |
 | `verdict.equivalence` | no       | Optional baseline-match facet. When both `diff_count` and `tolerance` are present, the producer guarantees the invariant `matched === (diff_count <= tolerance)`; a contradictory facet is dropped rather than recorded. |
 | `environment.*`       | yes      | Best-effort capture at run start.                    |

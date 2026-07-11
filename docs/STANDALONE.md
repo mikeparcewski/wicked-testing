@@ -13,8 +13,10 @@ npx wicked-testing install
 ```
 
 The installer detects any AI CLI directory in your home (Claude Code,
-Antigravity, Codex, Cursor, Kiro, Copilot, OpenCode, Pi) and copies
-47 skills into `~/.<cli>/skills/wicked-testing-*/`.
+Antigravity, Codex, Cursor, Kiro, Copilot, OpenCode, Pi) and copies all 48
+skills into `~/.<cli>/skills/wicked-testing-*/` — 8 workflow skills plus 40
+forked specialist skills. There are no separate agent or command directories
+to install.
 
 Run `npx wicked-testing status` to confirm:
 
@@ -28,7 +30,7 @@ wicked-testing 0.1.0 — status
 
 ## First Run
 
-Open any supported CLI and invoke one of the seven core skills:
+Open any supported CLI and invoke one of the five core workflow skills:
 
 ```
 /wicked-testing:plan "Add authenticated file upload to the dashboard"
@@ -161,7 +163,7 @@ Run with:
 npx wicked-testing uninstall
 ```
 
-Removes skills from every detected CLI. Your project-local
+Removes the installed skills from every detected CLI. Your project-local
 `.wicked-testing/` directories are **not** touched.
 
 ---

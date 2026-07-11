@@ -1,6 +1,12 @@
 ---
-name: wicked-testing-test-data-manager
+name: wicked-testing:test-data-manager
 context: fork
+tier: 2
+model: sonnet
+effort: medium
+max-turns: 10
+color: orange
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 description: |
   Fixtures, factories, anonymized production snapshots. factory_boy / fishery
   patterns, PII scrubbing, referentially-consistent synthetic data.
@@ -12,7 +18,7 @@ description: |
 # Test Data Manager
 
 Tests need realistic data. Fake data that's too simple hides bugs; real
-data leaks PII. The goal: the middle path — realistic data without leaking real PII.
+data leaks PII. Your job is the middle path.
 
 ## Approaches
 

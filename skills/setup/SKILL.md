@@ -1,11 +1,26 @@
 ---
-description: Initialize wicked-testing for this project — detect CLI tools, create config, register project in DomainStore
+name: wicked-testing:setup
+description: |
+  Tier-1 user-invokable entry point for per-project initialization. Initializes
+  wicked-testing for the current project — detects available test CLI tools,
+  creates `.wicked-testing/config.json`, and registers a project record in the
+  DomainStore.
+
+  Use when: "set up wicked-testing", "initialize testing for this project",
+  "ERR_NO_CONFIG", "/wicked-testing:setup".
 argument-hint: "[--project <name>] [--json]"
 ---
 
-# /wicked-testing:setup
+# wicked-testing:setup
 
-Initialize wicked-testing for the current project. Creates `.wicked-testing/config.json`, detects available test CLIs, and registers a project record in the DomainStore.
+Initialize wicked-testing for the current project. Creates
+`.wicked-testing/config.json`, detects available test CLIs, and registers a
+project record in the DomainStore. This is the remediation for `ERR_NO_CONFIG`
+anywhere in wicked-testing (plan, acceptance-testing, test-oracle,
+release-readiness all point here).
+
+This skill runs in the main context (Bash/Write) — it is an orchestrating
+entry point, not an isolated worker.
 
 ## Usage
 
@@ -101,9 +116,9 @@ Oracle and stats commands require SQLite. Run: npm rebuild better-sqlite3
 **Project ID**: {id}
 
 Next steps:
-- `/wicked-testing:plan` — create a test strategy
-- `/wicked-testing:authoring` — author test scenarios
-- `/wicked-testing:acceptance scenarios/test-runner.md` — run acceptance test pipeline
+- `wicked-testing:plan` skill — create a test strategy
+- `wicked-testing:authoring` skill — author test scenarios
+- `wicked-testing:acceptance-testing` skill (e.g. on `scenarios/test-runner.md`) — run the acceptance test pipeline
 - **Claim-boundary nudge (optional, off by default):** set `"claim_nudge": true` in
   `.wicked-testing/config.json` to be reminded to run `acceptance` whenever a turn
   claims "tests pass" with no acceptance verdict on record. Auto-registers under a

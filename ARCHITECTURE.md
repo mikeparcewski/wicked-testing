@@ -1,8 +1,10 @@
 # Architecture — wicked-testing
 
 Standalone QE library for AI coding CLIs. Ships as an npm package; installs
-47 skills into the host CLI's skills directory. Optional integration with
-wicked-bus (events) and wicked-brain (knowledge memory).
+skills into the host CLI's skill directory. Everything is a skill — one flat
+`wicked-testing:*` namespace, no separate agent or command component types.
+Optional integration with wicked-bus (events) and wicked-brain (knowledge
+memory).
 
 See [docs/INTEGRATION.md](docs/INTEGRATION.md) for the public contract,
 [docs/EVIDENCE.md](docs/EVIDENCE.md) for the evidence manifest schema, and
@@ -12,8 +14,8 @@ See [docs/INTEGRATION.md](docs/INTEGRATION.md) for the public contract,
 
 ## Design Principle: 5 Core + Specialists
 
-User-centric, not taxonomy-centric. The surface is five skills named after
-what a user actually wants to do:
+User-centric, not taxonomy-centric. The public surface is five workflow skills
+named after what a user actually wants to do:
 
 | Skill                       | User intent                                    |
 |-----------------------------|------------------------------------------------|
@@ -23,15 +25,22 @@ what a user actually wants to do:
 | `wicked-testing:review`     | Judge the evidence                             |
 | `wicked-testing:insight`    | Is my suite healthy? What happened last week?  |
 
-Behind the 7 Tier-1 skills sit 40 specialist skills, all with `context: fork`.
-**Tier 1** (stable, public contract) covers plan, authoring, execution, review,
-insight, acceptance-testing, and update. **Tier 2** (internal, grows freely)
-covers domain specialists: integration, ui-component, e2e, visual, a11y, load,
-chaos, fuzz, mutation, i18n, data-quality, observability, flaky-hunter,
-exploratory, coverage-archaeologist.
+Three more workflow skills are operational entry points, not part of the public
+contract: `acceptance-testing` (the full Writer→Executor→Reviewer gate),
+`setup`, and `update` — 8 workflow skills in all.
 
-Consumers (notably wicked-garden) only depend on Tier 1. Adding Tier-2
-specialists never breaks downstream.
+Behind the workflow skills sit **specialist skills**, each marked
+`context: fork` so the workflow skill dispatches it into an isolated context
+with no shared conversation history. **Tier 1** (15 skills — stable, public
+contract) covers strategy, testability, risk, automation, execution, review,
+oracle. **Tier 2** (25 skills — internal, grows freely) covers domain
+specialists: integration, ui-component, e2e, visual, a11y, load, chaos, fuzz,
+mutation, i18n, data-quality, observability, flaky-hunter, exploratory,
+coverage-archaeologist, and more.
+
+8 workflow + 15 Tier-1 + 25 Tier-2 = **48 skills**. Consumers (notably
+wicked-garden) only depend on the 5 public workflow skills and the 15 Tier-1
+specialist dispatch names. Adding Tier-2 specialists never breaks downstream.
 
 ---
 
@@ -41,19 +50,25 @@ specialists never breaks downstream.
 User --> AI CLI (Claude / Antigravity / Codex / Cursor / Kiro / Copilot / OpenCode / Pi)
               |
               v
-         wicked-testing plugin
+         wicked-testing plugin  (48 skills, one flat wicked-testing:* namespace)
               |
-              +-- 7 Tier-1 skills (SKILL.md, context: fork)
+              +-- 8 workflow skills (SKILL.md — user-invokable entry points)
               |     plan, authoring, execution, review, insight,
-              |     acceptance-testing, update
+              |     acceptance-testing, setup, update
               |
-              +-- 40 Tier-2 specialist skills (context: fork)
+              +-- 15 Tier-1 specialist skills (context: fork — public contract)
               |     test-strategist, test-designer, test-automation-engineer,
               |     testability-reviewer, requirements-quality-analyst,
               |     risk-assessor, code-analyzer, semantic-reviewer,
-              |     acceptance-test-writer, acceptance-test-executor,
-              |     acceptance-test-reviewer, scenario-executor, test-oracle,
-              |     + 27 domain specialists
+              |     contract-testing-engineer,
+              |     production-quality-engineer, acceptance-test-writer,
+              |     acceptance-test-executor, acceptance-test-reviewer,
+              |     scenario-executor, test-oracle
+              |
+              +-- 25 Tier-2 specialist skills (context: fork — internal)
+              |     integration, ui-component, e2e, visual, a11y, load, chaos,
+              |     fuzz, mutation, i18n, data-quality, observability,
+              |     flaky-hunter, exploratory, coverage-archaeologist, ...
               |
               +-- lib/
               |     domain-store.mjs  -- SQLite ledger + JSON canonical
@@ -78,8 +93,9 @@ Mirrors [wicked-bus](https://github.com/mikeparcewski/wicked-bus):
 
 1. wicked-testing is published to npm with `bin` entries (`wicked-testing`,
    `wicked-testing-install`).
-2. `npx wicked-testing install` copies 47 skills into the detected AI CLI
-   directories (`~/.claude/`, `~/.gemini/antigravity-cli/`, etc.).
+2. `npx wicked-testing install` copies the `skills/` tree into the detected
+   AI CLI skill directories (`~/.claude/skills/`, `~/.gemini/antigravity-cli/`,
+   etc.). Skills are the only distributed surface.
 3. Once copied, everything runs native in the host CLI — no per-call `npx`.
 4. `npx wicked-testing update` refreshes. `npx wicked-testing uninstall`
    removes.
@@ -123,13 +139,13 @@ Consumers read `evidence/<run-id>/manifest.json`, never the database.
 
 The public contract for consumers is three things:
 
-1. **Tier-1 skill names** — see [docs/INTEGRATION.md](docs/INTEGRATION.md) § 2–3.
+1. **Tier-1 skill names** (workflow + forked dispatch names) — see [docs/INTEGRATION.md](docs/INTEGRATION.md) § 2–3.
 2. **Bus events** — `wicked.testrun.*`, `wicked.verdict.recorded`,
    `wicked.evidence.captured` — see [docs/INTEGRATION.md](docs/INTEGRATION.md) § 4.
 3. **Evidence manifest schema** — `schemas/evidence.json`.
 
 Consumers should not read the SQLite database, anything under `lib/`, or
-Tier-2 skill names directly.
+Tier-2 specialist skill names directly.
 
 ### Graceful Degradation
 
@@ -156,7 +172,7 @@ written first. Test data survives SQLite issues.
 `acceptance-test-reviewer` is the integrity boundary:
 - `allowed-tools: [Read]` — advisory; isolation enforced by `context: fork` skill boundary
 - Evidence-only dispatch — no shared executor context
-- Separate `context: fork` skill dispatch
+- Separate forked-skill invocation (`context: fork`) — no shared conversation history
 
 ### 4. Fixed-SQL Oracle (No LLM-Generated SQL)
 The `test-oracle` maps questions to 12 named parameterized queries by
@@ -167,7 +183,7 @@ No home-global store. A project's test history travels with its code.
 
 ### 6. Public Contract = Events + Manifest Schema
 Consumers subscribe to bus events and read the evidence manifest. They do
-not read SQLite or agent bodies directly. This keeps wicked-testing free
+not read SQLite or skill bodies directly. This keeps wicked-testing free
 to refactor internals without breaking downstream.
 
 ---
@@ -180,7 +196,7 @@ to refactor internals without breaking downstream.
 | ARCHITECTURE.md (this file)          | library maintainers, reviewers  |
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) | consumers of the library  |
 | [docs/EVIDENCE.md](docs/EVIDENCE.md) | consumers reading manifests     |
-| [docs/NAMESPACE.md](docs/NAMESPACE.md) | anyone adding skills           |
+| [docs/NAMESPACE.md](docs/NAMESPACE.md) | anyone adding skills          |
 | [docs/STANDALONE.md](docs/STANDALONE.md) | users without wicked-garden |
 | [docs/WICKED-GARDEN.md](docs/WICKED-GARDEN.md) | wicked-garden users   |
 | [HOW-IT-WORKS.md](HOW-IT-WORKS.md)   | internal walkthrough            |

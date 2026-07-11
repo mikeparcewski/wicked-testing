@@ -41,8 +41,6 @@
     "install.mjs",
     "bin/",
     "skills/",
-    "agents/",
-    "commands/",
     "hooks/",
     "lib/",
     "src/",

@@ -1,12 +1,16 @@
 #!/usr/bin/env node
-// On-demand eval runner for wicked-testing agents.
+// On-demand eval runner for wicked-testing specialist skills.
 // Reads evals/<agent>/evals.json, dispatches each case via the host CLI's
-// Agent tool, captures output, checks assertions, writes a run report.
+// Skill tool (forked-skill invocation), captures output, checks assertions,
+// writes a run report.
 //
 // This script is a harness — it does NOT make Claude API calls directly.
 // Instead it prints the dispatch plan; the invoking agent (Claude Code skill)
-// executes the actual Agent tool calls. Deterministic assertions are checked
-// against captured outputs.
+// executes the actual Skill tool calls. Post skills-only conversion the plugin
+// registers no agents, so Task(subagent_type=...) cannot resolve — the skill
+// names are byte-identical to the legacy `subagent_type` values in evals.json
+// (e.g. "wicked-testing:test-designer"), so the data files need no migration.
+// Deterministic assertions are checked against captured outputs.
 //
 // Usage:
 //   node scripts/dev/evals.mjs list                 # list eval sets
@@ -91,7 +95,7 @@ function planAgent(agent) {
   }
   console.log(`Total cases: ${data.cases.length}`);
   console.log(`Estimated cost: $${(data.cases.length * 0.10).toFixed(2)} – $${(data.cases.length * 0.30).toFixed(2)} (rough)`);
-  console.log(`\nTo execute: the invoking skill dispatches each case via the Agent tool.`);
+  console.log(`\nTo execute: the invoking skill dispatches each case via the Skill tool (forked-skill invocation).`);
   console.log(`Capture output into ${relative(REPO, WORKSPACE)}/iteration-<N>/${agent}/case-<id>/`);
   console.log(`Then check with: node scripts/dev/evals.mjs check ${agent} iteration-<N>`);
 }
@@ -276,8 +280,10 @@ function checkAssertion(a, ctx) {
       }
     }
     case "dispatches-agent": {
-      // Skill-level assertion: the captured trace shows a Task() dispatch
-      // to the named subagent_type. The trace lives at
+      // Skill-level assertion: the captured trace shows a Skill() dispatch
+      // to the named skill. The assertion value is matched as a substring, and
+      // skill names are byte-identical to the legacy subagent_type values, so
+      // existing eval data keeps working. The trace lives at
       // `${caseDir}/dispatch.trace` — a plain text file the host CLI's
       // eval dispatcher writes alongside output.md. Skill evals need this
       // because the artifact they produce is "the right subagent was
@@ -371,7 +377,7 @@ function checkAll() {
 
 function runAgent(agent) {
   // `run` is plan + runtime instructions in one. The actual dispatch still
-  // happens in the host CLI's Agent tool — this runner cannot drive the
+  // happens in the host CLI's Skill tool — this runner cannot drive the
   // Claude API directly (see header comment). What we CAN do is show the
   // caller exactly where to write outputs and how to invoke the checker.
   if (!agent) { console.error("Usage: evals.mjs run <agent>"); process.exit(1); }
@@ -384,7 +390,7 @@ function runAgent(agent) {
   console.log(`Temperature pin: ${data.temperature != null ? data.temperature : "(none)"}`);
   console.log(`Seed pin: ${data.seed != null ? data.seed : "(none)"}`);
   console.log();
-  console.log(`For each case, dispatch Task(subagent_type="${data.subagent_type}", ...)`);
+  console.log(`For each case, dispatch Skill(skill="${data.subagent_type}", args=<case prompt>) — forked-skill invocation; the skill name is the evals.json subagent_type value verbatim.`);
   console.log(`Write output to: ${relative(REPO, WORKSPACE)}/iteration-<N>/${agent}/case-<id>/output.md`);
   console.log(`Then verify: node scripts/dev/evals.mjs check ${agent} iteration-<N>`);
 }

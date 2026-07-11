@@ -1,13 +1,14 @@
 ---
-name: wicked-testing-execution
-context: fork
+name: wicked-testing:execution
 description: |
   Tier-1 orchestrator for running tests and capturing evidence. Executes
   scenarios, invokes framework runners, collects artifacts, and writes the
   run + verdict to the ledger.
 
   Use when: "run the test", "execute this scenario", "run the suite",
-  "acceptance test this", "capture evidence", "prove it works".
+  "acceptance test this", "capture evidence", "prove it works",
+  "/wicked-testing:execution".
+argument-hint: "[target] [--project <name>] [--suite] [--json]"
 ---
 
 # wicked-testing:execution
@@ -15,6 +16,17 @@ description: |
 The doer. Takes a scenario or test command, runs it, captures everything,
 writes the ledger entry. Evidence lives under
 `.wicked-testing/evidence/<run-id>/`.
+
+## Usage
+
+```
+/wicked-testing:execution [target] [--project <name>] [--suite] [--json]
+```
+
+- `target` — scenario file path, scenario name, or a test command
+- `--project` — associate the run with a named project
+- `--suite` — run the project's full test suite instead of a scenario
+- `--json` — emit JSON envelope
 
 ## When to use
 
@@ -27,24 +39,27 @@ writes the ledger entry. Evidence lives under
 | Input                                                    | Dispatch                                                                                                 |
 |----------------------------------------------------------|----------------------------------------------------------------------------------------------------------|
 | A scenario file                                          | `wicked-testing:scenario-executor`                                                                       |
-| Scenario + "give me a verdict" (acceptance-grade)        | Route to `/wicked-testing:acceptance` — the 3-agent isolated pipeline (writer → executor → reviewer).    |
+| Scenario + "give me a verdict" (acceptance-grade)        | Route to `/wicked-testing:acceptance-testing` — the 3-role isolated pipeline (writer → executor → reviewer). |
 | Scenario + "give me a verdict" (dev-loop, explicit)      | `wicked-testing:test-designer` ONLY if the caller explicitly asks for the fast-path / self-graded loop.  |
 | Pre-written plan, "just execute"                         | `wicked-testing:acceptance-test-executor`                                                                |
 | "run the suite" (no scenario)                            | Project's native runner; record result                                                                   |
 | Contract verification                                    | `wicked-testing:contract-testing-engineer`                                                               |
 | "wire CI" / "bootstrap CI for tests"                     | Emit CI trigger (pre-push / GH Actions step); record nothing until a real run executes                   |
 
-**Default posture:** verdict requests go to the 3-agent pipeline. `test-designer`
+**Default posture:** verdict requests go to the 3-role pipeline. `test-designer`
 is the dev-loop fast path with known self-grading risk; it is never the default
 and never used for audit / CI / crew-phase sign-off evidence. See the warning
 in `skills/test-designer/SKILL.md`.
 
 ### Dispatch block (executable)
 
-Dispatch skill `wicked-testing:scenario-executor` (isolated via `context: fork`):
+Every id in the tables above is a forked worker skill (`context: fork`) —
+invoke it with the Skill tool so it runs in an isolated context:
 
 ```
-Execute the scenario file at the path below and capture evidence.
+Skill(
+  skill="wicked-testing:scenario-executor",
+  args="""Execute the scenario file at the path below and capture evidence.
 
 ## Scenario Path
 {path to scenarios/<name>.md}
@@ -62,12 +77,14 @@ Execute the scenario file at the path below and capture evidence.
 5. Determine per-step outcome: exit 0 = PASS, non-zero = FAIL, CLI missing = SKIPPED.
 
 Do NOT self-grade qualitative outcomes. For acceptance-grade verdicts
-route to /wicked-testing:acceptance instead.
+route to /wicked-testing:acceptance-testing instead."""
+)
 ```
 
-Swap the skill name per the table above. For a scenario that also needs
+Swap the `skill` id per the table above. For a scenario that also needs
 contract verification, dispatch `scenario-executor` and
-`contract-testing-engineer` in parallel and merge results.
+`contract-testing-engineer` in parallel (one `Skill(...)` call each in the
+same turn) and merge results.
 
 ## Tier-2 specialists this skill routes to
 
@@ -111,6 +128,13 @@ SKIP with reason `trust-level-insufficient`.
 - The run_id + path to `manifest.json`
 - Verdict (PASS / FAIL / N-A / SKIP)
 - One-line summary — never a wall of tool output
+
+## Legacy invocations (absorbed in 0.4.0)
+
+| Old command    | Ask execution instead |
+|----------------|-----------------------|
+| `run`          | "run scenario <path>" — execution dispatches `scenario-executor` and records the run |
+| `ci-bootstrap` | "wire CI to run these tests" — execution emits the CI trigger; for the portable evidence gate use wicked-garden's `compile` |
 
 ## References
 

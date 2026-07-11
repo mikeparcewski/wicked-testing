@@ -11,9 +11,13 @@ not depend on SQL schema, file paths inside `lib/`, or skill definition contents
 
 ## 1. Namespace
 
-All user-facing surface lives under the `wicked-testing:` namespace.
+All user-facing surface lives under the `wicked-testing:` namespace. Everything
+is a skill — there are no separate agent or command component types.
 
-- Skills: `wicked-testing:<name>` (invoked as `/wicked-testing:<name>` in the host CLI)
+- Skills: `wicked-testing:<name>`
+- Slash invocation of workflow skills: `/wicked-testing:<name>`
+- Worker skills are dispatched by the same `wicked-testing:<name>` strings that
+  used to be agent `subagent_type` values — the dispatch names are unchanged.
 
 The `qe:` prefix is **retired**. It appears only in wicked-garden backward-compat
 aliases for one minor version.
@@ -33,21 +37,23 @@ Five skills form the public surface. Consumers may reference these by name.
 | `wicked-testing:insight`  | Stats, reports, flaky detection, coverage archaeology          |
 
 Each Tier-1 skill **internally** dispatches Tier-2 specialist skills
-(ui-component-test-engineer, load-performance-engineer, etc.) based on the
-nature of the work. Consumers do not invoke Tier-2 skills directly — they
-always go through Tier-1.
+(ui-component-test-engineer, load-performance-engineer, etc.) into isolated
+forked contexts (`context: fork`) based on the nature of the work. Consumers
+do not invoke Tier-2 specialists directly — they always go through Tier-1.
 
 This keeps the integration contract narrow. Adding a new Tier-2 specialist
 is not a breaking change.
 
 ---
 
-## 3. Core Skills — Tier-1 Internal (stable dispatch names)
+## 3. Core Worker Skills (Tier 1 — stable dispatch names)
 
-Consumers (notably wicked-garden's crew gate) may dispatch these skills by
-name. This list is frozen; renames require a major version.
+Consumers (notably wicked-garden's crew gate) may dispatch these forked worker
+skills by name. The names are identical to the former agent `subagent_type`
+values, so nothing changed for consumers. This list is frozen; renames require
+a major version.
 
-| Skill name                                         | Owning Tier-1  |
+| Skill (dispatch name)                              | Owning Skill   |
 |----------------------------------------------------|----------------|
 | `wicked-testing:test-strategist`                   | plan           |
 | `wicked-testing:testability-reviewer`              | plan           |
@@ -65,9 +71,9 @@ name. This list is frozen; renames require a major version.
 | `wicked-testing:production-quality-engineer`       | review         |
 | `wicked-testing:test-oracle`                       | insight        |
 
-Tier-2 specialists (integration, ui-component, e2e, visual, a11y, load, chaos,
-fuzz, mutation, i18n, data-quality, observability, flaky-hunter, etc.) are
-**not** part of the public contract. They are dispatched by Tier-1 skills.
+Tier-2 specialist skills (integration, ui-component, e2e, visual, a11y, load,
+chaos, fuzz, mutation, i18n, data-quality, observability, flaky-hunter, etc.)
+are **not** part of the public contract. They are dispatched by Tier-1 skills.
 
 ---
 
@@ -95,7 +101,7 @@ the emit is a no-op; wicked-testing's own SQLite ledger is always written.
 | `wicked.testrun.finished`       | `testrun`             | A test run completed (any terminal status)            |
 | `wicked.verdict.recorded`       | `verdict`             | A reviewer emitted a verdict (PASS / FAIL / N-A / SKIP)|
 | `wicked.evidence.captured`      | `evidence`            | Evidence artifacts written to disk for a run          |
-| `wicked.contract.published`     | `contract`            | plugin.json manifest synced; full skill roster        |
+| `wicked.contract.published`     | `contract`            | plugin.json manifest synced; full skill/tier roster   |
 
 ### QE Gate Events
 
@@ -130,7 +136,10 @@ All events include:
 **`wicked.testrun.finished`** — `{ run_id, scenario_id, status, started_at, finished_at, evidence_path }`
 **`wicked.verdict.recorded`** — `{ verdict_id, run_id, verdict: "PASS|FAIL|N-A|SKIP", reviewer, evidence_path }`
 **`wicked.evidence.captured`** — `{ run_id, evidence_path, artifact_count }`
-**`wicked.contract.published`** — `{ version: "<semver>", skills: [{ name: "wicked-testing:<name>", path: "skills/<name>/SKILL.md" }] }`
+**`wicked.contract.published`** — `{ version: "<semver>", agents: [{ subagent_type: "wicked-testing:<name>", tier: 1|2 }] }`
+(The `agents` / `subagent_type` payload field names are retained for wire
+compatibility; each entry describes a forked worker skill and the value is its
+skill dispatch name.)
 
 Status values for `wicked.testrun.finished`: `passed | failed | errored | skipped`.
 
@@ -215,7 +224,7 @@ Bus + brain integration is pure upside when the ecosystem is present.
 
 - wicked-testing uses semver.
 - The surface in this document is stable across **minor** versions.
-- Breaking changes to namespace, skill names, event types, evidence manifest
+- Breaking changes to namespace, skill dispatch names, event types, evidence manifest
   schema, or degradation rules require a **major** version.
 - wicked-garden pins a minor-version range (`^X.Y`) of wicked-testing in its
   plugin.json `wicked_testing_version` field.

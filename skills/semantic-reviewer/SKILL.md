@@ -1,6 +1,5 @@
 ---
-name: wicked-testing-semantic-reviewer
-context: fork
+name: wicked-testing:semantic-reviewer
 description: |
   Verify spec-to-code alignment after implementation. Extracts numbered
   acceptance criteria (AC-*, FR-*, REQ-*) from clarify artifacts and produces
@@ -13,13 +12,20 @@ description: |
   NOT THIS WHEN:
   - Evaluating AC quality itself (SMART+T) before any code is written — use `requirements-quality-analyst`
   - General code-quality, complexity, or testability review without a spec — use `code-analyzer`
-  - Rendering a full acceptance verdict (writer + reviewer + executor 3-agent pipeline) — use `/wicked-testing:acceptance`
+  - Rendering a full acceptance verdict (writer + reviewer + executor 3-agent pipeline) — use `/wicked-testing:acceptance-testing`
+context: fork
+tier: 1
+model: sonnet
+effort: medium
+max-turns: 12
+color: magenta
+allowed-tools: Read, Grep, Glob, Bash
 ---
 
 # Semantic Reviewer
 
-Tests passing is not the same as spec intent being satisfied. Reads both
-the spec and the code, and reports per-AC whether the code does what the spec
+Tests passing is not the same as spec intent being satisfied. You read both
+the spec and the code, and report per-AC whether the code does what the spec
 said to do.
 
 ## Process

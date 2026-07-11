@@ -4,7 +4,7 @@
 
 import {
   existsSync, mkdirSync, mkdtempSync, cpSync, readdirSync, rmSync,
-  readFileSync, writeFileSync, accessSync, constants as FS_CONST,
+  readFileSync, writeFileSync, accessSync, statSync, constants as FS_CONST,
 } from "node:fs";
 import { join, resolve, basename, dirname } from "node:path";
 import { homedir, tmpdir } from "node:os";
@@ -38,10 +38,11 @@ const LEGACY_BARE_SKILL_DIRS = [
 // Per-CLI target spec. `identityMarkers` is any of-list of filenames/dirs
 // that must exist inside the CLI's home-relative root before we'll install
 // — prevents us writing into an unrelated `~/.claude/` that a different
-// tool created. `isolationTier` tracks whether the host reads `allowed-tools`
-// frontmatter (Claude Code) or ignores it (everyone else). Reviewer isolation
-// is enforced by the `context: fork` boundary and evidence-only dispatch on
-// all CLIs; `allowed-tools` is advisory everywhere.
+// tool created. `isolationTier` tracks whether the host hard-enforces the
+// `allowed-tools` frontmatter on forked skills (Claude Code) or leaves it
+// advisory (everyone else); we surface that at install time so users of
+// non-Claude hosts know the reviewer isolation is backed by prompt
+// discipline, not tool-restriction.
 //
 // Copilot: previously targeted at `~/.github/skills` — wrong path (collides
 // with gh CLI auth/config dotfiles). Correct personal-skills path is
@@ -554,6 +555,34 @@ function migrateLegacyLayout(targets) {
   return removed;
 }
 
+// Pre-0.7 installs also copied agents (`<root>/agents/wicked-testing-*.md`)
+// and commands (`<root>/commands/wicked-testing/`). The distribution is now
+// skills-only — every former agent/command is a skill dir — so those files
+// are orphans the host would keep loading alongside the new skills (double
+// registration of the same wicked-testing:<name> ids). Clean them up on
+// install/uninstall. Safe by construction: we only touch files carrying our
+// `wicked-testing-` prefix and the namespaced `commands/wicked-testing/` dir.
+function migrateLegacyAgentCommandLayout(targets) {
+  const removed = [];
+  for (const t of targets) {
+    const agentDir = join(t.rootDir, "agents");
+    for (const f of readdirSafe(agentDir)) {
+      if (f.startsWith("wicked-testing-") && f.endsWith(".md")) {
+        try { rmSync(join(agentDir, f), { force: true }); removed.push(`${t.name}/agents/${f}`); } catch {}
+      }
+    }
+    const cmdDir = join(t.rootDir, "commands", "wicked-testing");
+    if (existsSync(cmdDir)) {
+      try { rmSync(cmdDir, { recursive: true, force: true }); removed.push(`${t.name}/commands/wicked-testing/`); } catch {}
+    }
+  }
+  if (removed.length > 0 && !jsonOut) {
+    console.log(`[migration] removed ${removed.length} legacy agent/command file(s) from the pre-skills-only layout:`);
+    for (const r of removed) console.log(`            ${r}`);
+  }
+  return removed;
+}
+
 // --- subcommands -----------------------------------------------------------
 
 function cmdVersion() {
@@ -628,10 +657,18 @@ function cmdCheck() {
 }
 
 function cmdContract() {
+  // Published dispatch contract, derived from plugin.json's skills array.
+  // Former agents are now forked skills; a skill entry with a `tier` field
+  // IS the contract surface. The wire shape is unchanged on purpose —
+  // consumers (wicked-garden's wg-check) read `agents[].subagent_type` +
+  // `tier`, and the skill's colon-style name is byte-identical to the old
+  // subagent_type, so the keys keep their historical names.
   const plugin = JSON.parse(readFileSync(join(__dirname, ".claude-plugin", "plugin.json"), "utf8"));
   const out = {
     version: plugin.version,
-    skills: (plugin.skills || []).map(s => ({ name: s.name, path: s.path })),
+    agents: (plugin.skills || [])
+      .filter(s => s.tier === 1 || s.tier === 2)
+      .map(s => ({ subagent_type: s.name, tier: s.tier })),
   };
   process.stdout.write(JSON.stringify(out));
   process.exit(0);
@@ -649,7 +686,7 @@ Commands:
   status        Show installed version per CLI target
   doctor        Diagnose environment (Node version, detected CLIs, SQLite binding)
   check         Exit 0 if installed version satisfies --require=<spec>, else 1 (non-zero)
-  contract      Print the published skill contract from plugin.json (JSON)
+  contract      Print the published skill/tier contract from plugin.json (JSON)
   version       Print package version
   help          This message
 
@@ -783,7 +820,21 @@ async function cmdDoctor() {
     } else if (installed !== VERSION) {
       checks.push({ name: checkName, status: "warn", message: `installed ${installed} at ${t.rootDir}, code is ${VERSION}`, fix: `run \`npx wicked-testing update --cli=${t.name}\`` });
     } else {
-      checks.push({ name: checkName, status: "ok", message: `${VERSION} installed (${t.isolationTier})` });
+      // Spot-check: a few expected skill files are present and non-empty.
+      // The reviewer + oracle skills are the isolation-critical surface, so
+      // their presence is the integrity signal.
+      const expected = [
+        join("wicked-testing-acceptance-test-reviewer", "SKILL.md"),
+        join("wicked-testing-test-oracle", "SKILL.md"),
+      ];
+      const missing = expected.filter(f => {
+        const p = join(t.dir, f);
+        if (!existsSync(p)) return true;
+        try { return statSync(p).size === 0; } catch { return true; }
+      });
+      checks.push(missing.length === 0
+        ? { name: checkName, status: "ok",   message: `${VERSION} integrity verified (${t.isolationTier})` }
+        : { name: checkName, status: "fail", message: `missing/empty skill files: ${missing.join(", ")}`, fix: `run \`npx wicked-testing install --force --cli=${t.name}\`` });
     }
   }
 
@@ -876,7 +927,12 @@ async function cmdInstall({ mode }) {
   // split-brain of stale and fresh skills under the same ~/.claude/skills/.
   // migrateLegacyLayout is paranoid-signature-checked so it won't nuke a
   // same-named dir that belongs to an unrelated plugin.
-  const migrated = migrateLegacyLayout(targets);
+  // Also sweep the pre-skills-only agents/commands files (0.6.x and earlier)
+  // so the host doesn't load stale agent definitions next to the new skills.
+  const migrated = [
+    ...migrateLegacyLayout(targets),
+    ...migrateLegacyAgentCommandLayout(targets),
+  ];
 
   for (const target of targets) {
     const existing = installedVersion(target);
@@ -976,6 +1032,13 @@ async function cmdInstall({ mode }) {
       writeMarker(target);
       console.log(`[${target.name}] installed ${VERSION} — ${skillsInstalledThisTarget} skills`);
 
+      // Surface the isolation tier so users of non-Claude hosts know the
+      // reviewer's `allowed-tools: [Read]` is prompt-enforced, not
+      // host-enforced. See #73 / docs/INTEGRATION.md.
+      if (target.isolationTier === "advisory") {
+        console.log(`[${target.name}] note: allowed-tools isolation is ADVISORY on this CLI (prompt-enforced, not host-enforced). For hard isolation use Claude Code.`);
+      }
+
       perTargetReport.push({
         target: target.name,
         status: "installed",
@@ -1070,6 +1133,9 @@ function cmdUninstall() {
     for (const bare of LEGACY_BARE_SKILL_DIRS) {
       if (migrateOneLegacyDir(target.dir, bare)) removed++;
     }
+    // And the pre-skills-only agents/commands files (0.6.x and earlier) —
+    // uninstall must leave nothing behind from any historical layout.
+    removed += migrateLegacyAgentCommandLayout([target]).length;
     if (target.hookPath) {
       try {
         if (target.hookMode === "dir") {

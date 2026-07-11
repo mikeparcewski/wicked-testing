@@ -7,9 +7,7 @@
                                                                  |___/ 
 ```
 
-**A complete QE team for AI coding CLIs that can't self-grade.**
-
-40 agents · 47 installable skills (7 Tier-1 orchestrators + 40 specialists) · a 3-agent acceptance pipeline that eliminates self-grading.
+**48 skills: 40 specialist skills running in isolated forked contexts, coordinated by 8 workflow skills. A 3-agent acceptance pipeline that eliminates self-grading.**
 
 ```bash
 npx wicked-testing install
@@ -45,23 +43,25 @@ Then:
 /wicked-testing:plan src/auth/ --project auth-service
 
 # Run the 3-agent acceptance pipeline with enforced reviewer isolation
-/wicked-testing:acceptance scenarios/login-positive.md
+/wicked-testing:acceptance-testing scenarios/login-positive.md
 
 # Ask plain-English questions about your test history
 /wicked-testing:insight "what was the last verdict for the login scenario?"
 ```
 
-Under the hood: a project-local SQLite ledger, 40 specialist agents grouped into 5 Tier-1 skills, and a public event contract for wicked-garden integration.
+Under the hood: a project-local SQLite ledger, 40 specialist skills routed by 8 workflow skills — every specialist runs in an isolated forked context (`context: fork`) — and a public event contract for wicked-garden integration.
 
 ---
 
-## 40 Agents, 5 Tier-1 Skills
+## 48 Skills, One Namespace
 
-### Tier-1 Agents — Public Contract
+Everything is a skill. 8 workflow skills are the user-invokable entry points (`plan`, `authoring`, `execution`, `acceptance-testing`, `review`, `insight`, `setup`, `update`). The other 40 are specialist skills marked `context: fork` — the workflow skills dispatch them into isolated contexts with no shared conversation history.
 
-The 15 Tier-1 agents form the stable integration surface. wicked-garden and other consumers depend only on these.
+### Tier-1 Specialist Skills — Public Contract
 
-| Agent | Invoked By | What It Does |
+The 15 Tier-1 specialist skills form the stable integration surface. wicked-garden and other consumers depend only on these. Dispatch names are unchanged from the earlier agent-based layout: `wicked-testing:<name>`.
+
+| Skill | Invoked By | What It Does |
 |-------|-----------|--------------|
 | `test-strategist` | `plan` | Maps codebase to test scenarios — positive, negative, edge cases |
 | `testability-reviewer` | `plan` | Blocks designs that will be hard to test before a line is written |
@@ -81,7 +81,7 @@ The 15 Tier-1 agents form the stable integration surface. wicked-garden and othe
 
 ### Tier-2 Specialist Skills — Internal
 
-25 domain specialists routed by the Tier-1 skills. Never break downstream consumers because they are not part of the public contract.
+25 domain specialists routed by the workflow skills, each in its own forked context. Never break downstream consumers because they are not part of the public contract.
 
 | Specialist | Domain |
 |-----------|--------|
@@ -115,7 +115,7 @@ The 15 Tier-1 agents form the stable integration surface. wicked-garden and othe
 
 ## The 3-Agent Acceptance Pipeline
 
-The `/wicked-testing:acceptance` command eliminates the self-grading problem with enforced role separation:
+The `acceptance-testing` skill (`/wicked-testing:acceptance-testing`) eliminates the self-grading problem with enforced role separation. Writer, Executor, and Reviewer are three separate skills, each dispatched into an isolated forked context:
 
 ```
 Writer ──→ Test Plan ──→ Executor ──→ Evidence ──→ [context.md] ──→ Reviewer ──→ Verdict
@@ -129,25 +129,26 @@ Writer ──→ Test Plan ──→ Executor ──→ Evidence ──→ [cont
 
 **Cold context injection**: before dispatching Reviewer, the orchestrator may materialize a `context.md` in the evidence directory with non-prejudicial domain knowledge from wicked-brain (WCAG thresholds, tool quirks). Prior verdicts, pass/fail rates, and anything run-specific are strictly excluded — if Reviewer sees prejudicial content it returns `INCONCLUSIVE` with `CONTEXT_CONTAMINATION`.
 
-Reviewer isolation is enforced by the `context: fork` skill boundary and the `allowed-tools` advisory in the reviewer skill's frontmatter. The separation is what makes the verdict trustworthy.
+Reviewer isolation is enforced three ways on Claude Code: `allowed-tools` frontmatter, `context: fork` (each role runs as a separate forked skill with no shared conversation history), and evidence-only dispatch (the Reviewer receives only file paths — never the executor's transcript). Advisory on other CLIs. The separation is what makes the verdict trustworthy.
 
 ---
 
-## Skills (Tier-1)
+## Workflow Skills
 
-Invoke as slash commands — each maps to the installed `wicked-testing:<name>` skill:
+The user-invokable entry points. There is no separate command layer — each of these is a skill, and the familiar `/wicked-testing:<name>` invocations trigger them directly.
 
-| Skill | Description |
-|-------|-------------|
-| `/wicked-testing:setup` | Initialize for this project — detect CLI tools, create config |
-| `/wicked-testing:plan` | Shift-left test strategy from code or feature description |
-| `/wicked-testing:authoring` | Author scenario files and test code |
-| `/wicked-testing:execution` | Run a scenario and capture evidence |
-| `/wicked-testing:acceptance-testing` | Full 3-agent pipeline: Writer → Executor → Reviewer |
-| `/wicked-testing:review` | Evaluate captured evidence |
-| `/wicked-testing:insight` | Domain health, run history, oracle queries, stats, reports |
+| Skill | Invoke | Description |
+|-------|--------|-------------|
+| `setup` | `/wicked-testing:setup` | Initialize for this project — detect CLI tools, create config |
+| `plan` | `/wicked-testing:plan` | Shift-left test strategy from code or feature description |
+| `authoring` | `/wicked-testing:authoring` | Author scenario files and test code |
+| `execution` | `/wicked-testing:execution` | Run a scenario and capture evidence |
+| `acceptance-testing` | `/wicked-testing:acceptance-testing` | Full 3-agent pipeline: Writer → Executor → Reviewer |
+| `review` | `/wicked-testing:review` | Evaluate captured evidence |
+| `insight` | `/wicked-testing:insight` | Domain health, run history, oracle queries, stats, reports |
+| `update` | `/wicked-testing:update` | Check for and install wicked-testing updates across detected CLIs |
 
-Most skills support `--json` for machine-readable output. `/wicked-testing:review` and `/wicked-testing:authoring` are narrative-heavy and route through their orchestrators.
+Most workflow skills support `--json` for machine-readable output. Exceptions are `/wicked-testing:review` and `/wicked-testing:authoring`, which are narrative-heavy and don't emit a single envelope.
 
 ---
 
@@ -171,7 +172,7 @@ Most skills support `--json` for machine-readable output. `/wicked-testing:revie
   tasks/{id}.json
 ```
 
-**Dual-write**: every record writes JSON first (fsync'd), then SQLite. On SQLite failure the store degrades to JSON-only. Oracle and task commands require SQLite; all other commands continue in JSON-only mode.
+**Dual-write**: every record writes JSON first (fsync'd), then SQLite. On SQLite failure the store degrades to JSON-only. Oracle and task operations require SQLite; every other skill continues in JSON-only mode.
 
 **Provenance**: all records carry `run_id`, `scenario_id`, `agent`, `verdict`, and timestamps — every verdict traces back to the evidence that produced it.
 
@@ -202,7 +203,7 @@ When wicked-brain is present, wicked-testing writes memories on high-signal even
 npx wicked-testing install
 ```
 
-Detects which AI CLIs are present via identity markers (`config.json`, `settings.json`, `plugins/`, etc.), copies 47 skills (all with `context: fork`) into each CLI's skill directory, installs lifecycle hooks (JSON hooks for Claude Code, Antigravity, Codex, Cursor, Kiro, and Copilot; TypeScript plugins for OpenCode and Pi), and runs a bootstrap self-test. Idempotent — safe to run multiple times.
+Detects which AI CLIs are present via identity markers (`config.json`, `settings.json`, `plugins/`, etc.), copies all 48 skills (all specialists run with `context: fork`) into each CLI's home-relative skill directory (`~/.claude/skills/`, `~/.gemini/antigravity-cli/plugins/wicked-testing/skills/`, `~/.codex/skills/`, `~/.cursor/skills/`, `~/.kiro/skills/`), installs lifecycle hooks (JSON hooks for Claude Code, Antigravity, Codex, Cursor, Kiro, and Copilot; TypeScript plugins for OpenCode and Pi), runs a bootstrap self-test, and prints a per-target isolation-tier note (hard-enforced on Claude Code, advisory on everyone else). Idempotent — safe to run multiple times.
 
 **Claude Code users:** `npx wicked-testing install` is the preferred path and drops everything where Claude Code's skill resolver already looks. A `.claude-plugin/marketplace.json` also ships so you can register via the plugin-system install if you prefer:
 
@@ -286,7 +287,7 @@ See [SCENARIO-FORMAT.md](SCENARIO-FORMAT.md) for the full spec. Working examples
 | [DATA-DOMAIN.md](DATA-DOMAIN.md) | 7-table SQLite schema and DomainStore API |
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) | Consumers integrating with wicked-testing |
 | [docs/EVIDENCE.md](docs/EVIDENCE.md) | Evidence manifest schema |
-| [docs/NAMESPACE.md](docs/NAMESPACE.md) | Naming rules for skills and agents |
+| [docs/NAMESPACE.md](docs/NAMESPACE.md) | Naming rules for the skill namespace |
 | [docs/STANDALONE.md](docs/STANDALONE.md) | Using without wicked-garden |
 | [docs/WICKED-GARDEN.md](docs/WICKED-GARDEN.md) | wicked-garden integration guide |
 

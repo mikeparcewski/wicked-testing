@@ -1,12 +1,18 @@
 ---
-name: wicked-testing-fuzz-property-engineer
+name: wicked-testing:fuzz-property-engineer
 context: fork
+tier: 2
 description: |
   Property-based and fuzz testing — Hypothesis (Python), fast-check (TS),
   AFL/libFuzzer for native code. Finds inputs example tests never consider.
 
   Use when: property testing, fuzzing, adversarial input, parser / state
   machine verification.
+model: sonnet
+effort: medium
+max-turns: 12
+color: yellow
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 ---
 
 # Fuzz / Property Engineer

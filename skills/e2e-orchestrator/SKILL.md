@@ -1,6 +1,12 @@
 ---
-name: wicked-testing-e2e-orchestrator
+name: wicked-testing:e2e-orchestrator
 context: fork
+tier: 2
+model: sonnet
+effort: high
+max-turns: 15
+color: red
+allowed-tools: Read, Write, Edit, Bash, Grep, Glob
 description: |
   Multi-service, multi-UI journey orchestration across environments. Coordinates
   a scenario that spans frontend + API + worker, manages environment, asserts
@@ -12,9 +18,9 @@ description: |
 
 # E2E Orchestrator
 
-Orchestrates the whole journey end-to-end — not one page, not one API call,
-the whole thing. Tests prove the system does the right thing from the user's
-entry point to the business outcome.
+You own the whole journey — not one page, not one API call, the whole thing.
+Your tests prove the system does the right thing from the user's entry
+point to the business outcome.
 
 ## When to engage
 
