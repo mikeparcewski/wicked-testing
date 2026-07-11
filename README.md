@@ -9,7 +9,7 @@
 
 **A complete QE team for AI coding CLIs that can't self-grade.**
 
-40 agents · 47 installable skills (5 Tier-1 orchestrators + 42 specialists) · a 3-agent acceptance pipeline that eliminates self-grading.
+40 agents · 47 installable skills (7 Tier-1 orchestrators + 40 specialists) · a 3-agent acceptance pipeline that eliminates self-grading.
 
 ```bash
 npx wicked-testing install

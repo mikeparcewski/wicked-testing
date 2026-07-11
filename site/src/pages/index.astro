@@ -14,7 +14,7 @@
  * chrome or theme system of its own.
  *
  * Every claim is code-grounded against the wicked-testing repo (v0.7.3):
- *   48 skills (8 Tier-1 workflow/orchestrator skills + 40 specialist skills),
+ *   47 skills (7 Tier-1 workflow/orchestrator skills + 40 specialist skills),
  *   5 orchestrator surfaces the specialists route under,
  *   a 3-skill acceptance pipeline (Writer → Executor → Reviewer) with tool
  *   boundaries taken from each skill's `allowed-tools` frontmatter and reviewer
@@ -34,8 +34,8 @@ const repo = 'https://github.com/mikeparcewski/wicked-testing';
 // The eight AI CLIs the installer targets (install.mjs).
 const CLIS = ['Claude Code', 'Antigravity', 'Cursor', 'Codex', 'Kiro', 'Copilot', 'OpenCode', 'Pi'];
 
-// The 40 specialist skills, grounded against wicked-testing/skills (48 SKILL.md
-// dirs: 40 specialists + 8 Tier-1 workflow skills). surface = the orchestrator
+// The 40 specialist skills, grounded against wicked-testing/skills (47 SKILL.md
+// dirs: 40 specialists + 7 Tier-1 workflow skills). surface = the orchestrator
 // each specialist routes under (plan / authoring / execution / review / insight).
 const SKILLS = [
   // plan
@@ -259,23 +259,23 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
         <h2>Forty specialist skills. Five orchestrators. One contract.</h2>
         <p class="sec-sub">
           Forty specialist skills route beneath five orchestrator surfaces — part
-          of a <b>48-skill</b> toolkit whose <b>8 Tier-1</b> workflow skills form a
+          of a <b>47-skill</b> toolkit whose <b>7 Tier-1</b> workflow skills form a
           stable public contract. Every specialist runs in an <b>isolated forked
           context</b>. Pick a surface — see who reports to it.
         </p>
       </div>
 
       <div class="fleet-filter" id="fleetFilter" role="tablist" aria-label="Filter skills by orchestrator surface">
-        <span class="fleet-lbl">Surface</span>
-        <button class="f-btn is-on" role="tab" type="button" data-surf="all" aria-selected="true">all<span class="f-n">40</span></button>
+        <span class="fleet-lbl" id="fleetSurfLbl">Surface</span>
+        <button class="f-btn is-on" role="tab" type="button" data-surf="all" aria-selected="true" aria-controls="fleetGrid">all<span class="f-n">40</span></button>
         {SURFACES.map((s) => (
-          <button class="f-btn" role="tab" type="button" data-surf={s.key} aria-selected="false" title={s.line}>
+          <button class="f-btn" role="tab" type="button" data-surf={s.key} aria-selected="false" aria-controls="fleetGrid" title={s.line}>
             /{s.key}<span class="f-n">{surfaceCount(s.key)}</span>
           </button>
         ))}
       </div>
 
-      <div class="fleet-grid" id="fleetGrid">
+      <div class="fleet-grid" id="fleetGrid" role="tabpanel" aria-labelledby="fleetSurfLbl" tabindex="0">
         {SKILLS.map((a) => (
           <div class="agent" data-surf={a.s} title={a.n}>
             <span class="agent-dot" aria-hidden="true"></span>
@@ -285,7 +285,7 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
       </div>
 
       <div class="fleet-legend">
-        <span>48 skills · 40 specialists + 8 Tier-1 workflow skills</span>
+        <span>47 skills · 40 specialists + 7 Tier-1 workflow skills</span>
         <span>five surfaces coordinate them</span>
         <span>every skill ships with <code>context: fork</code></span>
       </div>

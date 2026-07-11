@@ -538,6 +538,7 @@ b { color: var(--ink); font-weight: 700; }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-snap-type: none; }
   .stage.is-playing .chip--pass, .stage.is-playing .chip--block { animation: none; opacity: 1; }
   .chip--block { left: 4%; }
   .chip--pass { left: 92%; }
