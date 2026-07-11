@@ -4,9 +4,39 @@
   "description": "Standalone QE library — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, optional wicked-bus + wicked-brain integration.",
   "skills": [
     {
+      "name": "wicked-testing:a11y-test-engineer",
+      "path": "skills/a11y-test-engineer/SKILL.md",
+      "command": "/wicked-testing:a11y-test-engineer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:acceptance-test-executor",
+      "path": "skills/acceptance-test-executor/SKILL.md",
+      "command": "/wicked-testing:acceptance-test-executor",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:acceptance-test-reviewer",
+      "path": "skills/acceptance-test-reviewer/SKILL.md",
+      "command": "/wicked-testing:acceptance-test-reviewer",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:acceptance-test-writer",
+      "path": "skills/acceptance-test-writer/SKILL.md",
+      "command": "/wicked-testing:acceptance-test-writer",
+      "tier": 1
+    },
+    {
       "name": "wicked-testing:acceptance-testing",
       "path": "skills/acceptance-testing/SKILL.md",
       "command": "/wicked-testing:acceptance-testing"
+    },
+    {
+      "name": "wicked-testing:ai-feature-test-engineer",
+      "path": "skills/ai-feature-test-engineer/SKILL.md",
+      "command": "/wicked-testing:ai-feature-test-engineer",
+      "tier": 2
     },
     {
       "name": "wicked-testing:authoring",
@@ -14,9 +44,81 @@
       "command": "/wicked-testing:authoring"
     },
     {
+      "name": "wicked-testing:chaos-test-engineer",
+      "path": "skills/chaos-test-engineer/SKILL.md",
+      "command": "/wicked-testing:chaos-test-engineer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:code-analyzer",
+      "path": "skills/code-analyzer/SKILL.md",
+      "command": "/wicked-testing:code-analyzer",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:compliance-test-engineer",
+      "path": "skills/compliance-test-engineer/SKILL.md",
+      "command": "/wicked-testing:compliance-test-engineer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:contract-testing-engineer",
+      "path": "skills/contract-testing-engineer/SKILL.md",
+      "command": "/wicked-testing:contract-testing-engineer",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:coverage-archaeologist",
+      "path": "skills/coverage-archaeologist/SKILL.md",
+      "command": "/wicked-testing:coverage-archaeologist",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:data-quality-tester",
+      "path": "skills/data-quality-tester/SKILL.md",
+      "command": "/wicked-testing:data-quality-tester",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:e2e-orchestrator",
+      "path": "skills/e2e-orchestrator/SKILL.md",
+      "command": "/wicked-testing:e2e-orchestrator",
+      "tier": 2
+    },
+    {
       "name": "wicked-testing:execution",
       "path": "skills/execution/SKILL.md",
       "command": "/wicked-testing:execution"
+    },
+    {
+      "name": "wicked-testing:exploratory-tester",
+      "path": "skills/exploratory-tester/SKILL.md",
+      "command": "/wicked-testing:exploratory-tester",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:flaky-test-hunter",
+      "path": "skills/flaky-test-hunter/SKILL.md",
+      "command": "/wicked-testing:flaky-test-hunter",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:fuzz-property-engineer",
+      "path": "skills/fuzz-property-engineer/SKILL.md",
+      "command": "/wicked-testing:fuzz-property-engineer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:iac-test-engineer",
+      "path": "skills/iac-test-engineer/SKILL.md",
+      "command": "/wicked-testing:iac-test-engineer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:incident-to-scenario-synthesizer",
+      "path": "skills/incident-to-scenario-synthesizer/SKILL.md",
+      "command": "/wicked-testing:incident-to-scenario-synthesizer",
+      "tier": 2
     },
     {
       "name": "wicked-testing:insight",
@@ -24,9 +126,57 @@
       "command": "/wicked-testing:insight"
     },
     {
+      "name": "wicked-testing:integration-test-engineer",
+      "path": "skills/integration-test-engineer/SKILL.md",
+      "command": "/wicked-testing:integration-test-engineer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:load-performance-engineer",
+      "path": "skills/load-performance-engineer/SKILL.md",
+      "command": "/wicked-testing:load-performance-engineer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:localization-test-engineer",
+      "path": "skills/localization-test-engineer/SKILL.md",
+      "command": "/wicked-testing:localization-test-engineer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:mutation-test-engineer",
+      "path": "skills/mutation-test-engineer/SKILL.md",
+      "command": "/wicked-testing:mutation-test-engineer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:observability-test-engineer",
+      "path": "skills/observability-test-engineer/SKILL.md",
+      "command": "/wicked-testing:observability-test-engineer",
+      "tier": 2
+    },
+    {
       "name": "wicked-testing:plan",
       "path": "skills/plan/SKILL.md",
       "command": "/wicked-testing:plan"
+    },
+    {
+      "name": "wicked-testing:production-quality-engineer",
+      "path": "skills/production-quality-engineer/SKILL.md",
+      "command": "/wicked-testing:production-quality-engineer",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:release-readiness-engineer",
+      "path": "skills/release-readiness-engineer/SKILL.md",
+      "command": "/wicked-testing:release-readiness-engineer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:requirements-quality-analyst",
+      "path": "skills/requirements-quality-analyst/SKILL.md",
+      "command": "/wicked-testing:requirements-quality-analyst",
+      "tier": 1
     },
     {
       "name": "wicked-testing:review",
@@ -34,248 +184,104 @@
       "command": "/wicked-testing:review"
     },
     {
+      "name": "wicked-testing:risk-assessor",
+      "path": "skills/risk-assessor/SKILL.md",
+      "command": "/wicked-testing:risk-assessor",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:scenario-executor",
+      "path": "skills/scenario-executor/SKILL.md",
+      "command": "/wicked-testing:scenario-executor",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:security-test-engineer",
+      "path": "skills/security-test-engineer/SKILL.md",
+      "command": "/wicked-testing:security-test-engineer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:semantic-reviewer",
+      "path": "skills/semantic-reviewer/SKILL.md",
+      "command": "/wicked-testing:semantic-reviewer",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:setup",
+      "path": "skills/setup/SKILL.md",
+      "command": "/wicked-testing:setup"
+    },
+    {
+      "name": "wicked-testing:snapshot-hygiene-auditor",
+      "path": "skills/snapshot-hygiene-auditor/SKILL.md",
+      "command": "/wicked-testing:snapshot-hygiene-auditor",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:test-automation-engineer",
+      "path": "skills/test-automation-engineer/SKILL.md",
+      "command": "/wicked-testing:test-automation-engineer",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:test-code-quality-auditor",
+      "path": "skills/test-code-quality-auditor/SKILL.md",
+      "command": "/wicked-testing:test-code-quality-auditor",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:test-data-manager",
+      "path": "skills/test-data-manager/SKILL.md",
+      "command": "/wicked-testing:test-data-manager",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:test-designer",
+      "path": "skills/test-designer/SKILL.md",
+      "command": "/wicked-testing:test-designer",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:test-impact-analyzer",
+      "path": "skills/test-impact-analyzer/SKILL.md",
+      "command": "/wicked-testing:test-impact-analyzer",
+      "tier": 2
+    },
+    {
+      "name": "wicked-testing:test-oracle",
+      "path": "skills/test-oracle/SKILL.md",
+      "command": "/wicked-testing:test-oracle",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:test-strategist",
+      "path": "skills/test-strategist/SKILL.md",
+      "command": "/wicked-testing:test-strategist",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:testability-reviewer",
+      "path": "skills/testability-reviewer/SKILL.md",
+      "command": "/wicked-testing:testability-reviewer",
+      "tier": 1
+    },
+    {
+      "name": "wicked-testing:ui-component-test-engineer",
+      "path": "skills/ui-component-test-engineer/SKILL.md",
+      "command": "/wicked-testing:ui-component-test-engineer",
+      "tier": 2
+    },
+    {
       "name": "wicked-testing:update",
       "path": "skills/update/SKILL.md",
       "command": "/wicked-testing:update"
-    }
-  ],
-  "agents": [
-    {
-      "name": "acceptance-test-executor",
-      "path": "agents/acceptance-test-executor.md",
-      "tier": 1
     },
     {
-      "name": "acceptance-test-reviewer",
-      "path": "agents/acceptance-test-reviewer.md",
-      "tier": 1
-    },
-    {
-      "name": "acceptance-test-writer",
-      "path": "agents/acceptance-test-writer.md",
-      "tier": 1
-    },
-    {
-      "name": "code-analyzer",
-      "path": "agents/code-analyzer.md",
-      "tier": 1
-    },
-    {
-      "name": "contract-testing-engineer",
-      "path": "agents/contract-testing-engineer.md",
-      "tier": 1
-    },
-    {
-      "name": "production-quality-engineer",
-      "path": "agents/production-quality-engineer.md",
-      "tier": 1
-    },
-    {
-      "name": "requirements-quality-analyst",
-      "path": "agents/requirements-quality-analyst.md",
-      "tier": 1
-    },
-    {
-      "name": "risk-assessor",
-      "path": "agents/risk-assessor.md",
-      "tier": 1
-    },
-    {
-      "name": "scenario-executor",
-      "path": "agents/scenario-executor.md",
-      "tier": 1
-    },
-    {
-      "name": "semantic-reviewer",
-      "path": "agents/semantic-reviewer.md",
-      "tier": 1
-    },
-    {
-      "name": "test-automation-engineer",
-      "path": "agents/test-automation-engineer.md",
-      "tier": 1
-    },
-    {
-      "name": "test-designer",
-      "path": "agents/test-designer.md",
-      "tier": 1
-    },
-    {
-      "name": "test-oracle",
-      "path": "agents/test-oracle.md",
-      "tier": 1
-    },
-    {
-      "name": "test-strategist",
-      "path": "agents/test-strategist.md",
-      "tier": 1
-    },
-    {
-      "name": "testability-reviewer",
-      "path": "agents/testability-reviewer.md",
-      "tier": 1
-    },
-    {
-      "name": "a11y-test-engineer",
-      "path": "agents/specialists/a11y-test-engineer.md",
+      "name": "wicked-testing:visual-regression-engineer",
+      "path": "skills/visual-regression-engineer/SKILL.md",
+      "command": "/wicked-testing:visual-regression-engineer",
       "tier": 2
-    },
-    {
-      "name": "ai-feature-test-engineer",
-      "path": "agents/specialists/ai-feature-test-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "chaos-test-engineer",
-      "path": "agents/specialists/chaos-test-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "compliance-test-engineer",
-      "path": "agents/specialists/compliance-test-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "coverage-archaeologist",
-      "path": "agents/specialists/coverage-archaeologist.md",
-      "tier": 2
-    },
-    {
-      "name": "data-quality-tester",
-      "path": "agents/specialists/data-quality-tester.md",
-      "tier": 2
-    },
-    {
-      "name": "e2e-orchestrator",
-      "path": "agents/specialists/e2e-orchestrator.md",
-      "tier": 2
-    },
-    {
-      "name": "exploratory-tester",
-      "path": "agents/specialists/exploratory-tester.md",
-      "tier": 2
-    },
-    {
-      "name": "flaky-test-hunter",
-      "path": "agents/specialists/flaky-test-hunter.md",
-      "tier": 2
-    },
-    {
-      "name": "fuzz-property-engineer",
-      "path": "agents/specialists/fuzz-property-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "iac-test-engineer",
-      "path": "agents/specialists/iac-test-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "incident-to-scenario-synthesizer",
-      "path": "agents/specialists/incident-to-scenario-synthesizer.md",
-      "tier": 2
-    },
-    {
-      "name": "integration-test-engineer",
-      "path": "agents/specialists/integration-test-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "load-performance-engineer",
-      "path": "agents/specialists/load-performance-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "localization-test-engineer",
-      "path": "agents/specialists/localization-test-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "mutation-test-engineer",
-      "path": "agents/specialists/mutation-test-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "observability-test-engineer",
-      "path": "agents/specialists/observability-test-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "release-readiness-engineer",
-      "path": "agents/specialists/release-readiness-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "security-test-engineer",
-      "path": "agents/specialists/security-test-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "snapshot-hygiene-auditor",
-      "path": "agents/specialists/snapshot-hygiene-auditor.md",
-      "tier": 2
-    },
-    {
-      "name": "test-code-quality-auditor",
-      "path": "agents/specialists/test-code-quality-auditor.md",
-      "tier": 2
-    },
-    {
-      "name": "test-data-manager",
-      "path": "agents/specialists/test-data-manager.md",
-      "tier": 2
-    },
-    {
-      "name": "test-impact-analyzer",
-      "path": "agents/specialists/test-impact-analyzer.md",
-      "tier": 2
-    },
-    {
-      "name": "ui-component-test-engineer",
-      "path": "agents/specialists/ui-component-test-engineer.md",
-      "tier": 2
-    },
-    {
-      "name": "visual-regression-engineer",
-      "path": "agents/specialists/visual-regression-engineer.md",
-      "tier": 2
-    }
-  ],
-  "commands": [
-    {
-      "name": "acceptance",
-      "path": "commands/acceptance.md",
-      "slash": "/wicked-testing:acceptance"
-    },
-    {
-      "name": "authoring",
-      "path": "commands/authoring.md",
-      "slash": "/wicked-testing:authoring"
-    },
-    {
-      "name": "execution",
-      "path": "commands/execution.md",
-      "slash": "/wicked-testing:execution"
-    },
-    {
-      "name": "insight",
-      "path": "commands/insight.md",
-      "slash": "/wicked-testing:insight"
-    },
-    {
-      "name": "plan",
-      "path": "commands/plan.md",
-      "slash": "/wicked-testing:plan"
-    },
-    {
-      "name": "review",
-      "path": "commands/review.md",
-      "slash": "/wicked-testing:review"
-    },
-    {
-      "name": "setup",
-      "path": "commands/setup.md",
-      "slash": "/wicked-testing:setup"
     }
   ]
 }

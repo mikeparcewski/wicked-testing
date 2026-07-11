@@ -7,13 +7,33 @@ description: |
 
   Use when: "what should I test", "test strategy", "test plan", "risk matrix",
   "is this testable", "are these requirements testable", "coverage strategy",
-  "shift-left testing".
+  "shift-left testing", "/wicked-testing:plan".
+argument-hint: "[target] [--project <name>] [--json]"
 ---
 
 # wicked-testing:plan
 
 One skill for everything before tests get written. Figures out what to test,
 what can go wrong, and whether the design lets you test at all.
+
+## Usage
+
+```
+/wicked-testing:plan [target] [--project <name>] [--json]
+```
+
+- `target` — file path, directory, or feature description (optional; defaults to current dir)
+- `--project <name>` — associate strategy with this project
+- `--json` — emit JSON envelope
+
+### Preflight: check config
+
+Verify `.wicked-testing/config.json` exists. If not:
+
+```
+Config not found. Run wicked-testing:setup first.
+Code: ERR_NO_CONFIG
+```
 
 ## When to use
 
@@ -37,12 +57,20 @@ Read the target first, then route:
 When multiple apply, dispatch in parallel. Merge results in the reply — no
 unrelated raw outputs dumped in.
 
+**Never dispatch `test-strategist` directly** — always enter planning through
+this skill so the 4-way router above (strategist / risk / testability /
+AC-quality) runs. Calling `test-strategist` directly bypasses the router
+(wave-6 audit fix #63).
+
 ### Dispatch block (executable)
 
+Every id in the tables above is a forked worker skill (`context: fork`) —
+invoke it with the Skill tool so it runs in an isolated context:
+
 ```
-Task(
-  subagent_type="wicked-testing:test-strategist",
-  prompt="""Generate a comprehensive test strategy for the target below.
+Skill(
+  skill="wicked-testing:test-strategist",
+  args="""Generate a comprehensive test strategy for the target below.
 
 ## Target
 {file path, directory, or feature description}
@@ -59,9 +87,9 @@ Return findings in the standard test-strategist format."""
 )
 ```
 
-Swap `subagent_type` to the matching agent from the table above. For the
-"test everything" path, dispatch all four in parallel (one `Task(...)` call
-per agent in the same turn) and merge the returned findings.
+Swap the `skill` id to the matching worker from the table above. For the
+"test everything" path, dispatch all four in parallel (one `Skill(...)` call
+per worker in the same turn) and merge the returned findings.
 
 ## Tier-2 specialists this skill may pull in
 
@@ -94,6 +122,12 @@ risk+scenario coverage where the generalist agents would miss signal:
 Tier-2 names are internal — see [docs/NAMESPACE.md](../../docs/NAMESPACE.md).
 Consumers (wicked-garden) depend only on Tier-1 names.
 
+## Strategy record
+
+The strategy is written to DomainStore by the dispatched agent via
+`store.create('strategies', {...})`, which also fires
+`wicked.teststrategy.authored` on the bus when present.
+
 ## Output
 
 - A test strategy: scenarios (positive + negative), risk matrix, testability
@@ -104,9 +138,16 @@ Consumers (wicked-garden) depend only on Tier-1 names.
 
 Emits `wicked.teststrategy.authored` on the bus when present.
 
+**With `--json`** — emit the JSON envelope (python3-with-python-fallback,
+cross-platform):
+
+```bash
+python3 -c "import json,sys; sys.stdout.write(json.dumps({'ok': True, 'data': {'strategy_id': '...', 'scenario_count': N, 'project': '...'}, 'meta': {'command': 'wicked-testing:plan', 'duration_ms': 0, 'schema_version': 1, 'store_mode': '...'}}))" 2>/dev/null || python -c "import json,sys; sys.stdout.write(json.dumps({'ok': True, 'data': {'strategy_id': '...', 'scenario_count': N, 'project': '...'}, 'meta': {'command': 'wicked-testing:plan', 'duration_ms': 0, 'schema_version': 1, 'store_mode': '...'}}))"
+```
+
 ## References
 
 - [`docs/INTEGRATION.md`](../../docs/INTEGRATION.md)
 - [`docs/NAMESPACE.md`](../../docs/NAMESPACE.md)
-- `agents/test-strategist.md`, `agents/risk-assessor.md`,
-  `agents/testability-reviewer.md`, `agents/requirements-quality-analyst.md`
+- `skills/test-strategist/SKILL.md`, `skills/risk-assessor/SKILL.md`,
+  `skills/testability-reviewer/SKILL.md`, `skills/requirements-quality-analyst/SKILL.md`

@@ -8,11 +8,12 @@ description: |
   Use when: "acceptance test", "verify it works", "did it pass", "run acceptance",
   "test this scenario", "acceptance criteria", "validate the feature",
   "/wicked-testing:acceptance"
+argument-hint: "<scenario-file> [--phase write|execute|review|all] [--json]"
 
 # REVIEWER ISOLATION NOTE: This skill enforces three isolation layers for the reviewer:
-# 1. allowed-tools: [Read] only (see agents/acceptance-test-reviewer.md)
+# 1. allowed-tools: [Read] only (see skills/acceptance-test-reviewer/SKILL.md)
 # 2. Evidence-only dispatch: reviewer receives ONLY file paths, test plan, scenario path
-# 3. Subagent context boundary: reviewer runs as separate subagent invocation
+# 3. Forked-skill context boundary: reviewer runs as an isolated forked-skill invocation (context: fork)
 # Enforcement is guaranteed on Claude Code; advisory on other CLIs.
 ---
 
@@ -46,15 +47,15 @@ Writer ──→ Test Plan ──→ Executor ──→ Evidence ──→ Revie
 
 The reviewer must NEVER receive executor conversation context. This is enforced through:
 
-1. **Tool restriction**: `allowed-tools: [Read]` in `agents/acceptance-test-reviewer.md`. On Claude Code, this is enforced at the host level. On other CLIs, this is advisory.
+1. **Tool restriction**: `allowed-tools: [Read]` in `skills/acceptance-test-reviewer/SKILL.md`. On Claude Code, this is enforced at the host level. On other CLIs, this is advisory.
 2. **Evidence-only dispatch**: The reviewer is dispatched with ONLY:
    - The original scenario file path
    - The evidence directory path (`.wicked-testing/evidence/{run-id}/`)
    - The test plan (writer output)
    - It does NOT include: executor stdout, executor reasoning, or any executor conversational context
-3. **Subagent context boundary**: The reviewer runs as a separate subagent invocation, not sharing history with the executor.
+3. **Forked-skill context boundary**: The reviewer skill declares `context: fork` and runs as a separate forked-skill invocation in a fresh context, not sharing history with the executor.
 
-See `agents/acceptance-test-reviewer.md` for the reviewer's isolation annotation.
+See `skills/acceptance-test-reviewer/SKILL.md` for the reviewer's isolation annotation.
 
 ## Reviewer Isolation Enforcement Tiers
 
@@ -67,11 +68,14 @@ See `agents/acceptance-test-reviewer.md` for the reviewer's isolation annotation
 Tests tagged `@requires-enforcement: claude-code` validate the hard tier.
 Tests without that tag validate the skill's dispatch contract (valid everywhere).
 
-## Command
+## Usage
 
 ```
-/wicked-testing:acceptance <scenario-file> [--phase write|execute|review|all] [--json]
+/wicked-testing:acceptance-testing <scenario-file> [--phase write|execute|review|all] [--json]
 ```
+
+(`/wicked-testing:acceptance` is the historical alias — treat it as the same
+invocation.)
 
 - `scenario-file` — path to a wicked-testing scenario .md file
 - `--phase all` (default) — full Write → Execute → Review pipeline
@@ -81,6 +85,23 @@ Tests without that tag validate the skill's dispatch contract (valid everywhere)
 - `--json` — emit JSON envelope
 
 ## Instructions
+
+### Preflight: Validate Input
+
+Check the scenario file exists:
+
+```bash
+test -f "{scenario-file}" || echo "ERR_SCENARIO_NOT_FOUND"
+```
+
+Check config:
+
+```bash
+test -f ".wicked-testing/config.json" || echo "ERR_NO_CONFIG"
+```
+
+On `ERR_NO_CONFIG`, stop and tell the user to run the `wicked-testing:setup`
+skill first.
 
 ### 0. Resolve Paths (UUID-based, collision-free)
 
@@ -126,12 +147,13 @@ repo under audit, etc.) could otherwise inject instruction-looking prose
 writer's instruction turn. The writer has `allowed-tools: Read` so it can
 open the scenario itself.
 
-Dispatch the `acceptance-test-writer` subagent:
+Dispatch the `wicked-testing:acceptance-test-writer` skill (it declares
+`context: fork`, so it runs in an isolated forked context):
 
 ```
-Task(
-  subagent_type="wicked-testing:acceptance-test-writer",
-  prompt="""Generate an evidence-gated test plan for the acceptance scenario
+Skill(
+  skill="wicked-testing:acceptance-test-writer",
+  args="""Generate an evidence-gated test plan for the acceptance scenario
 at the path below.
 
 ## Scenario Path
@@ -163,12 +185,12 @@ If `--phase write`, stop here.
 The run record was already created in step 0 so the evidence dir could derive
 from its UUID. Here we dispatch the executor against that dir.
 
-Dispatch the `acceptance-test-executor` subagent:
+Dispatch the `wicked-testing:acceptance-test-executor` skill (forked context):
 
 ```
-Task(
-  subagent_type="wicked-testing:acceptance-test-executor",
-  prompt="""Execute this test plan and collect evidence artifacts.
+Skill(
+  skill="wicked-testing:acceptance-test-executor",
+  args="""Execute this test plan and collect evidence artifacts.
 
 ## Test Plan
 {test plan content}
@@ -252,9 +274,9 @@ It does NOT receive the executor's conversation, reasoning, or stdout/stderr dir
 Pass paths, not content, where possible.
 
 ```
-Task(
-  subagent_type="wicked-testing:acceptance-test-reviewer",
-  prompt="""Review the evidence against the test plan assertions.
+Skill(
+  skill="wicked-testing:acceptance-test-reviewer",
+  args="""Review the evidence against the test plan assertions.
 
 ## Scenario Path
 {scenario file path only — reviewer reads it independently}
@@ -283,8 +305,10 @@ DO NOT reference any execution context beyond the files above.
 )
 ```
 
-**Note**: The reviewer prompt intentionally omits all executor conversation context.
-This is the evidence-only dispatch — the third isolation layer.
+**Note**: The reviewer dispatch intentionally omits all executor conversation
+context, and the reviewer skill's `context: fork` means the invocation starts
+from a fresh context. This is the evidence-only dispatch — the third
+isolation layer.
 
 ### 6. Write Verdict + Build Public Manifest
 
@@ -400,7 +424,15 @@ emitBusEvent('wicked.evidence.captured', {
 *Verdict written to DomainStore — query with /wicked-testing:insight*
 ```
 
-**With `--json`** — Use `scripts/_python.sh` Python pattern for the JSON envelope.
+**With `--json`** — Emit the JSON envelope (python3-with-python-fallback,
+cross-platform):
+
+```bash
+python3 -c "import json,sys; sys.stdout.write(json.dumps({'ok': True, 'data': {'verdict': 'PASS', 'run_id': '...', 'evidence_path': '...', 'assertions_passed': N, 'assertions_failed': 0}, 'meta': {'command': 'wicked-testing:acceptance', 'duration_ms': 0, 'schema_version': 1, 'store_mode': '...'}}))" 2>/dev/null || python -c "..."
+```
+
+On FAIL, `ok` remains `true` but `data.verdict` is `'FAIL'` and `data.failures`
+lists the failures.
 
 ## Integration
 

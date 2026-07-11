@@ -1,13 +1,15 @@
 #!/usr/bin/env node
 // Keeps .claude-plugin/plugin.json in lockstep with package.json AND with
-// the actual skills/agents/commands on disk. Invoked by `prepublishOnly` so
+// the actual skills on disk (the distribution is skills-only — former
+// agents and commands are skills now). Invoked by `prepublishOnly` so
 // npm publish never ships a drifted plugin manifest; `--check` mode is
 // called by `npm test` to catch drift at PR time before it reaches a
 // release.
 //
 // Kept under the historical name `sync-plugin-version.mjs` to avoid
 // breaking the package.json script references; scope expanded from
-// version-only (Wave 1) to the full manifest in Wave 5 (#67).
+// version-only (Wave 1) to the full manifest in Wave 5 (#67), narrowed to
+// skills-only in the agents/commands -> skills conversion.
 //
 // Exit codes:
 //   0 — manifest is in sync (or was successfully synced when not --check)
@@ -67,6 +69,11 @@ if (existsSync(marketplacePath)) {
 
 // --- Derive the canonical manifest shape from disk -------------------------
 
+// Every skill dir becomes one manifest entry. Tiered worker skills (the
+// former agents, tier 1/2 in SKILL.md frontmatter, `context: fork`) carry
+// their tier into the manifest — that tier is what `wicked-testing contract`
+// and the wicked.contract.published emit are derived from. Orchestrator
+// skills (plan, execution, setup, ...) have no tier and no contract entry.
 function listSkills() {
   const dir = join(REPO, "skills");
   if (!existsSync(dir)) return [];
@@ -76,47 +83,20 @@ function listSkills() {
       catch { return false; }
     })
     .sort()
-    .map(d => ({
-      name:    `wicked-testing:${d}`,
-      path:    `skills/${d}/SKILL.md`,
-      command: `/wicked-testing:${d}`,
-    }));
-}
-
-function listAgents() {
-  const dir = join(REPO, "agents");
-  if (!existsSync(dir)) return [];
-  const direct = readdirSync(dir)
-    .filter(f => f.endsWith(".md"))
-    .sort()
-    .map(f => ({ name: f.replace(/\.md$/, ""), path: `agents/${f}`, tier: tierOf(join(dir, f)) }));
-  const specDir = join(dir, "specialists");
-  const specialists = existsSync(specDir)
-    ? readdirSync(specDir)
-        .filter(f => f.endsWith(".md"))
-        .sort()
-        .map(f => ({ name: f.replace(/\.md$/, ""), path: `agents/specialists/${f}`, tier: tierOf(join(specDir, f)) }))
-    : [];
-  return [...direct, ...specialists];
-}
-
-function listCommands() {
-  const dir = join(REPO, "commands");
-  if (!existsSync(dir)) return [];
-  return readdirSync(dir)
-    .filter(f => f.endsWith(".md"))
-    .sort()
-    .map(f => {
-      const name = f.replace(/\.md$/, "");
-      return { name, path: `commands/${f}`, slash: `/wicked-testing:${name}` };
+    .map(d => {
+      const tier = tierOf(join(dir, d, "SKILL.md"));
+      return {
+        name:    `wicked-testing:${d}`,
+        path:    `skills/${d}/SKILL.md`,
+        command: `/wicked-testing:${d}`,
+        ...(tier !== null ? { tier } : {}),
+      };
     });
 }
 
 const desired = {
   version:     pkg.version,
   skills:      listSkills(),
-  agents:      listAgents(),
-  commands:    listCommands(),
 };
 
 // --- Diff each section against the current manifest ------------------------
@@ -128,13 +108,15 @@ function jsonEqual(a, b) {
 const drifts = [];
 if (plugin.version !== desired.version)       drifts.push(`version: ${plugin.version} -> ${desired.version}`);
 if (!jsonEqual(plugin.skills,   desired.skills))   drifts.push(`skills (${plugin.skills?.length ?? 0} -> ${desired.skills.length})`);
-if (!jsonEqual(plugin.agents,   desired.agents))   drifts.push(`agents (${plugin.agents?.length ?? 0} -> ${desired.agents.length})`);
-if (!jsonEqual(plugin.commands, desired.commands)) drifts.push(`commands (${plugin.commands?.length ?? 0} -> ${desired.commands.length})`);
+// Legacy manifest sections — the distribution is skills-only, so any
+// surviving `agents`/`commands` array is drift to be deleted.
+if ("agents"   in plugin) drifts.push(`legacy agents array present (${plugin.agents?.length ?? 0} entries) -> removed`);
+if ("commands" in plugin) drifts.push(`legacy commands array present (${plugin.commands?.length ?? 0} entries) -> removed`);
 if (mpEntry && mpEntry.version !== desired.version)
   drifts.push(`marketplace.json entry: ${mpEntry.version} -> ${desired.version}`);
 
 if (drifts.length === 0) {
-  log(`plugin.json in sync (v${pkg.version}, ${desired.skills.length} skills, ${desired.agents.length} agents, ${desired.commands.length} commands)`);
+  log(`plugin.json in sync (v${pkg.version}, ${desired.skills.length} skills)`);
   process.exit(0);
 }
 
@@ -148,6 +130,9 @@ if (checkOnly) {
 // --- Apply changes ---------------------------------------------------------
 
 const merged = { ...plugin, ...desired };
+// Skills-only distribution: drop the legacy sections outright.
+delete merged.agents;
+delete merged.commands;
 writeFileSync(pluginPath, JSON.stringify(merged, null, 2) + "\n");
 
 // Keep the marketplace plugin entry's version in lockstep too. Only the
@@ -160,7 +145,13 @@ if (mpEntry && mpEntry.version !== desired.version) {
 log(`manifest updated:`);
 for (const d of drifts) log(`  - ${d}`);
 
+// Wire shape is intentionally unchanged (key `agents`, field `subagent_type`)
+// so consumers like wicked-garden's wg-check keep parsing it: the tiered
+// skills' colon-style names are byte-identical to the old subagent_type ids —
+// they now resolve to forked-skill dispatch instead of Task() agents.
 emitBusEvent("wicked.contract.published", {
   version: desired.version,
-  agents: desired.agents.map(a => ({ subagent_type: `wicked-testing:${a.name}`, tier: a.tier })),
+  agents: desired.skills
+    .filter(s => s.tier === 1 || s.tier === 2)
+    .map(s => ({ subagent_type: s.name, tier: s.tier })),
 });

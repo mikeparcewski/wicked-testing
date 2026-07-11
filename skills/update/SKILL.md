@@ -2,9 +2,9 @@
 name: wicked-testing:update
 description: |
   Check for and install wicked-testing updates. Compares installed version
-  against npm registry, updates the published CLI, refreshes skills / agents
-  / commands across all detected AI CLIs (Claude Code, Gemini, Codex, Cursor,
-  Kiro), and verifies the upgrade landed.
+  against npm registry, updates the published CLI, refreshes the skills
+  across all detected AI CLIs (Claude Code, Gemini, Codex, Cursor, Kiro),
+  and verifies the upgrade landed.
 
   Use when: "update wicked-testing", "check for updates", "wicked-testing:update",
   or periodically to stay current.
@@ -13,8 +13,8 @@ description: |
 # wicked-testing:update
 
 You check for and install updates to the published `wicked-testing` npm
-package and refresh the skills / agents / commands it drops into each
-detected AI CLI.
+package and refresh the skills it drops into each detected AI CLI (the
+distribution is skills-only — former agents and commands are skills now).
 
 Unlike `wicked-brain` (which runs a persistent server that must be
 restarted after upgrade), `wicked-testing` is a plugin — there is no
@@ -85,14 +85,15 @@ If an update is available, ask the user:
 
 1. The **npm package** — reinstalled so `npx wicked-testing` resolves to the
    new version.
-2. The **skills / agents / commands** dropped into each detected AI CLI's
-   plugin directory (`~/.claude/`, `~/.gemini/`, `~/.codex/`, `~/.cursor/`,
-   `~/.kiro/`). These live outside the npm install; `npx wicked-testing install`
-   is what refreshes them from the updated package.
+2. The **skills** dropped into each detected AI CLI's plugin directory
+   (`~/.claude/skills/`, `~/.gemini/skills/`, `~/.codex/skills/`,
+   `~/.cursor/skills/`, `~/.kiro/skills/`). These live outside the npm
+   install; `npx wicked-testing install` is what refreshes them from the
+   updated package (and sweeps any agent/command files left by pre-skills-only
+   versions).
 
 Running only one of the two creates a split-brain where the CLI sees stale
-skill/agent files even though the npm package is fresh (or vice versa). Do
-both.
+skill files even though the npm package is fresh (or vice versa). Do both.
 
 ```bash
 npm install -g wicked-testing@latest 2>&1
@@ -154,7 +155,7 @@ failure mode of this skill.
 ### Step 5: Run doctor to confirm health
 
 The doctor subcommand runs structured diagnostics — node version, per-CLI
-install integrity (expected agent files present and non-empty), better-sqlite3
+install integrity (expected skill files present and non-empty), better-sqlite3
 loadability, SQLite schema version vs code, plugin.json drift (see Wave 5
 #74). Green doctor output is the "update succeeded" contract:
 
@@ -194,7 +195,7 @@ Tell the user what changed:
 
 ```
 wicked-testing: v{old} -> v{new}
-Skills/agents/commands refreshed in: {list of CLI names}
+Skills refreshed in: {list of CLI names}
 Doctor: {healthy|N warnings}
 ```
 

@@ -6,13 +6,33 @@ description: |
   code for testability signals.
 
   Use when: "review this", "judge the evidence", "verdict", "does the code
-  match the spec", "is this test suite any good", "code review for testability".
+  match the spec", "is this test suite any good", "code review for testability",
+  "/wicked-testing:review".
+argument-hint: "[run-id | path] [--spec <path>] [--focus semantic|quality|testability]"
 ---
 
 # wicked-testing:review
 
 Reviewing is its own discipline. This skill is the place where verdicts are
 rendered — not inside the executor, not as a side effect of running.
+
+## Usage
+
+```
+/wicked-testing:review [run-id | path] [--spec <path>] [--focus <area>]
+```
+
+Arguments map onto the dispatch table below:
+
+- `run-id` — review a specific recorded run: `acceptance-test-reviewer` over
+  the run's evidence manifest
+- `path` — review a source tree or test directory
+- `--spec <path>` — supplies the acceptance criteria / spec document
+- `--focus semantic` — spec-to-code alignment: `semantic-reviewer` Gap Report
+- `--focus quality` — test quality audit: `code-analyzer` + the
+  test-code-quality Tier-2 specialist
+- `--focus testability` — code testability review: `code-analyzer` static
+  review
 
 ## When to use
 
@@ -32,10 +52,15 @@ rendered — not inside the executor, not as a side effect of running.
 
 ### Dispatch block (executable)
 
+Every id in the tables above is a forked worker skill (`context: fork`) —
+invoke it with the Skill tool so it runs in an isolated context. For the
+reviewer this is isolation-critical: the forked context is what guarantees
+it never sees the executor's history.
+
 ```
-Task(
-  subagent_type="wicked-testing:acceptance-test-reviewer",
-  prompt="""Review the evidence manifest at the path below and render an
+Skill(
+  skill="wicked-testing:acceptance-test-reviewer",
+  args="""Review the evidence manifest at the path below and render an
 independent verdict.
 
 ## Evidence Directory
@@ -59,17 +84,17 @@ DO NOT reference executor conversation context beyond the files above."""
 )
 ```
 
-For a spec-vs-code divergence review, swap to `semantic-reviewer` and pass
-the spec path + implementation path. For a standalone test-suite quality
-review (no run, just the source), dispatch `code-analyzer` + the relevant
-Tier-2 specialist from the table below.
+For a spec-vs-code divergence review, swap the `skill` id to
+`wicked-testing:semantic-reviewer` and pass the spec path + implementation
+path. For a standalone test-suite quality review (no run, just the source),
+dispatch `code-analyzer` + the relevant Tier-2 specialist from the table below.
 
 ## Independence
 
 Reviewers work from evidence and spec, not from the executor's story.
-`acceptance-test-reviewer` is isolated (Read-only tools, scrubbed `context.md`
-via `lib/context-md-validator.mjs`) to keep its verdict honest. Do not
-pre-narrate what it should find.
+`acceptance-test-reviewer` is isolated (Read-only tools, `context: fork`
+forked invocation, scrubbed `context.md` via `lib/context-md-validator.mjs`)
+to keep its verdict honest. Do not pre-narrate what it should find.
 
 ## Tier-2 specialists this skill routes to
 
@@ -111,5 +136,5 @@ Emits `wicked.verdict.recorded` on the bus when present.
 
 - [`docs/INTEGRATION.md`](../../docs/INTEGRATION.md)
 - [`docs/EVIDENCE.md`](../../docs/EVIDENCE.md)
-- `agents/acceptance-test-reviewer.md`, `agents/semantic-reviewer.md`,
-  `agents/code-analyzer.md`, `agents/production-quality-engineer.md`
+- `skills/acceptance-test-reviewer/SKILL.md`, `skills/semantic-reviewer/SKILL.md`,
+  `skills/code-analyzer/SKILL.md`, `skills/production-quality-engineer/SKILL.md`

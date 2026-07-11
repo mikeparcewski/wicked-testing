@@ -1,10 +1,10 @@
 ---
 name: wicked-testing-evals
 description: |
-  On-demand eval runner for wicked-testing's agents. Dispatches each case from
-  evals/<agent>/evals.json via the Agent tool, captures output, runs
-  deterministic assertions, and writes a run report. Real Claude API cost —
-  user-triggered only, never in CI.
+  On-demand eval runner for wicked-testing's specialist skills. Dispatches each
+  case from evals/<agent>/evals.json via the Skill tool (forked-skill
+  invocation), captures output, runs deterministic assertions, and writes a run
+  report. Real Claude API cost — user-triggered only, never in CI.
 
   Use when: "run evals on test-designer", "verify the acceptance pipeline
   still works", "check agent behavior after a change", "rerun evals".
@@ -12,8 +12,8 @@ description: |
 
 # wicked-testing-evals (dev skill)
 
-Repo-local dev skill. Runs on demand against the agents in this repo.
-Not shipped to npm; not part of the public contract.
+Repo-local dev skill. Runs on demand against the specialist skills in this
+repo. Not shipped to npm; not part of the public contract.
 
 ## Workflow
 
@@ -33,13 +33,17 @@ This skill orchestrates the run. For each case in the chosen agent's
 `evals.json`:
 
 1. Create case directory: `.claude/skills/wicked-testing-evals/workspace/iteration-<N>/<agent>/case-<id>/`
-2. Dispatch the agent via the Agent tool with:
-   - `subagent_type` = `<data.subagent_type>` from evals.json
-   - `prompt` = case `prompt`
+2. Dispatch the specialist via the Skill tool (forked-skill invocation —
+   post skills-only conversion the plugin registers no agents, so
+   `Task(subagent_type=...)` cannot resolve):
+   - `skill` = `<data.subagent_type>` from evals.json — the value (e.g.
+     `wicked-testing:test-designer`) is byte-identical to the skill name,
+     so evals.json needs no migration
+   - `args` = case `prompt`
    - Any files from `input_files` copied into the case directory as context
 3. Capture:
-   - Full agent output → `output.md`
-   - Any artifacts the agent writes → folder tree preserved
+   - Full skill output → `output.md`
+   - Any artifacts the skill writes → folder tree preserved
    - Exit status → `exit.code`
 
 **Cost discipline:**

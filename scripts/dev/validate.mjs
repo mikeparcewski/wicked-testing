@@ -77,36 +77,17 @@ function parseFrontmatter(content) {
 
 // --- checks ----------------------------------------------------------------
 
-function checkAgents() {
-  const dirs = [join(REPO, "agents"), join(REPO, "agents", "specialists")];
-  const requiredFields = ["name", "subagent_type", "description", "model", "allowed-tools", "tier"];
-  for (const dir of dirs) {
-    if (!existsSync(dir)) continue;
-    const entries = readdirSync(dir).filter(f => f.endsWith(".md"));
-    for (const f of entries) {
-      const path = join(dir, f);
-      const rel = relative(REPO, path);
-      const content = readFileSync(path, "utf8");
-      const fm = parseFrontmatter(content);
-      if (!fm) { err("agents", rel, "missing or malformed frontmatter"); continue; }
-      for (const k of requiredFields) {
-        if (!(k in fm)) err("agents", rel, `missing required frontmatter key: ${k}`);
-      }
-      if (fm.subagent_type && !fm.subagent_type.startsWith("wicked-testing:")) {
-        err("agents", rel, `subagent_type must start with 'wicked-testing:' (got: ${fm.subagent_type})`);
-      }
-      const tier = fm.tier;
-      if (tier !== "1" && tier !== "2") {
-        err("agents", rel, `tier must be 1 or 2 (got: ${tier ?? "missing"})`);
-      } else {
-        const inSpecialists = path.includes(join("agents", "specialists"));
-        if (tier === "2" && !inSpecialists) err("agents", rel, `tier: 2 but not under agents/specialists/`);
-        if (tier === "1" && inSpecialists) err("agents", rel, `tier: 1 but under agents/specialists/`);
-      }
-      const expectedName = f.replace(/\.md$/, "");
-      if (fm.name && fm.name !== expectedName) {
-        warn("agents", rel, `frontmatter name '${fm.name}' doesn't match filename '${expectedName}'`);
-      }
+// The tree no longer has agents/ or commands/ — every former agent is a
+// forked worker skill (skills/<name>/SKILL.md with `context: fork` + `tier`)
+// and every former command folded into its same-named orchestrator skill.
+// If either legacy directory reappears, fail loudly: the SKILLS-ONLY layout
+// is the contract now.
+function checkNoLegacyDirs() {
+  for (const legacy of ["agents", "commands"]) {
+    if (existsSync(join(REPO, legacy))) {
+      err("layout", `${legacy}/`,
+        `legacy ${legacy}/ directory present — the distribution is skills-only; ` +
+        `convert entries to skills/<name>/SKILL.md`);
     }
   }
 }
@@ -114,6 +95,11 @@ function checkAgents() {
 function checkSkills() {
   const skillsRoot = join(REPO, "skills");
   const requiredFields = ["name", "description"];
+  // Forked worker skills (the former agents) additionally carry the tiered
+  // dispatch contract: context: fork (isolated invocation — the reviewer
+  // must never share the executor's context), a model hint, and the
+  // allowed-tools restriction that backs reviewer isolation on Claude Code.
+  const requiredWorkerFields = ["model", "allowed-tools"];
   if (!existsSync(skillsRoot)) { err("skills", "skills/", "skills directory missing"); return; }
   const dirs = readdirSync(skillsRoot).filter(d => {
     try { return statSync(join(skillsRoot, d)).isDirectory(); } catch { return false; }
@@ -126,6 +112,22 @@ function checkSkills() {
     if (!fm) { err("skills", rel, "malformed frontmatter"); continue; }
     for (const k of requiredFields) {
       if (!(k in fm)) err("skills", rel, `missing required frontmatter key: ${k}`);
+    }
+    if ("tier" in fm) {
+      const tier = fm.tier;
+      if (tier !== "1" && tier !== "2") {
+        err("skills", rel, `tier must be 1 or 2 (got: ${tier})`);
+      }
+      if (fm.context !== "fork") {
+        err("skills", rel,
+          `tiered worker skill must declare 'context: fork' (got: ${fm.context ?? "missing"}) — ` +
+          `forked-context dispatch is what preserves writer/executor/reviewer isolation`);
+      }
+      for (const k of requiredWorkerFields) {
+        if (!(k in fm)) err("skills", rel, `tiered worker skill missing required frontmatter key: ${k}`);
+      }
+    } else if (fm.context === "fork") {
+      warn("skills", rel, "context: fork without a tier — worker skills should declare tier: 1 or 2");
     }
     // Frontmatter `name:` MUST be `wicked-testing:<dir>`. When it's just
     // `<dir>` (unprefixed), Claude Code's skill resolver silently drops
@@ -154,7 +156,14 @@ function checkPluginJson() {
   try { data = JSON.parse(readFileSync(path, "utf8")); }
   catch (e) { err("plugin.json", rel, `parse error: ${e.message}`); return; }
 
-  for (const group of ["skills", "agents", "commands"]) {
+  // Skills-only manifest: `agents`/`commands` arrays are legacy and must be gone.
+  for (const legacy of ["agents", "commands"]) {
+    if (legacy in data) {
+      err("plugin.json", rel, `legacy '${legacy}' array present — the manifest is skills-only; run scripts/dev/sync-plugin-version.mjs`);
+    }
+  }
+
+  for (const group of ["skills"]) {
     const entries = data[group] || [];
     for (const entry of entries) {
       if (!entry.path) { err("plugin.json", rel, `${group}: entry missing 'path'`); continue; }
@@ -191,17 +200,14 @@ function checkEvidenceSchema() {
 }
 
 // --- cross-platform shell portability gate ---------------------------------
-// Scans fenced bash blocks in agents/, skills/, commands/, scenarios/, and
-// top-level scenario/format docs for Unix-only shell constructs that violate
-// the global CLAUDE.md portability rule (must work on macOS/Linux AND Windows
+// Scans fenced bash blocks in skills/, scenarios/, and top-level
+// scenario/format docs for Unix-only shell constructs that violate the
+// global CLAUDE.md portability rule (must work on macOS/Linux AND Windows
 // Git Bash / PowerShell). Each finding lands as `warn` so `npm test` doesn't
 // regress while the audit lands — flip to `err` once the tree is clean
 // across all audit branches.
 function checkCrossPlatform() {
   const scanPaths = [
-    { dir: join(REPO, "agents"),        glob: /\.md$/ },
-    { dir: join(REPO, "agents", "specialists"), glob: /\.md$/ },
-    { dir: join(REPO, "commands"),      glob: /\.md$/ },
     { dir: join(REPO, "skills"),        glob: /SKILL\.md$/, recursive: true },
     { dir: join(REPO, "scenarios"),     glob: /\.md$/, recursive: true },
   ];
@@ -368,27 +374,36 @@ function checkNamespaceAlignment() {
     if (nextSep >= 0) t2End = nextSep;
   }
   const t2Section = t2Start >= 0 ? doc.slice(t2Start, t2End) : "";
-  for (const [dir, tier] of [["agents", "1"], [join("agents", "specialists"), "2"]]) {
-    const d = join(REPO, dir);
-    if (!existsSync(d)) continue;
-    for (const f of readdirSync(d).filter(x => x.endsWith(".md"))) {
-      const token = `wicked-testing:${f.replace(/\.md$/, "")}`;
-      const inT1 = t1Section.includes(token);
-      const inT2 = t2Section.includes(token);
-      if (tier === "1") {
-        if (!inT1) err("namespace", rel, `Tier-1 agent '${token}' missing from NAMESPACE.md Tier-1 section`);
-        if (inT2) err("namespace", rel, `Tier-1 agent '${token}' wrongly listed under Tier-2`);
-      } else {
-        // Tier-2 is churnable; only assert it isn't miscategorized as Tier-1.
-        if (inT1) err("namespace", rel, `Tier-2 agent '${token}' wrongly listed under Tier-1`);
-      }
+  // Tier now lives in skill frontmatter (skills/<name>/SKILL.md, tier: 1|2),
+  // not in a directory split — walk the skills tree and compare each tiered
+  // worker skill's token against the doc's tier sections. Untier-ed skills
+  // (the orchestrators) have no namespace-tier entry to check.
+  const skillsRoot = join(REPO, "skills");
+  if (!existsSync(skillsRoot)) return;
+  const dirs = readdirSync(skillsRoot).filter(d => {
+    try { return statSync(join(skillsRoot, d)).isDirectory() && existsSync(join(skillsRoot, d, "SKILL.md")); }
+    catch { return false; }
+  });
+  for (const d of dirs) {
+    const fm = parseFrontmatter(readFileSync(join(skillsRoot, d, "SKILL.md"), "utf8"));
+    const tier = fm?.tier;
+    if (tier !== "1" && tier !== "2") continue; // orchestrator skill — not part of the tier contract
+    const token = `wicked-testing:${d}`;
+    const inT1 = t1Section.includes(token);
+    const inT2 = t2Section.includes(token);
+    if (tier === "1") {
+      if (!inT1) err("namespace", rel, `Tier-1 skill '${token}' missing from NAMESPACE.md Tier-1 section`);
+      if (inT2) err("namespace", rel, `Tier-1 skill '${token}' wrongly listed under Tier-2`);
+    } else {
+      // Tier-2 is churnable; only assert it isn't miscategorized as Tier-1.
+      if (inT1) err("namespace", rel, `Tier-2 skill '${token}' wrongly listed under Tier-1`);
     }
   }
 }
 
 // --- run -------------------------------------------------------------------
 
-checkAgents();
+checkNoLegacyDirs();
 checkSkills();
 checkPluginJson();
 checkEvidenceSchema();

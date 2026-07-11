@@ -31,11 +31,13 @@ explains what moves, what stays, and how to migrate.
 | `/wicked-garden:qe:acceptance`                 | `/wicked-testing:execution` (full loop)  |
 | `/wicked-garden:qe:qe-review`                  | `/wicked-testing:review`                 |
 | `/wicked-garden:qe:report`                     | `/wicked-testing:insight`                |
-| `subagent_type: wicked-garden:qe:<name>`       | `subagent_type: wicked-testing:<name>`   |
+| `subagent_type: wicked-garden:qe:<name>`       | `wicked-testing:<name>` (skill dispatch name) |
 
-The 11 agents that lived under `wicked-garden/agents/qe/` are now in
-wicked-testing's `agents/` tree. Their behavior is preserved; only the
-namespace changed.
+The 11 agents that lived under `wicked-garden/agents/qe/` are now forked
+skills (`context: fork`) in wicked-testing's `skills/` tree — one directory
+per skill. Their behavior is preserved; only the namespace and component
+type changed. Dispatch strings are identical to the old `subagent_type`
+values.
 
 ---
 
@@ -50,7 +52,7 @@ wicked-garden still owns:
   agentic, jam, mem, search, smaht, persona, etc.)
 
 wicked-garden's crew gate now dispatches QE reviewers by their new
-`wicked-testing:*` subagent names (and subscribes to
+`wicked-testing:*` skill dispatch names (and subscribes to
 `wicked.verdict.recorded` events for the result).
 
 ---
@@ -71,7 +73,7 @@ wicked-garden's crew gate now dispatches QE reviewers by their new
    /wicked-garden:crew:start "tiny refactor"
    ```
    The clarify → design → build → test → review cycle should complete,
-   with test and review phases invoking `wicked-testing:*` agents.
+   with test and review phases invoking `wicked-testing:*` skills.
 4. **Update any gate-policy.json overrides** you may have customized —
    reviewer names should reference `wicked-testing:*`, not
    `wicked-garden:qe:*`.
@@ -88,14 +90,14 @@ wicked-garden consumes these from wicked-testing, and nothing else:
 | Surface                                  | Doc                                      |
 |------------------------------------------|------------------------------------------|
 | Tier-1 skill names                       | [INTEGRATION.md §2](INTEGRATION.md#2-core-skills-tier-1--stable) |
-| Tier-1 agent subagent_types              | [INTEGRATION.md §3](INTEGRATION.md#3-core-agents-tier-1--stable-dispatch-names) |
+| Tier-1 worker-skill dispatch names       | [INTEGRATION.md §3](INTEGRATION.md#3-core-worker-skills-tier-1--stable-dispatch-names) |
 | Bus events                               | [INTEGRATION.md §4](INTEGRATION.md#4-bus-events-public-contract) |
 | Evidence manifest schema                 | [EVIDENCE.md](EVIDENCE.md) + [`schemas/evidence.json`](../schemas/evidence.json) |
 | Brain memory shapes (optional)           | [INTEGRATION.md §5](INTEGRATION.md#5-brain-memories-optional-enrichment) |
 
 wicked-garden must **not** read wicked-testing's SQLite database, reach
-into `lib/`, or reference Tier-2 agent names in `gate-policy.json`. Those
-are internal and can change across minor versions.
+into `lib/`, or reference Tier-2 specialist skill names in
+`gate-policy.json`. Those are internal and can change across minor versions.
 
 ---
 
@@ -118,8 +120,8 @@ if it falls outside the pinned range. Pin updates follow semver.
 
 ## Troubleshooting
 
-- **Gate errors "unknown subagent_type: wicked-testing:xxx"** — wicked-testing
-  isn't installed. Run `npx wicked-testing install`.
+- **Gate errors "unknown skill (or subagent_type): wicked-testing:xxx"** —
+  wicked-testing isn't installed. Run `npx wicked-testing install`.
 - **Gates return empty verdicts** — wicked-bus may not be running. The bus is
   optional in wicked-testing but wicked-garden's crew gate subscribes to
   `wicked.verdict.recorded` to advance. Run `npx wicked-bus status`.
