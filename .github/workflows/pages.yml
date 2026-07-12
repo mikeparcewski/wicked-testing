@@ -1,11 +1,11 @@
 # Deploy the wicked-testing marketing site (site/) to GitHub Pages.
 #
-# DORMANT BY DESIGN: this workflow runs ONLY on manual dispatch. Go-live is
-# human-gated — it must never auto-run on push or merge. Enabling GitHub Pages
-# for this repo and triggering this workflow are deliberate, separate steps.
-name: Deploy site to Pages
+# Auto-deploys the site on every push to main; also runnable by hand.
+name: Deploy site to GitHub Pages
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
