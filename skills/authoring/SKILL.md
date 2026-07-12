@@ -111,7 +111,7 @@ Scenario files use the format in [`SCENARIO-FORMAT.md`](../../SCENARIO-FORMAT.md
   OR
 - Both, when authoring scenarios that have automated companions
 
-Emits `wicked.scenario.authored` and/or `wicked.teststrategy.authored` on the
+Emits `wicked.scenario.authored` and/or `wicked.test.strategy.generated` on the
 bus when present.
 
 ## Legacy invocations (absorbed in 0.4.0)

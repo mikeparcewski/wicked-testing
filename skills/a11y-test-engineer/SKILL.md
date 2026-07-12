@@ -157,7 +157,7 @@ re-check the raw evidence.
 ## 4. DomainStore write
 
 Through `lib/domain-store.mjs` (which dual-writes JSON + SQLite and emits
-`wicked.verdict.recorded` on the bus):
+`wicked.test.verdict.created` on the bus):
 
 ```js
 // Append a verdict row linked to the current run.

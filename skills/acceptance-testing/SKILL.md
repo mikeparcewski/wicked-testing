@@ -315,7 +315,7 @@ isolation layer.
 Two writes and one manifest build, in order:
 
 ```javascript
-// 1. Finalize run (triggers wicked.testrun.finished emit)
+// 1. Finalize run (triggers wicked.test.run.completed emit)
 //
 // Preserve the reviewer's full taxonomy — do NOT collapse everything-not-PASS
 // to 'failed'. "couldn't evaluate" (INCONCLUSIVE) and "partly satisfied"
@@ -351,7 +351,7 @@ store.update('runs', run.id, {
   evidence_path: EVIDENCE_DIR,
 });
 
-// 2. Record verdict (triggers wicked.verdict.recorded emit)
+// 2. Record verdict (triggers wicked.test.verdict.created emit)
 //
 // Optional baseline-match facet (rec #5): when the reviewer rendered an
 // EQUIVALENT_TO_BASELINE assertion it reports a `verdict.equivalence` object

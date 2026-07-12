@@ -130,7 +130,7 @@ or a list of findings the skill folds into the review output:
 - Evidence citations (file paths, line numbers, AC IDs)
 - Next actions: specific, assignable, bounded
 
-Emits `wicked.verdict.recorded` on the bus when present.
+Emits `wicked.test.verdict.created` on the bus when present.
 
 ## References
 

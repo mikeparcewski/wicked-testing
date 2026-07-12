@@ -126,7 +126,7 @@ Consumers (wicked-garden) depend only on Tier-1 names.
 
 The strategy is written to DomainStore by the dispatched agent via
 `store.create('strategies', {...})`, which also fires
-`wicked.teststrategy.authored` on the bus when present.
+`wicked.test.strategy.generated` on the bus when present.
 
 ## Output
 
@@ -136,7 +136,7 @@ The strategy is written to DomainStore by the dispatched agent via
   which design changes unblock testing
 - A pointer to the ledger where this plan is recorded
 
-Emits `wicked.teststrategy.authored` on the bus when present.
+Emits `wicked.test.strategy.generated` on the bus when present.
 
 **With `--json`** — emit the JSON envelope (python3-with-python-fallback,
 cross-platform):

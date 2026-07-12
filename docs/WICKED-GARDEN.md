@@ -53,7 +53,7 @@ wicked-garden still owns:
 
 wicked-garden's crew gate now dispatches QE reviewers by their new
 `wicked-testing:*` skill dispatch names (and subscribes to
-`wicked.verdict.recorded` events for the result).
+`wicked.test.verdict.created` events for the result).
 
 ---
 
@@ -124,7 +124,7 @@ if it falls outside the pinned range. Pin updates follow semver.
   wicked-testing isn't installed. Run `npx wicked-testing install`.
 - **Gates return empty verdicts** — wicked-bus may not be running. The bus is
   optional in wicked-testing but wicked-garden's crew gate subscribes to
-  `wicked.verdict.recorded` to advance. Run `npx wicked-bus status`.
+  `wicked.test.verdict.created` to advance. Run `npx wicked-bus status`.
 - **Old `/wicked-garden:qe:*` commands missing** — you're on wicked-garden
   `>= 7.1`; the alias layer was removed. Use `/wicked-testing:*`.
 

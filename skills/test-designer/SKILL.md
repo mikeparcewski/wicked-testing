@@ -74,7 +74,7 @@ Steps without expected evidence and an assertion are rejected at plan time.
 - `SKIP` — applicable but deferred (requires ticket reference)
 
 Write the manifest per `docs/EVIDENCE.md` and emit
-`wicked.verdict.recorded` via the bus helper if present.
+`wicked.test.verdict.created` via the bus helper if present.
 
 ## References
 

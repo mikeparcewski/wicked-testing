@@ -5,9 +5,9 @@
  * integration introduced in Phase B of ECOSYSTEM-RATIONALIZATION.md §5a.
  *
  * SIG-3 coverage:
- *   1. domainEventToBusEvent returns a single wicked.verdict.recorded event when
+ *   1. domainEventToBusEvent returns a single wicked.test.verdict.created event when
  *      vault_payload_sha is absent (regression guard — existing callers unchanged)
- *   2. domainEventToBusEvent returns an array [wicked.verdict.recorded,
+ *   2. domainEventToBusEvent returns an array [wicked.test.verdict.created,
  *      wicked.evidence.captured] when vault_payload_sha is present (dual-event path)
  *   3. The dual-event path flows end-to-end: store.create("verdicts", { vault_payload_sha })
  *      stores the column — verified by store.get() round-trip
@@ -52,12 +52,12 @@ function fakeVerdict(overrides = {}) {
 // domainEventToBusEvent — verdicts.create, no vault_payload_sha
 // ---------------------------------------------------------------------------
 
-test("verdicts.create without vault_payload_sha returns single wicked.verdict.recorded", () => {
+test("verdicts.create without vault_payload_sha returns single wicked.test.verdict.created", () => {
   const record = fakeVerdict();
   const result = domainEventToBusEvent("create", "verdicts", record, FAKE_VERSION);
 
   assert.ok(!Array.isArray(result), "should be a single event object, not an array");
-  assert.equal(result.type, "wicked.verdict.recorded");
+  assert.equal(result.type, "wicked.test.verdict.created");
   assert.equal(result.payload.verdict_id, "v-test-id");
   assert.equal(result.payload.run_id, "run-1");
   assert.equal(result.payload.verdict, "PASS");
@@ -71,7 +71,7 @@ test("verdicts.create with vault_payload_sha=null still returns single event", (
   const result = domainEventToBusEvent("create", "verdicts", rec, FAKE_VERSION);
 
   assert.ok(!Array.isArray(result));
-  assert.equal(result.type, "wicked.verdict.recorded");
+  assert.equal(result.type, "wicked.test.verdict.created");
 });
 
 // ---------------------------------------------------------------------------
@@ -86,11 +86,11 @@ test("verdicts.create with vault_payload_sha returns array of two events", () =>
   assert.equal(result.length, 2, `expected 2 events, got ${result.length}`);
 });
 
-test("dual-event array[0] is wicked.verdict.recorded with correct payload", () => {
+test("dual-event array[0] is wicked.test.verdict.created with correct payload", () => {
   const rec = fakeVerdict({ vault_payload_sha: "abc123sha256", evidence_path: "/some/path" });
   const [verdictEvent] = domainEventToBusEvent("create", "verdicts", rec, FAKE_VERSION);
 
-  assert.equal(verdictEvent.type, "wicked.verdict.recorded");
+  assert.equal(verdictEvent.type, "wicked.test.verdict.created");
   assert.equal(verdictEvent.payload.verdict_id, "v-test-id");
   assert.equal(verdictEvent.payload.run_id, "run-1");
   assert.equal(verdictEvent.payload.verdict, "PASS");

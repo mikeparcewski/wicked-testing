@@ -140,7 +140,7 @@ Consumers read `evidence/<run-id>/manifest.json`, never the database.
 The public contract for consumers is three things:
 
 1. **Tier-1 skill names** (workflow + forked dispatch names) — see [docs/INTEGRATION.md](docs/INTEGRATION.md) § 2–3.
-2. **Bus events** — `wicked.testrun.*`, `wicked.verdict.recorded`,
+2. **Bus events** — `wicked.testrun.*`, `wicked.test.verdict.created`,
    `wicked.evidence.captured` — see [docs/INTEGRATION.md](docs/INTEGRATION.md) § 4.
 3. **Evidence manifest schema** — `schemas/evidence.json`.
 

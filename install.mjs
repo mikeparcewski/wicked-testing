@@ -1071,7 +1071,7 @@ async function cmdInstall({ mode }) {
   }
 
   // Register as a wicked-bus provider so downstream subscribers receive vault
-  // and testing events (wicked.evidence.captured, wicked.verdict.recorded, etc.).
+  // and testing events (wicked.evidence.captured, wicked.test.verdict.created, etc.).
   // Absorbed from wicked-vault installer (ECOSYSTEM-RATIONALIZATION.md §5a Phase B).
   // Non-fatal: wicked-testing emits events when wicked-bus is present and runs
   // fully standalone when it isn't. Dynamic import keeps the bus optional.

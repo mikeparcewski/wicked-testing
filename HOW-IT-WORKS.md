@@ -52,7 +52,7 @@ User: /wicked-testing:acceptance-testing scenarios/test-runner.md
         |
         v
 [5] DomainStore writes (dual-write: JSON + SQLite)
-        // Order matters: update runs FIRST so `wicked.testrun.finished`
+        // Order matters: update runs FIRST so `wicked.test.run.completed`
         // fires with a terminal status, THEN write the verdict row so the
         // verdict row's evidence_path references an already-finalized run.
         store.update('runs', run.id, {

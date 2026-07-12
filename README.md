@@ -182,11 +182,11 @@ When wicked-bus is on PATH, wicked-testing emits on every significant action. Ev
 
 | Event | When |
 |-------|------|
-| `wicked.teststrategy.authored` | Test strategy record created |
+| `wicked.test.strategy.generated` | Test strategy record created |
 | `wicked.scenario.authored` | Scenario record created or updated |
 | `wicked.testrun.started` | Run row written with `status: running` |
-| `wicked.testrun.finished` | Run row updated with `finished_at` (any terminal status) |
-| `wicked.verdict.recorded` | Reviewer writes a verdict |
+| `wicked.test.run.completed` | Run row updated with `finished_at` (any terminal status) |
+| `wicked.test.verdict.created` | Reviewer writes a verdict |
 | `wicked.evidence.captured` | `evidence/<run-id>/manifest.json` written |
 
 Emission is fire-and-forget: if wicked-bus is absent or the spawn fails, wicked-testing continues without error. See [`lib/bus-emit.mjs`](lib/bus-emit.mjs).

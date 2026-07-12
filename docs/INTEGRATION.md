@@ -95,11 +95,11 @@ the emit is a no-op; wicked-testing's own SQLite ledger is always written.
 
 | Event Type                    | Subdomain             | Description                                           |
 |-------------------------------|-----------------------|-------------------------------------------------------|
-| `wicked.teststrategy.authored`  | `scenario.authoring`  | A test strategy document was produced                 |
+| `wicked.test.strategy.generated`  | `scenario.authoring`  | A test strategy document was produced                 |
 | `wicked.scenario.authored`      | `scenario.authoring`  | A scenario file was created or updated                |
 | `wicked.testrun.started`        | `testrun`             | A test run began                                      |
-| `wicked.testrun.finished`       | `testrun`             | A test run completed (any terminal status)            |
-| `wicked.verdict.recorded`       | `verdict`             | A reviewer emitted a verdict (PASS / FAIL / N-A / SKIP)|
+| `wicked.test.run.completed`       | `testrun`             | A test run completed (any terminal status)            |
+| `wicked.test.verdict.created`       | `verdict`             | A reviewer emitted a verdict (PASS / FAIL / N-A / SKIP)|
 | `wicked.evidence.captured`      | `evidence`            | Evidence artifacts written to disk for a run          |
 | `wicked.contract.published`     | `contract`            | plugin.json manifest synced; full skill/tier roster   |
 
@@ -118,7 +118,7 @@ All events include:
 
 ```
 {
-  "event_type": "wicked.testrun.finished",
+  "event_type": "wicked.test.run.completed",
   "domain": "wicked-testing",
   "subdomain": "testrun",
   "emitted_at": "2026-04-20T14:03:12.004Z",
@@ -130,22 +130,22 @@ All events include:
 
 ### Per-event additional fields
 
-**`wicked.teststrategy.authored`** — `{ strategy_id, project_id, scenario_count }`
+**`wicked.test.strategy.generated`** — `{ strategy_id, project_id, scenario_count }`
 **`wicked.scenario.authored`** — `{ scenario_id, strategy_id, project_id, format_version }`
 **`wicked.testrun.started`** — `{ run_id, scenario_id, project_id, started_at }`
-**`wicked.testrun.finished`** — `{ run_id, scenario_id, status, started_at, finished_at, evidence_path }`
-**`wicked.verdict.recorded`** — `{ verdict_id, run_id, verdict: "PASS|FAIL|N-A|SKIP", reviewer, evidence_path }`
+**`wicked.test.run.completed`** — `{ run_id, scenario_id, status, started_at, finished_at, evidence_path }`
+**`wicked.test.verdict.created`** — `{ verdict_id, run_id, verdict: "PASS|FAIL|N-A|SKIP", reviewer, evidence_path }`
 **`wicked.evidence.captured`** — `{ run_id, evidence_path, artifact_count }`
 **`wicked.contract.published`** — `{ version: "<semver>", agents: [{ subagent_type: "wicked-testing:<name>", tier: 1|2 }] }`
 (The `agents` / `subagent_type` payload field names are retained for wire
 compatibility; each entry describes a forked worker skill and the value is its
 skill dispatch name.)
 
-Status values for `wicked.testrun.finished`: `passed | failed | errored | skipped`.
+Status values for `wicked.test.run.completed`: `passed | failed | errored | skipped`.
 
 ### What consumers get
 
-wicked-garden's crew gate subscribes to `wicked.verdict.recorded` with
+wicked-garden's crew gate subscribes to `wicked.test.verdict.created` with
 `domain: wicked-testing`. That's the entire read surface — no SQLite access
 required.
 
@@ -189,7 +189,7 @@ If wicked-brain is not installed, memory writes are a no-op.
 
 Evidence lives project-local (not home-global), under `.wicked-testing/evidence/`.
 The path is included in every `wicked.evidence.captured` and
-`wicked.verdict.recorded` event.
+`wicked.test.verdict.created` event.
 
 ```
 <project-root>/.wicked-testing/

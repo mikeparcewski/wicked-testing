@@ -167,7 +167,7 @@ Bus event is emitted when a run directory is pruned
 
 ### Normal path (via bus event)
 
-1. Subscribe to `wicked.verdict.recorded` (domain: `wicked-testing`).
+1. Subscribe to `wicked.test.verdict.created` (domain: `wicked-testing`).
 2. Read `evidence_path` from the payload.
 3. Open `<evidence_path>/manifest.json`.
 4. Iterate `artifacts[]`, optionally verify `sha256`.

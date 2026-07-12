@@ -120,8 +120,8 @@ SKIP with reason `trust-level-insufficient`.
 - `manifest.json` is written per `docs/EVIDENCE.md` (produced by `lib/manifest.mjs`)
 - The run + verdict are written to the SQLite ledger
 - Bus events emitted (when bus present): `wicked.testrun.started`,
-  `wicked.testrun.finished`, `wicked.evidence.captured`, and finally
-  `wicked.verdict.recorded`
+  `wicked.test.run.completed`, `wicked.evidence.captured`, and finally
+  `wicked.test.verdict.created`
 
 ## Output
 

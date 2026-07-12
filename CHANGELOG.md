@@ -6,6 +6,14 @@ All notable changes to `wicked-testing`. Format loosely follows
 
 ## [Unreleased]
 
+### Changed
+- **Test-lifecycle bus event names aligned to the `wicked-bus` SPEC map** (`wicked-bus/reqs/SPEC.md`, `wicked.test.<noun>.<past-verb>`). Renamed the three emitted types in `lib/bus-emit.mjs`:
+  - `wicked.verdict.recorded` → `wicked.test.verdict.created`
+  - `wicked.testrun.finished` → `wicked.test.run.completed`
+  - `wicked.teststrategy.authored` → `wicked.test.strategy.generated`
+
+  Payloads are unchanged. `wicked.testrun.started`, `wicked.scenario.authored`, `wicked.evidence.captured`, and `wicked.contract.published` are unchanged. The QE **acceptance** gate events (`wicked.qe.gate.passed/failed/conditional`, `wicked.qe.deploy.completed`) are a distinct gate and are **not** renamed. **Breaking for bus subscribers** — update filters to the new names.
+
 ## [0.8.0] — 2026-07-12
 
 ### Changed
