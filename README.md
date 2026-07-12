@@ -15,7 +15,7 @@ npx wicked-testing install
 
 Works with **Claude Code**, **Antigravity**, **Cursor**, **Codex**, **Kiro**, **Copilot**, **OpenCode**, and **Pi**.
 
-Published to npm as [`wicked-testing`](https://www.npmjs.com/package/wicked-testing) v0.8.0 · site at [wt.wickedagile.com](https://wt.wickedagile.com). The `wicked-qe` rename is pending — the `wicked-qe` bin alias already ships.
+Published to npm as [`wicked-testing`](https://www.npmjs.com/package/wicked-testing) v0.9.0 · site at [wt.wickedagile.com](https://wt.wickedagile.com). The `wicked-qe` rename is pending — the `wicked-qe` bin alias already ships.
 
 ---
 
@@ -124,7 +124,7 @@ Writer ──→ Test Plan ──→ Executor ──→ Evidence ──→ [cont
 ```
 
 - **Writer** (`allowed-tools: Read, Grep, Glob, Skill`) — reads scenario + code, optionally queries wicked-brain for prior flaky patterns and tool quirks, produces an evidence-gated plan where every step declares expected evidence and an assertion. Cannot execute or write state.
-- **Executor** (`allowed-tools: Read, Write, Bash`) — follows the plan mechanically. Captures stdout, stderr, exit codes, and file artifacts. Optionally emits `wicked.testrun.*` events via wicked-bus. Makes **no judgment** about results.
+- **Executor** (`allowed-tools: Read, Write, Bash`) — follows the plan mechanically. Captures stdout, stderr, exit codes, and file artifacts. Optionally emits `wicked.test.run.*` events via wicked-bus. Makes **no judgment** about results.
 - **Reviewer** (`allowed-tools: Read`) — reads cold evidence files only. **Never sees the executor's context, reasoning, or stdout.** Evaluates assertions against artifacts. Cannot execute.
 
 **Cold context injection**: before dispatching Reviewer, the orchestrator may materialize a `context.md` in the evidence directory with non-prejudicial domain knowledge from wicked-brain (WCAG thresholds, tool quirks). Prior verdicts, pass/fail rates, and anything run-specific are strictly excluded — if Reviewer sees prejudicial content it returns `INCONCLUSIVE` with `CONTEXT_CONTAMINATION`.
@@ -183,11 +183,11 @@ When wicked-bus is on PATH, wicked-testing emits on every significant action. Ev
 | Event | When |
 |-------|------|
 | `wicked.test.strategy.generated` | Test strategy record created |
-| `wicked.scenario.authored` | Scenario record created or updated |
-| `wicked.testrun.started` | Run row written with `status: running` |
+| `wicked.test.scenario.authored` | Scenario record created or updated |
+| `wicked.test.run.started` | Run row written with `status: running` |
 | `wicked.test.run.completed` | Run row updated with `finished_at` (any terminal status) |
 | `wicked.test.verdict.created` | Reviewer writes a verdict |
-| `wicked.evidence.captured` | `evidence/<run-id>/manifest.json` written |
+| `wicked.test.evidence.captured` | `evidence/<run-id>/manifest.json` written |
 
 Emission is fire-and-forget: if wicked-bus is absent or the spawn fails, wicked-testing continues without error. See [`lib/bus-emit.mjs`](lib/bus-emit.mjs).
 

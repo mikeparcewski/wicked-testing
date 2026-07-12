@@ -85,8 +85,14 @@ the emit is a no-op; wicked-testing's own SQLite ledger is always written.
 
 ### Conventions
 
-- Event names follow wicked-ecosystem convention: `wicked.<noun>.<past-tense-verb>`
-- `domain` field is always `wicked-testing`
+- Event names follow wicked-ecosystem convention: `wicked.<domain>.<noun>.<verb>`
+- **Two distinct notions of "domain" — do not conflate them:**
+  - The **2nd segment of the event *type*** is the **short** domain slug (`test`), e.g.
+    `test` in `wicked.test.run.completed`. This is the compact routing token baked
+    into the type string.
+  - The **`domain` payload field / SQLite column** is the **full package name**
+    `wicked-testing`. It never abbreviates to `test`.
+  - So a completed run emits type `wicked.test.run.completed` with `domain: wicked-testing`.
 - `subdomain` scopes by functional area (`ledger`, `scenario`, `testrun`, `verdict`, `evidence`)
 - Payload follows the standard tier rules — IDs and outcomes always, small categoricals
   when relevant, never content / diffs / secrets
@@ -96,12 +102,12 @@ the emit is a no-op; wicked-testing's own SQLite ledger is always written.
 | Event Type                    | Subdomain             | Description                                           |
 |-------------------------------|-----------------------|-------------------------------------------------------|
 | `wicked.test.strategy.generated`  | `scenario.authoring`  | A test strategy document was produced                 |
-| `wicked.scenario.authored`      | `scenario.authoring`  | A scenario file was created or updated                |
-| `wicked.testrun.started`        | `testrun`             | A test run began                                      |
+| `wicked.test.scenario.authored` | `scenario.authoring`  | A scenario file was created or updated                |
+| `wicked.test.run.started`       | `testrun`             | A test run began                                      |
 | `wicked.test.run.completed`       | `testrun`             | A test run completed (any terminal status)            |
 | `wicked.test.verdict.created`       | `verdict`             | A reviewer emitted a verdict (PASS / FAIL / N-A / SKIP)|
-| `wicked.evidence.captured`      | `evidence`            | Evidence artifacts written to disk for a run          |
-| `wicked.contract.published`     | `contract`            | plugin.json manifest synced; full skill/tier roster   |
+| `wicked.test.evidence.captured` | `evidence`            | Evidence artifacts written to disk for a run          |
+| `wicked.test.contract.published`| `contract`            | plugin.json manifest synced; full skill/tier roster   |
 
 ### QE Gate Events
 
@@ -131,12 +137,12 @@ All events include:
 ### Per-event additional fields
 
 **`wicked.test.strategy.generated`** — `{ strategy_id, project_id, scenario_count }`
-**`wicked.scenario.authored`** — `{ scenario_id, strategy_id, project_id, format_version }`
-**`wicked.testrun.started`** — `{ run_id, scenario_id, project_id, started_at }`
+**`wicked.test.scenario.authored`** — `{ scenario_id, strategy_id, project_id, format_version }`
+**`wicked.test.run.started`** — `{ run_id, scenario_id, project_id, started_at }`
 **`wicked.test.run.completed`** — `{ run_id, scenario_id, status, started_at, finished_at, evidence_path }`
 **`wicked.test.verdict.created`** — `{ verdict_id, run_id, verdict: "PASS|FAIL|N-A|SKIP", reviewer, evidence_path }`
-**`wicked.evidence.captured`** — `{ run_id, evidence_path, artifact_count }`
-**`wicked.contract.published`** — `{ version: "<semver>", agents: [{ subagent_type: "wicked-testing:<name>", tier: 1|2 }] }`
+**`wicked.test.evidence.captured`** — `{ verdict_id, run_id, vault_payload_sha, evidence_path }`
+**`wicked.test.contract.published`** — `{ version: "<semver>", agents: [{ subagent_type: "wicked-testing:<name>", tier: 1|2 }] }`
 (The `agents` / `subagent_type` payload field names are retained for wire
 compatibility; each entry describes a forked worker skill and the value is its
 skill dispatch name.)
@@ -188,7 +194,7 @@ If wicked-brain is not installed, memory writes are a no-op.
 ## 6. Evidence Artifact Paths
 
 Evidence lives project-local (not home-global), under `.wicked-testing/evidence/`.
-The path is included in every `wicked.evidence.captured` and
+The path is included in every `wicked.test.evidence.captured` and
 `wicked.test.verdict.created` event.
 
 ```

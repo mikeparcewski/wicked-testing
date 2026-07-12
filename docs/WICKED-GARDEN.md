@@ -45,13 +45,16 @@ values.
 
 wicked-garden still owns:
 
-- Crew workflow (`/wicked-garden:crew:*`)
 - Facilitator and specialist routing
 - Gate policy and phase management
 - The 13 non-QE domains (product, engineering, data, delivery, platform,
   agentic, jam, mem, search, smaht, persona, etc.)
 
-wicked-garden's crew gate now dispatches QE reviewers by their new
+The crew workflow has since been extracted into its own product, **wicked-crew**
+— the GOVERN stage that drives the coding-agent harness — and is no longer a
+`wicked-garden` sub-namespace.
+
+The crew gate now dispatches QE reviewers by their new
 `wicked-testing:*` skill dispatch names (and subscribes to
 `wicked.test.verdict.created` events for the result).
 
