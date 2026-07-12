@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:test-designer
+name: wicked-testing-test-designer
 description: |
   DEV-LOOP FAST PATH ONLY. Single-role plan→execute→verdict for local iteration
   when the 3-agent isolated pipeline's rigor is explicitly not needed. Reads

@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:security-test-engineer
+name: wicked-testing-security-test-engineer
 context: fork
 tier: 2
 model: sonnet

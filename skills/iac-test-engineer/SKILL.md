@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:iac-test-engineer
+name: wicked-testing-iac-test-engineer
 context: fork
 tier: 2
 description: |

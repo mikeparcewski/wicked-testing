@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:test-code-quality-auditor
+name: wicked-testing-test-code-quality-auditor
 context: fork
 tier: 2
 model: sonnet

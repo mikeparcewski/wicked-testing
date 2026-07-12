@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:release-readiness-engineer
+name: wicked-testing-release-readiness-engineer
 context: fork
 tier: 2
 model: sonnet

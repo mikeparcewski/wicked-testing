@@ -1,5 +1,5 @@
 ---
-name: wicked-vault:verify-evidence
+name: wicked-vault-verify-evidence
 description: Deterministically re-derive a single recorded artifact's integrity — recompute the payload/criteria/envelope hashes and re-run its pure verifier. Model-free, reproducible, CI-gate-safe. Use to confirm a piece of evidence is still intact and its deterministic check passes, or to detect tamper. Never trusts the cached status. For an INDEPENDENT judgment of whether the evidence MEETS its criteria, use wicked-vault:analyze-evidence.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:data-quality-tester
+name: wicked-testing-data-quality-tester
 context: fork
 tier: 2
 model: sonnet

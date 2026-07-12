@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:test-impact-analyzer
+name: wicked-testing-test-impact-analyzer
 context: fork
 tier: 2
 model: sonnet

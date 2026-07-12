@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:requirements-quality-analyst
+name: wicked-testing-requirements-quality-analyst
 description: |
   Evaluate acceptance-criteria quality at the clarify phase. Check whether ACs
   are specific, measurable, testable. Flag ambiguous scope and missing edge

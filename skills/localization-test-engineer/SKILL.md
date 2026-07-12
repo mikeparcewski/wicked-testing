@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:localization-test-engineer
+name: wicked-testing-localization-test-engineer
 context: fork
 tier: 2
 description: |

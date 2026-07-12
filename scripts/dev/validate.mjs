@@ -104,21 +104,12 @@ function checkSkills() {
   const dirs = readdirSync(skillsRoot).filter(d => {
     try { return statSync(join(skillsRoot, d)).isDirectory(); } catch { return false; }
   });
-  for (const d of dirs) {
-    const skillFile = join(skillsRoot, d, "SKILL.md");
-    const rel = relative(REPO, skillFile);
-    if (!existsSync(skillFile)) {
-      // Namespace dir: no top-level SKILL.md but subdirs have SKILL.md files.
-      // install.mjs flattens these to `<namespace>-<subskill>/SKILL.md` at install time.
-      const isNamespace = readdirSync(join(skillsRoot, d)).some(sub => {
-        try { return statSync(join(skillsRoot, d, sub)).isDirectory() && existsSync(join(skillsRoot, d, sub, "SKILL.md")); }
-        catch { return false; }
-      });
-      if (!isNamespace) err("skills", rel, "SKILL.md missing");
-      continue;
-    }
+  // Validate a single SKILL.md against the frontmatter + name invariant.
+  // `expectedName` is the dash-joined, product-prefixed id the frontmatter
+  // `name:` must equal (see the rationale block below).
+  const checkOneSkill = (skillFile, rel, expectedName) => {
     const fm = parseFrontmatter(readFileSync(skillFile, "utf8"));
-    if (!fm) { err("skills", rel, "malformed frontmatter"); continue; }
+    if (!fm) { err("skills", rel, "malformed frontmatter"); return; }
     for (const k of requiredFields) {
       if (!(k in fm)) err("skills", rel, `missing required frontmatter key: ${k}`);
     }
@@ -138,13 +129,24 @@ function checkSkills() {
     } else if (fm.context === "fork") {
       warn("skills", rel, "context: fork without a tier — worker skills should declare tier: 1 or 2");
     }
-    // Frontmatter `name:` MUST be `wicked-testing:<dir>`. When it's just
-    // `<dir>` (unprefixed), Claude Code's skill resolver silently drops
-    // the skill — and if enough skills in the batch are broken, it drops
-    // the whole plugin. This was the v0.3.1 regression caught in dogfood:
-    // 6 of 12 skills had unprefixed names and all 12 became invisible.
-    // Keep this gate strict so we never re-ship that.
-    const expectedName = `wicked-testing:${d}`;
+    // Frontmatter `name:` MUST be the dash-joined, product-prefixed id.
+    // Rationale (the cross-CLI namespace split):
+    //   * The name must stay PRODUCT-PREFIXED. When it's just `<dir>`
+    //     (unprefixed), Claude Code's skill resolver silently drops the
+    //     skill — and if enough skills in the batch are broken, it drops
+    //     the whole plugin. This was the v0.3.1 regression caught in
+    //     dogfood: 6 of 12 skills had unprefixed names and all 12 became
+    //     invisible.
+    //   * The separator must be a DASH, not a colon. install.mjs flattens
+    //     every skill to `{cli}/skills/<expectedName>/`, and the
+    //     non-Claude CLIs (Antigravity/Codex/OpenCode/Pi/...) key the skill
+    //     off that directory name. A colon `name:` (`wicked-testing:<dir>`)
+    //     no longer matches the dash directory, so those hosts see a
+    //     name/dir mismatch and drop the skill. The dash form makes
+    //     `name` == installed dir on every CLI. (Claude's colon
+    //     `plugin:skill` invocation lives in .claude-plugin/plugin.json's
+    //     `command` field, and the colon dispatch/`subagent_type` contract
+    //     is emitted from plugin.json — neither depends on this field.)
     // Strict equality — empty string must also fail here. The required-
     // fields loop above catches a missing `name:` key; this check catches
     // the wrong value, including "". If we short-circuited on falsy fm.name
@@ -154,6 +156,37 @@ function checkSkills() {
         `frontmatter name '${fm.name}' must equal '${expectedName}' — ` +
         `dash separator required for cross-CLI compatibility.`);
     }
+  };
+
+  for (const d of dirs) {
+    const skillFile = join(skillsRoot, d, "SKILL.md");
+    const rel = relative(REPO, skillFile);
+    if (!existsSync(skillFile)) {
+      // Namespace dir: no top-level SKILL.md but subdirs have SKILL.md files.
+      // install.mjs flattens these to `<namespace>-<subskill>/SKILL.md` at
+      // install time, so each nested subskill's frontmatter name must equal
+      // `<namespace>-<subskill>` (the namespace dir is already product-prefixed,
+      // e.g. `wicked-vault`). Recurse so nested skills get the SAME name/dir
+      // validation as top-level ones — otherwise a colon or unprefixed name in
+      // a namespaced skill would ship unchecked (the very gap this closes).
+      const subs = readdirSync(join(skillsRoot, d)).filter(sub => {
+        try { return statSync(join(skillsRoot, d, sub)).isDirectory() && !sub.startsWith("."); }
+        catch { return false; }
+      });
+      if (subs.length === 0) { err("skills", rel, "SKILL.md missing"); continue; }
+      for (const sub of subs) {
+        const nestedFile = join(skillsRoot, d, sub, "SKILL.md");
+        // Flag a namespaced subdir that is missing its SKILL.md rather than
+        // silently skipping it (the filter used to hide these entirely).
+        if (!existsSync(nestedFile)) {
+          err("skills", relative(REPO, nestedFile), "SKILL.md missing");
+          continue;
+        }
+        checkOneSkill(nestedFile, relative(REPO, nestedFile), `${d}-${sub}`);
+      }
+      continue;
+    }
+    checkOneSkill(skillFile, rel, `wicked-testing-${d}`);
   }
 }
 

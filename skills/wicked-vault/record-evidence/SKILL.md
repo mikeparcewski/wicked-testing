@@ -1,5 +1,5 @@
 ---
-name: wicked-vault:record-evidence
+name: wicked-vault-record-evidence
 description: Record a claim-backing artifact in the vault and attach a deterministic verifier. Use when capturing evidence that "tests pass", "build clean", a commit exists, or a file's contents back a claim — and when replacing stale evidence via supersede. Covers --run vs --artifact, verifier syntax, and contract pinning.
 ---
 

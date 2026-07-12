@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:update
+name: wicked-testing-update
 description: |
   Check for and install wicked-testing updates. Compares installed version
   against npm registry, updates the published CLI, refreshes the skills

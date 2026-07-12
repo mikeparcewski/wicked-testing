@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:production-quality-engineer
+name: wicked-testing-production-quality-engineer
 description: |
   Monitor production quality post-deploy. Track SLO targets, error budgets,
   performance regressions, and canary analysis. Define rollback criteria.

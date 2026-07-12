@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:ui-component-test-engineer
+name: wicked-testing-ui-component-test-engineer
 context: fork
 tier: 2
 model: sonnet

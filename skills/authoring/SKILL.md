@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:authoring
+name: wicked-testing-authoring
 description: |
   Tier-1 orchestrator for producing tests. Writes scenario files, generates
   test code (unit / integration / E2E), creates fixtures and test data. The

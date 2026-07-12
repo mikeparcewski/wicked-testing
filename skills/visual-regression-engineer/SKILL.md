@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:visual-regression-engineer
+name: wicked-testing-visual-regression-engineer
 context: fork
 tier: 2
 model: sonnet

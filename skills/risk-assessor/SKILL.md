@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:risk-assessor
+name: wicked-testing-risk-assessor
 description: |
   Identify failure modes, assess security/reliability/operational risks, and
   produce a risk matrix with mitigations.

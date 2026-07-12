@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:insight
+name: wicked-testing-insight
 description: |
   Tier-1 orchestrator for reading the ledger. Stats, reports, flake detection,
   coverage gaps, historical queries. Never writes — only reads.

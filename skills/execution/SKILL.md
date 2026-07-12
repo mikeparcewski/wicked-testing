@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:execution
+name: wicked-testing-execution
 description: |
   Tier-1 orchestrator for running tests and capturing evidence. Executes
   scenarios, invokes framework runners, collects artifacts, and writes the

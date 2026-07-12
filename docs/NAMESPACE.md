@@ -100,11 +100,23 @@ documentation tooling, and are safe to leave on non-Claude CLIs
 | `max-turns`     | integer | Upper bound on dispatcher iterations for this skill. Advisory; hosts that don't honor it ignore the field. |
 | `color`         | string  | UI hint for hosts that colorize output.                               |
 
-The dispatch id **is** the skill `name` (`wicked-testing:<name>`). The former
-`subagent_type` frontmatter field is gone — its value was always identical to
-the name, so nothing changed for consumers. For Tier-1 skills the name is part
-of the public contract (see the table above); for Tier-2 specialists it is
-internal and subject to change.
+The **dispatch id** is the colon form `wicked-testing:<name>` — the tables
+above list it, `.claude-plugin/plugin.json` emits it as each skill's
+`command` and `subagent_type` contract entry, and Claude Code resolves it as
+the `plugin:skill` invocation. The former `subagent_type` frontmatter field is
+gone — its value was always identical to this dispatch id, so nothing changed
+for consumers. For Tier-1 skills the dispatch id is part of the public
+contract (see the table above); for Tier-2 specialists it is internal and
+subject to change.
+
+The skill's frontmatter `name:` field, by contrast, is the **dash-joined**
+`wicked-testing-<name>` (e.g. `wicked-testing-test-strategist`). It is *not*
+the dispatch id: it names the installed skill directory
+(`{cli}/skills/wicked-testing-<name>/`) so every CLI — including the
+non-Claude hosts that rewrite `:`→`-` in directory names — sees a matching
+`name`/dir pair. The colon lives only where a host needs the `plugin:skill`
+separator (plugin.json `command`) or where the published dispatch contract is
+read.
 
 ---
 
@@ -130,7 +142,10 @@ wicked-garden keeps aliases for one minor version. After that, references to
 
 ## Rules
 
-1. New skills MUST use the `wicked-testing:` prefix.
+1. New skills MUST be namespaced: frontmatter `name:` = `<namespace>-<dir>`
+   (dash), dispatch id / plugin.json `command` = `<namespace>:<dir>` (colon) —
+   where `<namespace>` is `wicked-testing` or the parent namespace directory for
+   a nested skill (e.g. `wicked-vault`, giving `wicked-vault-<dir>`).
 2. Tier-2 specialist names are internal; do not document them as part of a
    contract elsewhere.
 3. `qe:` is dead. Do not resurrect it.

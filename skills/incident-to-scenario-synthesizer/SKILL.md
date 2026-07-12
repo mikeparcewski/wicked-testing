@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:incident-to-scenario-synthesizer
+name: wicked-testing-incident-to-scenario-synthesizer
 context: fork
 tier: 2
 description: |

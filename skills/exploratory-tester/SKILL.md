@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:exploratory-tester
+name: wicked-testing-exploratory-tester
 context: fork
 tier: 2
 model: sonnet
