@@ -13,10 +13,10 @@
  * ../styles/testing.css. Theming is driven by [data-theme]; this page adds no
  * chrome or theme system of its own.
  *
- * Every claim is code-grounded against the wicked-testing repo (v0.7.3):
+ * Every claim is code-grounded against the wicked-testing repo (v0.8.0):
  *   48 skills (8 Tier-1 workflow/orchestrator skills + 40 specialist skills),
  *   5 orchestrator surfaces the specialists route under,
- *   a 3-skill acceptance pipeline (Writer → Executor → Reviewer) with tool
+ *   a 3-agent acceptance pipeline (Writer → Executor → Reviewer) with tool
  *   boundaries taken from each skill's `allowed-tools` frontmatter and reviewer
  *   isolation via `context: fork`, and the pending wicked-qe rename (bin alias
  *   already ships). Messaging is locked to
@@ -28,7 +28,7 @@ import Footer from 'wicked-web/components/Footer.astro';
 import '../styles/testing.css';
 
 const title = 'wicked-testing — no agent grades its own homework';
-const description = 'When an AI agent tests its own work it grades its own homework — self-reported PASS rates run 80%+ above human-reviewed rates. wicked-testing gives your AI CLI a complete QE team from planning through execution through judgment, with an enforced wall between the agent that runs the tests and the agent that evaluates them. Local-first, SQLite-backed, MIT. Published to npm as wicked-testing v0.7.3.';
+const description = 'When an AI agent tests its own work it grades its own homework — self-reported PASS rates run 80%+ above human-reviewed rates. wicked-testing gives your AI CLI a complete QE team from planning through execution through judgment, with an enforced wall between the agent that runs the tests and the agent that evaluates them. Local-first, SQLite-backed, MIT. Published to npm as wicked-testing v0.8.0.';
 const repo = 'https://github.com/mikeparcewski/wicked-testing';
 
 // The eight AI CLIs the installer targets (install.mjs).
@@ -186,7 +186,7 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
         <span class="kicker">The differentiator · reviewer isolation</span>
         <h2>The reviewer never sees who did the work.</h2>
         <p class="sec-sub">
-          The 3-skill acceptance pipeline gives each role its own tool boundary.
+          The 3-agent acceptance pipeline gives each role its own tool boundary.
           The reviewer reads <b>cold evidence files only</b> — never the
           executor's context, reasoning, or stdout — so the self-grading that
           inflates AI PASS rates has nowhere to hide. Watch what crosses the wall.
@@ -335,7 +335,7 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
           <h2>Give your agent a QE team it can't out-argue.</h2>
           <p>
             Local-first and SQLite-backed. MIT-licensed, published to npm as
-            <code>wicked-testing</code> v0.7.3. The <code>wicked-qe</code> rename is
+            <code>wicked-testing</code> v0.8.0. The <code>wicked-qe</code> rename is
             pending — the <code>wicked-qe</code> bin alias already ships.
           </p>
         </div>
