@@ -11,10 +11,9 @@ const alias = existsSync(localUI) ? { 'wicked-web': localUI } : {};
 
 // https://astro.build/config
 export default defineConfig({
-  // wt.wickedagile.com isn't live yet — serve from GitHub Pages for now.
-  // Restore site:'https://wt.wickedagile.com' + drop base when the subdomain is up.
-  site: 'https://mikeparcewski.github.io',
-  base: '/wicked-testing',
+  // Served at wt.wickedagile.com (custom domain, root path). No base prefix —
+  // assets resolve from '/', so the CNAME root serves CSS/JS correctly.
+  site: 'https://wt.wickedagile.com',
   output: 'static',
   vite: { resolve: { alias } },
 });
