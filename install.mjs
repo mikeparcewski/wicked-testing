@@ -504,6 +504,49 @@ function writeMarker(target) {
   writeFileSync(join(target.dir, INSTALLED_MARKER), VERSION);
 }
 
+// Strip // and /* */ comments from JSONC — string-aware, so // inside a "string"
+// (e.g. the "$schema" URL) is preserved.
+function stripJsonc(s) {
+  let out = "", inStr = false, esc = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i], n = s[i + 1];
+    if (inStr) { out += c; if (esc) esc = false; else if (c === "\\") esc = true; else if (c === '"') inStr = false; continue; }
+    if (c === '"') { inStr = true; out += c; continue; }
+    if (c === "/" && n === "/") { while (i < s.length && s[i] !== "\n") i++; out += "\n"; continue; }
+    if (c === "/" && n === "*") { i += 2; while (i < s.length && !(s[i] === "*" && s[i + 1] === "/")) i++; i++; continue; }
+    out += c;
+  }
+  return out;
+}
+
+// OpenCode loads skills ONLY from config-declared skills.paths (or an external
+// ~/.claude / ~/.agents scan) — it does NOT auto-scan ~/.config/opencode/skills.
+// Register our install dir in opencode.jsonc's skills.paths so opencode loads
+// what we copied. Idempotent, and never corrupts an unparseable config.
+function registerOpencodeSkillsPath(target) {
+  const jsonc = join(target.rootDir, "opencode.jsonc");
+  const jsonf = join(target.rootDir, "opencode.json");
+  const cfgPath = existsSync(jsonf) && !existsSync(jsonc) ? jsonf : jsonc;
+  let cfg = { $schema: "https://opencode.ai/config.json" };
+  if (existsSync(cfgPath)) {
+    try { cfg = JSON.parse(stripJsonc(readFileSync(cfgPath, "utf8"))); }
+    catch { console.warn(`[${target.name}] could not parse ${cfgPath} — register ${target.dir} in skills.paths manually`); return; }
+  }
+  if (typeof cfg !== "object" || cfg === null || Array.isArray(cfg)) cfg = {};
+  const skills = cfg.skills && typeof cfg.skills === "object" && !Array.isArray(cfg.skills) ? cfg.skills : {};
+  const paths = Array.isArray(skills.paths) ? skills.paths : [];
+  if (paths.includes(target.dir)) return;
+  paths.push(target.dir);
+  cfg.skills = { ...skills, paths };
+  try {
+    mkdirSync(dirname(cfgPath), { recursive: true });
+    writeFileSync(cfgPath, JSON.stringify(cfg, null, 2) + "\n");
+    console.log(`[${target.name}] registered ${target.dir} in opencode.jsonc skills.paths`);
+  } catch (err) {
+    console.warn(`[${target.name}] could not write ${cfgPath}: ${err?.code || err?.message}`);
+  }
+}
+
 function readdirSafe(p) { try { return readdirSync(p); } catch { return []; } }
 
 function copyTree(src, dest) {
@@ -1028,6 +1071,13 @@ async function cmdInstall({ mode }) {
           console.warn(`[${target.name}] plugin skipped — could not write to ${target.pluginPath}: ${err?.code || err?.message}`);
         }
       }
+
+      // OpenCode does NOT auto-scan ~/.config/opencode/skills — it only loads
+      // skills declared in opencode.jsonc's `skills.paths` (or scanned under
+      // ~/.claude/ ~/.agents/). Register our install dir there or the skills we
+      // just copied install invisible. (Pi auto-scans ~/.pi/agent/skills; the
+      // other CLIs auto-scan their skills dirs too — opencode is the exception.)
+      if (target.platform === "opencode") registerOpencodeSkillsPath(target);
 
       writeMarker(target);
       console.log(`[${target.name}] installed ${VERSION} — ${skillsInstalledThisTarget} skills`);
