@@ -13,7 +13,8 @@
  * ../styles/testing.css. Theming is driven by [data-theme]; this page adds no
  * chrome or theme system of its own.
  *
- * Every claim is code-grounded against the wicked-testing repo (v0.8.0):
+ * Every claim is code-grounded against the wicked-testing repo (the published
+ * version is read from package.json at build time — see `version` below):
  *   48 skills (8 Tier-1 workflow/orchestrator skills + 40 specialist skills),
  *   5 orchestrator surfaces the specialists route under,
  *   a 3-agent acceptance pipeline (Writer → Executor → Reviewer) with tool
@@ -22,13 +23,20 @@
  *   already ships). Messaging is locked to
  *   scratch/marketing/CANONICAL-MESSAGING.md (Wave-4 top).
  */
+import rootPkg from '../../../package.json';
 import Base from 'wicked-web/layouts/Base.astro';
 import Topbar from 'wicked-web/components/Topbar.astro';
 import Footer from 'wicked-web/components/Footer.astro';
 import '../styles/testing.css';
 
+// Derive the published version from the repo-root package.json at build time so
+// the page never falls behind a release. Vite resolves this import against the
+// source file (repo root), unlike import.meta.url which points at the bundled
+// chunk — so it reliably picks up wicked-testing's version, not site/'s.
+const version = rootPkg.version;
+
 const title = 'wicked-testing — no agent grades its own homework';
-const description = 'When an AI agent tests its own work it grades its own homework — self-reported PASS rates run 80%+ above human-reviewed rates. wicked-testing gives your AI CLI a complete QE team from planning through execution through judgment, with an enforced wall between the agent that runs the tests and the agent that evaluates them. Local-first, SQLite-backed, MIT. Published to npm as wicked-testing v0.8.0.';
+const description = `When an AI agent tests its own work it grades its own homework — self-reported PASS rates run 80%+ above human-reviewed rates. wicked-testing gives your AI CLI a complete QE team from planning through execution through judgment, with an enforced wall between the agent that runs the tests and the agent that evaluates them. Local-first, SQLite-backed, MIT. Published to npm as wicked-testing v${version}.`;
 const repo = 'https://github.com/mikeparcewski/wicked-testing';
 
 // The eight AI CLIs the installer targets (install.mjs).
@@ -335,7 +343,7 @@ const BLOCKED = ['executor context', 'chain-of-thought', 'raw stdout', 'prior ve
           <h2>Give your agent a QE team it can't out-argue.</h2>
           <p>
             Local-first and SQLite-backed. MIT-licensed, published to npm as
-            <code>wicked-testing</code> v0.8.0. The <code>wicked-qe</code> rename is
+            <code>wicked-testing</code> v{version}. The <code>wicked-qe</code> rename is
             pending — the <code>wicked-qe</code> bin alias already ships.
           </p>
         </div>
