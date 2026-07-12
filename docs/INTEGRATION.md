@@ -86,7 +86,13 @@ the emit is a no-op; wicked-testing's own SQLite ledger is always written.
 ### Conventions
 
 - Event names follow wicked-ecosystem convention: `wicked.<domain>.<noun>.<verb>`
-- `domain` field is always `wicked-testing`
+- **Two distinct notions of "domain" — do not conflate them:**
+  - The **2nd segment of the event *type*** is the **short** domain slug (`test`), e.g.
+    `test` in `wicked.test.run.completed`. This is the compact routing token baked
+    into the type string.
+  - The **`domain` payload field / SQLite column** is the **full package name**
+    `wicked-testing`. It never abbreviates to `test`.
+  - So a completed run emits type `wicked.test.run.completed` with `domain: wicked-testing`.
 - `subdomain` scopes by functional area (`ledger`, `scenario`, `testrun`, `verdict`, `evidence`)
 - Payload follows the standard tier rules — IDs and outcomes always, small categoricals
   when relevant, never content / diffs / secrets
@@ -135,7 +141,7 @@ All events include:
 **`wicked.test.run.started`** — `{ run_id, scenario_id, project_id, started_at }`
 **`wicked.test.run.completed`** — `{ run_id, scenario_id, status, started_at, finished_at, evidence_path }`
 **`wicked.test.verdict.created`** — `{ verdict_id, run_id, verdict: "PASS|FAIL|N-A|SKIP", reviewer, evidence_path }`
-**`wicked.test.evidence.captured`** — `{ run_id, evidence_path, artifact_count }`
+**`wicked.test.evidence.captured`** — `{ verdict_id, run_id, vault_payload_sha, evidence_path }`
 **`wicked.test.contract.published`** — `{ version: "<semver>", agents: [{ subagent_type: "wicked-testing:<name>", tier: 1|2 }] }`
 (The `agents` / `subagent_type` payload field names are retained for wire
 compatibility; each entry describes a forked worker skill and the value is its
