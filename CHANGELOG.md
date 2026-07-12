@@ -6,6 +6,11 @@ All notable changes to `wicked-testing`. Format loosely follows
 
 ## [Unreleased]
 
+## [0.8.0] — 2026-07-12
+
+### Changed
+- **Converted the plugin to skills-only.** The 40 specialist agents and 7 commands are now **48 skills** — 40 `context: fork` specialists routed by 8 Tier-1 workflow skills. The `agents/` and `commands/` directories are removed, and `install.mjs` purges any left behind from prior installs. Dispatch names are unchanged (`wicked-testing:<name>`), so downstream consumers are unaffected.
+
 ### Added
 - **`wicked-qe gate` CLI** (`bin/wicked-qe.mjs`, `lib/gate.mjs`) — standalone command for recording QE gate verdicts from agent scripts and CI pipelines. Validates inputs, writes to the domain store, emits `wicked.qe.gate.passed`, `wicked.qe.gate.failed`, or `wicked.qe.gate.conditional` bus events with DEC-00010 idempotency keys (`qe:gate.result:{projectId}:{sha256(runId)[0:16]}:0`). On PASS also emits `wicked.qe.deploy.completed`. Exit codes: 0 PASS / 1 FAIL / 2 CONDITIONAL / 3 SYSTEM_ERROR.
   ```bash
