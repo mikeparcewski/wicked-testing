@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:chaos-test-engineer
+name: wicked-testing-chaos-test-engineer
 context: fork
 tier: 2
 model: sonnet

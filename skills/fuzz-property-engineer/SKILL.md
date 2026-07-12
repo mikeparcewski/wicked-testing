@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:fuzz-property-engineer
+name: wicked-testing-fuzz-property-engineer
 context: fork
 tier: 2
 description: |

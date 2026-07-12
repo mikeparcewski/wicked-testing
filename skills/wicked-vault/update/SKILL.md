@@ -1,5 +1,5 @@
 ---
-name: wicked-vault:update
+name: wicked-vault-update
 description: |
   Check for and install wicked-vault updates. Compares the installed version
   against the npm registry, updates the published CLI, and refreshes the skills

@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:review
+name: wicked-testing-review
 description: |
   Tier-1 orchestrator for judgment. Renders independent verdicts on captured
   evidence, checks spec-to-code alignment, audits test quality, and reviews

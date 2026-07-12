@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:mutation-test-engineer
+name: wicked-testing-mutation-test-engineer
 context: fork
 tier: 2
 description: |

@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:code-analyzer
+name: wicked-testing-code-analyzer
 description: |
   Static code analysis for testability, quality, and maintainability. Reviews
   code structure, identifies test-coverage gaps, and flags risky areas.

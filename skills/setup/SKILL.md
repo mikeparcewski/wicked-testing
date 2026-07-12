@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:setup
+name: wicked-testing-setup
 description: |
   Tier-1 user-invokable entry point for per-project initialization. Initializes
   wicked-testing for the current project — detects available test CLI tools,

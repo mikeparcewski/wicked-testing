@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:flaky-test-hunter
+name: wicked-testing-flaky-test-hunter
 context: fork
 tier: 2
 model: sonnet

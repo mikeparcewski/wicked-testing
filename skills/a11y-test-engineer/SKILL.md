@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:a11y-test-engineer
+name: wicked-testing-a11y-test-engineer
 context: fork
 tier: 2
 model: sonnet

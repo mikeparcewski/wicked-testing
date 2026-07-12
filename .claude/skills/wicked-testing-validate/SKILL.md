@@ -28,8 +28,10 @@ wicked-testing repo. Not shipped to npm. Not installed into consumers.
    the former agents) also declares `context: fork` (isolated dispatch —
    preserves writer/executor/reviewer isolation), `model`, and
    `allowed-tools`; a skill with `context: fork` but no tier is warned
-4. **Namespace** — frontmatter `name` equals `wicked-testing:<dir>` exactly
-   (the plugin-namespaced form Claude Code's skill resolver requires)
+4. **Namespace** — frontmatter `name` equals the dash-joined
+   `wicked-testing-<dir>` exactly (matches the installed skill directory on
+   every CLI; the colon `plugin:skill` invocation lives in plugin.json's
+   `command`, not here)
 5. **plugin.json integrity** — every `skills[].path` resolves to a real
    file; legacy `agents`/`commands` arrays in the manifest are errors
 6. **Orphan skills** — skill dirs present on disk but not registered in

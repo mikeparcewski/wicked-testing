@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:integration-test-engineer
+name: wicked-testing-integration-test-engineer
 context: fork
 tier: 2
 description: |

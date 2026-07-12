@@ -1,5 +1,5 @@
 ---
-name: wicked-vault:init
+name: wicked-vault-init
 description: Initialize a wicked-vault in a repository so claims can be backed by re-derivable evidence. OPTIONAL ceremony — record/declare-contract/supersede create the vault automatically; use init only to scaffold explicitly. A read command reporting code VAULT_NOT_FOUND means no evidence exists yet, which record (not init) fixes.
 ---
 

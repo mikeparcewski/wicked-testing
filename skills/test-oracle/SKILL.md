@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:test-oracle
+name: wicked-testing-test-oracle
 description: |
   Answers plain-language questions about the wicked-testing data domain.
   Queries SQLite via the fixed parameterized oracle query library.

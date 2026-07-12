@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:contract-testing-engineer
+name: wicked-testing-contract-testing-engineer
 description: |
   API contract testing specialist. Designs and reviews consumer-driven contracts,
   Pact-style tests, OpenAPI contract verification, schema versioning, and

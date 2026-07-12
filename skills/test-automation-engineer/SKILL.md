@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:test-automation-engineer
+name: wicked-testing-test-automation-engineer
 description: |
   Generate test code and configure test automation infrastructure. Creates unit,
   integration, and end-to-end tests. Configures test runners, CI pipelines,

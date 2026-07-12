@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:observability-test-engineer
+name: wicked-testing-observability-test-engineer
 context: fork
 tier: 2
 description: |

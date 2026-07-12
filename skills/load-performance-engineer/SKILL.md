@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:load-performance-engineer
+name: wicked-testing-load-performance-engineer
 context: fork
 tier: 2
 description: |

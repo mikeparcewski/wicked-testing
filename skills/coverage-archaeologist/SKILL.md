@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:coverage-archaeologist
+name: wicked-testing-coverage-archaeologist
 context: fork
 tier: 2
 model: sonnet

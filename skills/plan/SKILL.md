@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:plan
+name: wicked-testing-plan
 description: |
   Tier-1 orchestrator for test planning. Covers test strategy, risk, testability
   review, and requirements quality. Dispatches specialist agents based on what

@@ -1,5 +1,5 @@
 ---
-name: wicked-vault:analyze-evidence
+name: wicked-vault-analyze-evidence
 description: Have an INDEPENDENT party analyze whether recorded evidence actually meets its frozen acceptance criteria, and record the judgment as a hash-bound, append-only attestation (mutation-detecting; durable tamper-evidence is the committed git history). Use when judging free-form criteria a deterministic check can't express ("does this adequately address the failure modes"), or producing a third-party sign-off that defeats self-graded "done". Runs a model (non-reproducible, costs a call). For the cheap deterministic integrity check, use wicked-vault:verify-evidence instead.
 ---
 

@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:testability-reviewer
+name: wicked-testing-testability-reviewer
 description: |
   Review design artifacts and code structure for testability. Flags designs
   that will be hard to test. Checks component isolation, dependency injection

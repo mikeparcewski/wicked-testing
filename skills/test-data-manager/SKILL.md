@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:test-data-manager
+name: wicked-testing-test-data-manager
 context: fork
 tier: 2
 model: sonnet

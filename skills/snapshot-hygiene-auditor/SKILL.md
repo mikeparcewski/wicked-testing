@@ -1,5 +1,5 @@
 ---
-name: wicked-testing:snapshot-hygiene-auditor
+name: wicked-testing-snapshot-hygiene-auditor
 context: fork
 tier: 2
 model: sonnet

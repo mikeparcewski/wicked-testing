@@ -1,5 +1,5 @@
 ---
-name: wicked-vault:cross-check-evidence
+name: wicked-vault-cross-check-evidence
 description: Declare a consumer-authored contract and get a mechanical PASS/REJECT verdict for a scope+phase by re-deriving every required artifact. Use when answering "is this claim actually backed by evidence that still holds?" — gate logic, release readiness, or merge checks. Fail-closed when no contract is declared.
 ---
 
