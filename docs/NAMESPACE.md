@@ -142,9 +142,10 @@ wicked-garden keeps aliases for one minor version. After that, references to
 
 ## Rules
 
-1. New skills MUST be namespaced to wicked-testing: frontmatter `name:` =
-   `wicked-testing-<dir>` (dash), dispatch id / plugin.json `command` =
-   `wicked-testing:<dir>` (colon).
+1. New skills MUST be namespaced: frontmatter `name:` = `<namespace>-<dir>`
+   (dash), dispatch id / plugin.json `command` = `<namespace>:<dir>` (colon) —
+   where `<namespace>` is `wicked-testing` or the parent namespace directory for
+   a nested skill (e.g. `wicked-vault`, giving `wicked-vault-<dir>`).
 2. Tier-2 specialist names are internal; do not document them as part of a
    contract elsewhere.
 3. `qe:` is dead. Do not resurrect it.

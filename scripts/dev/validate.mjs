@@ -170,12 +170,18 @@ function checkSkills() {
       // validation as top-level ones — otherwise a colon or unprefixed name in
       // a namespaced skill would ship unchecked (the very gap this closes).
       const subs = readdirSync(join(skillsRoot, d)).filter(sub => {
-        try { return statSync(join(skillsRoot, d, sub)).isDirectory() && existsSync(join(skillsRoot, d, sub, "SKILL.md")); }
+        try { return statSync(join(skillsRoot, d, sub)).isDirectory() && !sub.startsWith("."); }
         catch { return false; }
       });
       if (subs.length === 0) { err("skills", rel, "SKILL.md missing"); continue; }
       for (const sub of subs) {
         const nestedFile = join(skillsRoot, d, sub, "SKILL.md");
+        // Flag a namespaced subdir that is missing its SKILL.md rather than
+        // silently skipping it (the filter used to hide these entirely).
+        if (!existsSync(nestedFile)) {
+          err("skills", relative(REPO, nestedFile), "SKILL.md missing");
+          continue;
+        }
         checkOneSkill(nestedFile, relative(REPO, nestedFile), `${d}-${sub}`);
       }
       continue;
