@@ -101,7 +101,17 @@ b { color: var(--ink); font-weight: 700; }
   padding: clamp(40px, 6.5vh, 96px) 0;
   position: relative;
 }
-.wrap { max-width: 1240px; margin: 0 auto; padding: 0 28px; }
+/* min-width:0 stops a .wrap that is a column-flex child (every top-level
+   section is display:flex/column) from ballooning to its content's min-content
+   width instead of the viewport — without it, a grid track floor like the
+   fleet's minmax(160px,…) forces the whole section wider than a phone screen. */
+/* width:100% + min-width:0 keep a .wrap that is a column-flex child (every
+   top-level section is display:flex/column) pinned to the viewport. Without an
+   explicit width, its `margin:0 auto` cross-axis auto-margins DISABLE flex
+   stretch, so it sizes to content max-content — a grid track floor like the
+   fleet's minmax(160px,…) then balloons the whole section far past a phone
+   screen. Desktop is unchanged: width:100% is capped by max-width and centred. */
+.wrap { max-width: 1240px; width: 100%; margin: 0 auto; padding: 0 28px; min-width: 0; }
 
 /* full-width section header — for titles/intros that sit ON TOP of content */
 .head-top {
@@ -535,6 +545,32 @@ b { color: var(--ink); font-weight: 700; }
 }
 @media (max-width: 560px) {
   .grades { grid-template-columns: 1fr; }
+}
+
+/* ── phone viewport pass (≤480px) ─────────────────────────────────────────
+   Scale display headings and the roster to the viewport so nothing clips.
+   Desktop keeps its tuned clamps (these overrides only apply on phones); each
+   min font-size is lowered just enough that the longest single word fits a
+   ~330px content column, and long words may break as a last resort. */
+@media (max-width: 480px) {
+  /* Display headings use font-stretch:125% (extra-wide glyphs); on a phone that
+     inflation clips long single words ("homework.", "orchestrators"). Ease the
+     stretch back toward normal and lower each floor so the widest word fits a
+     ~330px content column. .hero has overflow:hidden, so its title MUST fit. */
+  h1, h2, h3 { overflow-wrap: break-word; font-stretch: 105%; }
+  .hero h1 { font-size: clamp(1.65rem, 7vw, 2.7rem); }
+  .head-top h2   { font-size: clamp(1.45rem, 6.2vw, 2.4rem); }
+  .gap-copy h2   { font-size: clamp(1.45rem, 6vw, 2.2rem); }
+  .ledger-grid h2{ font-size: clamp(1.45rem, 6vw, 2.1rem); }
+  .closer-intro h2 { font-size: clamp(1.55rem, 6.4vw, 2.4rem); }
+  /* keep long inline code tokens (run_id, scenario_id …) inside the column */
+  .ledger-grid p, .closer-intro p { overflow-wrap: anywhere; }
+  /* roster: keep two legible columns down to ~340px, then collapse to one */
+  .fleet-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 7px; }
+  .agent { font-size: .64rem; }
+}
+@media (max-width: 380px) {
+  .fleet-grid { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
