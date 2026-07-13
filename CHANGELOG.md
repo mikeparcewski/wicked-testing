@@ -6,6 +6,14 @@ All notable changes to `wicked-testing`. Format loosely follows
 
 ## [Unreleased]
 
+### Changed
+- **Evidence bus events reconciled onto the 4-segment `wicked.<domain>.<noun>.<verb>` catalog.** The divergent 3-segment emits are renamed:
+  - `wicked.evidence.captured` → **`wicked.test.evidence.captured`** (both emit sites: the verdict path in `lib/bus-emit.mjs` and the manifest path in `skills/acceptance-testing/SKILL.md`). The two sites now share a **union payload** — common `{ project_id, run_id, evidence_path, wicked_testing_version }` plus optional `{ verdict_id, vault_payload_sha, artifact_count }`, each `null` when the emitting site lacks it — so one subscriber schema serves both.
+  - `wicked-vault record`'s emit is split out to its own verb **`wicked.test.evidence.recorded`** (was `wicked.evidence.captured`), because its payload is a single recorded envelope, not a run's aggregated artifacts.
+  - Sibling drift fixed: `wicked.scenario.authored` → **`wicked.test.scenario.authored`** and `wicked.testrun.started` → **`wicked.test.run.started`**.
+
+  **Breaking for any subscriber filtering on the old 3-segment names.** Known consumers are unaffected — per `docs/INTEGRATION.md` § 4, the only documented read surface is `wicked.test.verdict.created` (unchanged). Update filters to the new names.
+
 ## [0.9.0] — 2026-07-12
 
 ### Changed

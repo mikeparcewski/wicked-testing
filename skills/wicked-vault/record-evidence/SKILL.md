@@ -156,8 +156,10 @@ verdict, use `verify` or `cross-check`.
 
 ## wicked-bus event
 
-If wicked-bus is installed, `record` publishes `wicked.evidence.captured`
-(domain `wicked-testing`, subdomain `vault.record`) fire-and-forget. `supersede`
+If wicked-bus is installed, `record` publishes `wicked.test.evidence.recorded`
+(domain `wicked-testing`, subdomain `vault.record`) fire-and-forget — the payload
+is a single recorded envelope, distinct from the run-level
+`wicked.test.evidence.captured`. `supersede`
 publishes `wicked.evidence.superseded`. Emission is a silent no-op when the bus
 is absent or `WICKED_VAULT_NO_BUS=1` — it never affects the output or exit code.
 

@@ -8,7 +8,7 @@
  *   1. domainEventToBusEvent returns a single wicked.test.verdict.created event when
  *      vault_payload_sha is absent (regression guard — existing callers unchanged)
  *   2. domainEventToBusEvent returns an array [wicked.test.verdict.created,
- *      wicked.evidence.captured] when vault_payload_sha is present (dual-event path)
+ *      wicked.test.evidence.captured] when vault_payload_sha is present (dual-event path)
  *   3. The dual-event path flows end-to-end: store.create("verdicts", { vault_payload_sha })
  *      stores the column — verified by store.get() round-trip
  *   4. vault record() returns payload_sha256 in its result object
@@ -96,21 +96,23 @@ test("dual-event array[0] is wicked.test.verdict.created with correct payload", 
   assert.equal(verdictEvent.payload.verdict, "PASS");
   assert.equal(verdictEvent.payload.reviewer, "acceptance-test-reviewer");
   assert.equal(verdictEvent.payload.evidence_path, "/some/path");
-  // vault_payload_sha is NOT in the verdict event payload — it's in evidence.captured
+  // vault_payload_sha is NOT in the verdict event payload — it's in wicked.test.evidence.captured
   assert.ok(!("vault_payload_sha" in verdictEvent.payload), "vault_payload_sha should not appear in verdict event");
 });
 
-test("dual-event array[1] is wicked.evidence.captured with vault_payload_sha", () => {
+test("dual-event array[1] is wicked.test.evidence.captured with union payload", () => {
   const rec = fakeVerdict({ vault_payload_sha: "abc123sha256", evidence_path: "/some/path" });
   const [, capturedEvent] = domainEventToBusEvent("create", "verdicts", rec, FAKE_VERSION);
 
-  assert.equal(capturedEvent.type, "wicked.evidence.captured");
+  assert.equal(capturedEvent.type, "wicked.test.evidence.captured");
   assert.equal(capturedEvent.payload.verdict_id, "v-test-id");
   assert.equal(capturedEvent.payload.run_id, "run-1");
   assert.equal(capturedEvent.payload.vault_payload_sha, "abc123sha256");
   assert.equal(capturedEvent.payload.evidence_path, "/some/path");
   assert.equal(capturedEvent.payload.project_id, "proj-1");
   assert.equal(capturedEvent.payload.wicked_testing_version, FAKE_VERSION);
+  // Union payload: the verdict-path emit lacks an artifact count, so it is null.
+  assert.equal(capturedEvent.payload.artifact_count, null, "artifact_count must be null on the verdict path");
 });
 
 test("dual-event evidence_path null propagates to both events", () => {
