@@ -8,7 +8,9 @@
  * (loom peer manifest, garden resolver) continue to work without changes.
  *
  * Bus events emitted by this CLI (via src/vault/bus.mjs fire-and-forget):
- *   wicked.evidence.captured    — on successful `record`
+ *   wicked.test.evidence.recorded — on successful `record` (single recorded
+ *                                   envelope — distinct from the run-level
+ *                                   wicked.test.evidence.captured)
  *   wicked.evidence.attested    — on successful `attest`
  *   wicked.evidence.tampered    — on `verify` when hash_ok=false
  *   wicked.contract.published   — on successful `declare-contract`
@@ -156,8 +158,11 @@ try {
         actor: typeof args.actor === 'string' ? args.actor : undefined,
         cwd,
       });
-      // Emit wicked.evidence.captured (catalog event — replaces wicked.evidence.recorded from standalone vault)
-      publish('wicked.evidence.captured', 'vault.record', {
+      // Emit wicked.test.evidence.recorded — the payload is a single recorded
+      // envelope (one artifact + its criteria), NOT a run's aggregated artifacts.
+      // It gets its own 4-seg verb, distinct from the run-level
+      // wicked.test.evidence.captured emitted by the acceptance pipeline.
+      publish('wicked.test.evidence.recorded', 'vault.record', {
         scope: args.scope, phase: args.phase, claim_id: args.claim, kind: args.kind,
         source: args.source, id: res.id, envelope_hash: res.envelope_hash,
         payload_sha256: res.payload_sha256,

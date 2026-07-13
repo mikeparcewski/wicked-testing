@@ -93,11 +93,11 @@ npx wicked-bus init
 
 wicked-testing will detect it automatically and start emitting events:
 
-- `wicked.testrun.started`
+- `wicked.test.run.started`
 - `wicked.test.run.completed`
 - `wicked.test.verdict.created`
-- `wicked.evidence.captured`
-- `wicked.scenario.authored`
+- `wicked.test.evidence.captured`
+- `wicked.test.scenario.authored`
 - `wicked.test.strategy.generated`
 
 Subscribe with `npx wicked-bus subscribe`.

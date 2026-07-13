@@ -107,6 +107,7 @@ the emit is a no-op; wicked-testing's own SQLite ledger is always written.
 | `wicked.test.run.completed`       | `testrun`             | A test run completed (any terminal status)            |
 | `wicked.test.verdict.created`       | `verdict`             | A reviewer emitted a verdict (PASS / FAIL / N-A / SKIP)|
 | `wicked.test.evidence.captured` | `evidence`            | Evidence artifacts written to disk for a run          |
+| `wicked.test.evidence.recorded` | `vault.record`        | A single evidence envelope recorded via `wicked-vault record` |
 | `wicked.test.contract.published`| `contract`            | plugin.json manifest synced; full skill/tier roster   |
 
 ### QE Gate Events
@@ -141,7 +142,17 @@ All events include:
 **`wicked.test.run.started`** — `{ run_id, scenario_id, project_id, started_at }`
 **`wicked.test.run.completed`** — `{ run_id, scenario_id, status, started_at, finished_at, evidence_path }`
 **`wicked.test.verdict.created`** — `{ verdict_id, run_id, verdict: "PASS|FAIL|N-A|SKIP", reviewer, evidence_path }`
-**`wicked.test.evidence.captured`** — `{ verdict_id, run_id, vault_payload_sha, evidence_path }`
+**`wicked.test.evidence.captured`** — union payload so one subscriber schema serves
+both emit sites (the verdict path in `lib/bus-emit.mjs` and the manifest path in
+`skills/acceptance-testing/SKILL.md`): common `{ project_id, run_id, evidence_path,
+wicked_testing_version }` plus optional `{ verdict_id, vault_payload_sha,
+artifact_count }` — each optional field is `null` when the emitting site lacks it
+(the verdict path has `verdict_id` + `vault_payload_sha` but `artifact_count: null`;
+the manifest path has `artifact_count` but `verdict_id: null` + `vault_payload_sha: null`).
+**`wicked.test.evidence.recorded`** — emitted by `wicked-vault record` (subdomain
+`vault.record`) for a single recorded envelope: `{ scope, phase, claim_id, kind,
+source, id, envelope_hash, payload_sha256, criteria_authored_by, status_at_record }`.
+Distinct from `wicked.test.evidence.captured`, which describes a whole run's artifacts.
 **`wicked.test.contract.published`** — `{ version: "<semver>", agents: [{ subagent_type: "wicked-testing:<name>", tier: 1|2 }] }`
 (The `agents` / `subagent_type` payload field names are retained for wire
 compatibility; each entry describes a forked worker skill and the value is its

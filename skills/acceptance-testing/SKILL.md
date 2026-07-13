@@ -394,10 +394,14 @@ const { manifest } = buildManifest({
 // 4. Emit the skill-level evidence.captured event (DomainStore doesn't fire
 //    this one because evidence capture is a skill-orchestration concern, not
 //    a CRUD op).
-emitBusEvent('wicked.evidence.captured', {
+// Union payload shared with the verdict-path emit in lib/bus-emit.mjs — this
+// site has no verdict_id / vault_payload_sha, so they are null here.
+emitBusEvent('wicked.test.evidence.captured', {
   project_id: runAfter.project_id,
   run_id: run.id,
   evidence_path: EVIDENCE_DIR,
+  verdict_id: null,
+  vault_payload_sha: null,
   artifact_count: manifest.artifacts.length,
   wicked_testing_version: pkgVersion,
 });
