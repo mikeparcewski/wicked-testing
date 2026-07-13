@@ -111,7 +111,11 @@ b { color: var(--ink); font-weight: 700; }
    stretch, so it sizes to content max-content — a grid track floor like the
    fleet's minmax(160px,…) then balloons the whole section far past a phone
    screen. Desktop is unchanged: width:100% is capped by max-width and centred. */
-.wrap { max-width: 1240px; width: 100%; margin: 0 auto; padding: 0 28px; min-width: 0; }
+/* box-sizing:border-box makes width:100% include the 28px padding, so the mobile
+   overflow fix is self-contained and does not rely on the shared chrome's global
+   reset. border-box is already the computed value via that reset, so desktop
+   rendering is byte-identical. */
+.wrap { max-width: 1240px; width: 100%; box-sizing: border-box; margin: 0 auto; padding: 0 28px; min-width: 0; }
 
 /* full-width section header — for titles/intros that sit ON TOP of content */
 .head-top {
@@ -563,8 +567,9 @@ b { color: var(--ink); font-weight: 700; }
   .gap-copy h2   { font-size: clamp(1.45rem, 6vw, 2.2rem); }
   .ledger-grid h2{ font-size: clamp(1.45rem, 6vw, 2.1rem); }
   .closer-intro h2 { font-size: clamp(1.55rem, 6.4vw, 2.4rem); }
-  /* keep long inline code tokens (run_id, scenario_id …) inside the column */
-  .ledger-grid p, .closer-intro p { overflow-wrap: anywhere; }
+  /* keep long inline code tokens (run_id, scenario_id, CONTEXT_CONTAMINATION …)
+     inside the column — .wall-foot carries such tokens too */
+  .ledger-grid p, .closer-intro p, .wall-foot { overflow-wrap: anywhere; }
   /* roster: keep two legible columns down to ~340px, then collapse to one */
   .fleet-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 7px; }
   .agent { font-size: .64rem; }
