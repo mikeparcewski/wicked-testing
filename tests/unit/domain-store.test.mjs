@@ -22,6 +22,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import {
+  DomainStore,
   createDomainStore,
   __resetDomainStoreCacheForTests,
 } from "../../lib/domain-store.mjs";
@@ -285,6 +286,73 @@ test("an out-of-enum verdict throws and leaves NO split-brain (neither JSON nor 
   // clean pre-write rejection, not a swallowed CHECK violation).
   assert.equal(store.get("verdicts", bogusId), null, "no index row may exist for a rejected verdict");
   assert.equal(store.stats().drift_count, 0, "a rejected verdict must not count as dual-write drift");
+});
+
+// --- L2-6: SQLite degradation path (DoD criterion) ---
+// Verifies that DomainStore degrades cleanly to JSON-only mode when SQLite
+// is unavailable — mode, create/list/stats all work; no crash or silent error.
+// Simulates the `Database` module-load failure (better-sqlite3 missing/ABI
+// mismatch) by subclassing DomainStore with a no-op _initDb(): the effect is
+// identical — _sqliteAvailable stays false and _db stays null.
+
+test("degrades to JSON-only mode when _initDb is a no-op (better-sqlite3 load failure sim)", () => {
+  class JsonOnlyStore extends DomainStore {
+    _initDb() { /* no-op: simulates better-sqlite3 failing to load */ }
+  }
+
+  let jsonOnlyRoot;
+  let jsonOnlyStore;
+  try {
+    jsonOnlyRoot = mkdtempSync(join(tmpdir(), "wt-ds-json-"));
+    jsonOnlyStore = new JsonOnlyStore(jsonOnlyRoot);
+
+    // Mode must be json-only
+    assert.equal(jsonOnlyStore.mode, "json-only",
+      "store must report json-only mode when SQLite is unavailable");
+
+    // create() must work (writes canonical JSON; no SQLite row)
+    const project = jsonOnlyStore.create("projects", {
+      name: "json-only-test-proj",
+      description: "degradation test",
+    });
+    assert.ok(project.id, "create() must return a record with an id in json-only mode");
+
+    // JSON file must exist on disk
+    const jsonPath = join(jsonOnlyRoot, "projects", `${project.id}.json`);
+    assert.ok(existsSync(jsonPath), "canonical JSON file must be written in json-only mode");
+
+    // get() must find the record (JSON fallback)
+    const fetched = jsonOnlyStore.get("projects", project.id);
+    assert.ok(fetched, "get() must find the record via JSON in json-only mode");
+    assert.equal(fetched.name, "json-only-test-proj");
+
+    // list() must work (scans JSON files)
+    const listed = jsonOnlyStore.list("projects");
+    assert.equal(listed.length, 1, "list() must find the record in json-only mode");
+
+    // update() must merge diff and persist to JSON
+    const updated = jsonOnlyStore.update("projects", project.id, { description: "updated" });
+    assert.ok(updated, "update() must return the updated record in json-only mode");
+    assert.equal(updated.description, "updated");
+    const refetched = jsonOnlyStore.get("projects", project.id);
+    assert.equal(refetched.description, "updated", "get() must return updated value after update() in json-only mode");
+
+    // delete() (soft) must hide the record from get() and list()
+    const deleted = jsonOnlyStore.delete("projects", project.id);
+    assert.equal(deleted, true, "delete() must return true in json-only mode");
+    assert.equal(jsonOnlyStore.get("projects", project.id), null, "get() must return null for soft-deleted record in json-only mode");
+    const afterDelete = jsonOnlyStore.list("projects");
+    assert.equal(afterDelete.length, 0, "list() must exclude soft-deleted records in json-only mode");
+
+    // stats() must return mode: json-only and a counts object
+    const s = jsonOnlyStore.stats();
+    assert.equal(s.mode, "json-only", "stats() must report json-only mode");
+    assert.equal(typeof s.counts, "object", "stats() must include a counts object");
+
+  } finally {
+    if (jsonOnlyStore) { try { jsonOnlyStore.close(); } catch { /* ignore */ } }
+    if (jsonOnlyRoot) { rmSync(jsonOnlyRoot, { recursive: true, force: true }); }
+  }
 });
 
 test("every valid verdict value (incl. CONDITIONAL) persists and reads back from BOTH stores", () => {
