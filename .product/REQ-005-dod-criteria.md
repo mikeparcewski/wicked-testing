@@ -2,7 +2,7 @@
 name: REQ-005-dod-criteria
 title: wicked-testing — Definition of Done Criteria
 status: partially-verified
-version: 0.8
+version: 0.9
 date: 2026-07-21
 author: mike.parcewski@gmail.com
 review-required: true
@@ -52,7 +52,7 @@ behavior matches specification.
 | L2-7 | Oracle returns results for all 13 named queries | `oracle-queries.test.mjs` | ✓ 2026-07-21 — `oracle-queries.test.mjs` test "ships exactly the 13 documented named queries — no more, no fewer" passes. Additional tests verify each query's SQL is a static, read-only SELECT (no mutation verbs, no template interpolation), `buildOracleQuery` returns `{ sql, params }` correctly with positional binding, and 6 of the 13 queries run against a live in-memory SQLite db returning expected row shapes. |
 | L2-8 | Install is idempotent — re-running `npx wicked-testing install` on same target exits 0 | Manual or CI test | ✓ 2026-07-21 — `node install.mjs install` run twice: first run installed (claude was already at 0.9.0, skipping; codex/cursor/pi installed fresh); second run all targets "already at 0.9.0, skipping"; exit 0 both times. Code path: `if (existing === VERSION && !force && mode !== "update") { console.log('already at...'); continue; }` — skip-with-continue means no write, no fail, exit 0. |
 | L2-9 | `wicked-testing:insight` answers a plain-English query via parameterized SQL | Integration smoke test | ✓ (partial) 2026-07-21 — `oracle-queries.test.mjs` tests `routeQuestion()`: "routeQuestion sends baseline / equivalence questions to `baseline_matches_for_scenario`", routing tests for all query types pass, and `buildOracleQuery` binds params positionally. The unit-level oracle mechanism is verified. Full end-to-end: the `insight` skill invoking `routeQuestion` → `buildOracleQuery` → `db.prepare().all()` and returning a human-readable result is not covered by unit tests — integration smoke test still required. |
-| L2-10 | Dual-write order: JSON written before SQLite row on `create()` | `domain-store.test.mjs` | ✓ (partial) 2026-07-21 — `lib/domain-store.mjs` source comment (line 41) states "create() writes canonical JSON FIRST". The out-of-enum rejection test in `domain-store.test.mjs` confirms the pre-write guard fires before any write (neither JSON nor SQLite row exists after a rejected `create()`). Dual-write consistency is proven (all columns agree between JSON and SQLite). A test that explicitly intercepts the filesystem write and asserts JSON lands before the SQLite INSERT does not exist — ordering is inferred from source code and the atomicity tests. |
+| L2-10 | Dual-write order: JSON written before SQLite row on `create()` | `domain-store.test.mjs` | ✓ 2026-07-21 — `tests/unit/domain-store.test.mjs` test "create() writes canonical JSON BEFORE the SQLite INSERT fires" (PR #148) subclasses `DomainStore` and overrides `_dbInsert()` to intercept the SQLite INSERT; asserts `existsSync(jsonPath) === true` at the moment the INSERT fires. This directly proves the "JSON FIRST" ordering — the JSON file is on disk before `_dbInsert()` is ever called. `npm run test:unit` exits 0 (87 tests, 0 fail). |
 
 ---
 
@@ -91,3 +91,4 @@ gate.
 - v0.6 evidence quality update (2026-07-21): Addressed Copilot review findings on PR #146. Added `manifest.json` at correct path (docs/EVIDENCE.md public contract) — L2-3 updated to partial pending AJV validation. Tightened A1 evidence wording (oracle layer invoked directly, not through skill entry point). Fixed A4 evidence text (schema_version in raw_stats_json, not plain-text output). Updated L2-1 to reference manifest.json and note A1 routing caveat.
 - v0.7 L2-6 checked off (2026-07-21): L2-6 SQLite degradation path verified — `DomainStore` subclass with no-op `_initDb()` simulates `better-sqlite3` load failure; JSON-only mode confirmed for create/get/list/stats/update/delete. PR #147. 86 unit tests, 0 fail.
 - v0.8 L2-8 checked off (2026-07-21): L2-8 install idempotency verified — `node install.mjs install` run twice, second run exits 0 with all targets "already at 0.9.0, skipping".
+- v0.9 L2-10 checked off (2026-07-21): L2-10 JSON-before-SQLite ordering explicitly verified — `domain-store.test.mjs` test "create() writes canonical JSON BEFORE the SQLite INSERT fires" (PR #148) intercepts `_dbInsert()` and asserts `existsSync(jsonPath) === true`. `npm run test:unit` exits 0 (87 tests, 0 fail). Upgraded from partial to fully verified.
