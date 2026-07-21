@@ -19,7 +19,7 @@ assertions:
   - id: A3
     description: Store mode is reported (sqlite+json or json-only)
   - id: A4
-    description: Schema version is 1
+    description: Schema version is 3 (current SCHEMA_VERSION in domain-store.mjs)
 ---
 
 # Test Runner Self-Test
@@ -58,7 +58,7 @@ node -e "import('./lib/domain-store.mjs').then(m => console.log('DomainStore loa
 node -e "import('./lib/oracle-queries.mjs').then(m => { console.log('Queries:', Object.keys(m.QUERIES).length); if (Object.keys(m.QUERIES).length < 12) { console.error('FAIL: expected 12+ queries'); process.exit(1); } }).catch(e => { console.error('FAIL:', e.message); process.exit(1); })"
 ```
 
-**Expect**: Exit code 0, "Queries: 12" (or more)
+**Expect**: Exit code 0, "Queries: 13" (or more)
 
 ### Step 4: Create a project in the domain store (node)
 
