@@ -1,0 +1,62 @@
+{
+  "manifest_version": "1.0.0",
+  "run_id": "5acb71e1-45ef-4c01-8df4-dbd02e39ce6a",
+  "project_id": "21b6aedb-06c7-4fb2-92fa-8fa487c0a2b5",
+  "scenario_id": "3638448a-39ce-4a5f-b572-2b2e47c0f94d",
+  "scenario_name": "test-runner-self-test",
+  "scenario_path": ".wicked-testing/scenarios/test-runner.md",
+  "started_at": "2026-07-21T08:00:00.000Z",
+  "finished_at": "2026-07-21T09:00:00.000Z",
+  "duration_ms": 3600000,
+  "status": "passed",
+  "verdict": {
+    "value": "PASS",
+    "reviewer": "acceptance-test-reviewer",
+    "recorded_at": "2026-07-21T09:00:00.000Z"
+  },
+  "environment": {
+    "os": "darwin",
+    "node": "v26.0.0",
+    "wicked_testing_version": "0.9.0"
+  },
+  "artifacts": [
+    {
+      "name": "executor-step-outputs",
+      "kind": "log",
+      "path": "step-outputs.json",
+      "bytes": 5582,
+      "sha256": "95cc23f17c09e100d86a0587d56a9a8a6ddd3b2a20709283927b22412b4f377c",
+      "captured_at": "2026-07-21T08:30:00.000Z"
+    },
+    {
+      "name": "reviewer-verdict",
+      "kind": "log",
+      "path": "verdict.json",
+      "bytes": 4958,
+      "sha256": "a29bb06166b3a9bc4ffd1519e1b6f6dc2959ea11b1f949771fbd111bd752ef50",
+      "captured_at": "2026-07-21T09:00:00.000Z"
+    }
+  ],
+  "assertions": [
+    {
+      "id": "A1",
+      "description": "Oracle layer returns valid JSON with ok=true for stats queries",
+      "passed": true
+    },
+    {
+      "id": "A2",
+      "description": "Stats response contains row counts for all 7 tables",
+      "passed": true
+    },
+    {
+      "id": "A3",
+      "description": "Store mode is reported (sqlite+json or json-only)",
+      "passed": true
+    },
+    {
+      "id": "A4",
+      "description": "Schema version is 3",
+      "passed": true
+    }
+  ]
+}
