@@ -25,8 +25,8 @@
     },
     "A4": {
       "verdict": "PASS",
-      "evidence": "step7_verify_tables string output contains 'schema_version: 3' with exit_code:0. raw_stats_json.schema_version = 3 corroborates it as a structured field. schema_migrations:3 in the oracle row_counts query further corroborates that exactly 3 migrations have been applied, consistent with SCHEMA_VERSION = 3.",
-      "notes": "Clean direct evidence from two independent captures in the same step, with a third corroborating data point from the oracle query."
+      "evidence": "raw_stats_json.schema_version = 3 in step7_verify_tables (exit_code:0). step7 plain-text output only shows 'Store mode: sqlite+json'; the schema_version field is captured in raw_stats_json, not the string output. schema_migrations:3 in the oracle row_counts query further corroborates that exactly 3 migrations have been applied, consistent with SCHEMA_VERSION = 3.",
+      "notes": "Evidence is in raw_stats_json.schema_version (structured) and corroborated by schema_migrations:3 in the oracle query. The plain-text step7 output does not include 'schema_version: 3' — it shows only the mode string."
     }
   },
   "overall_verdict": "PASS",
