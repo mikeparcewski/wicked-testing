@@ -186,7 +186,7 @@ A snapshot-based or `beforeEach` intercept test could assert that the JSON file 
 `runs_by_status` keywords: `["runs", "status", "running", "passed", "failed", "error"]` → score 2 for "show me running runs".
 `recent_runs` keywords: `["recent", "last", "runs", "latest", "show"]` → score 2 for "show me running runs".
 
-When two queries tie at the same keyword score, the winner is determined by iteration order of `Object.entries(scores)` — effectively undefined (depends on insertion order of `QUERIES`). A tie on "show running runs" could route to `recent_runs` (which takes a `limit` parameter, not a `status` parameter), causing `null` to bind into `LIMIT ?`.
+When two queries tie at the same keyword score, the winner is determined by iteration order of `Object.entries(scores)` — which in Node preserves insertion order of `QUERIES`, making tie-breaking implicitly coupled to the definition order in `oracle-queries.mjs`. A tie on "show running runs" could route to `recent_runs` (which takes a `limit` parameter, not a `status` parameter), causing `null` to bind into `LIMIT ?`.
 
 This is a routing quality issue, not a SQL injection vector. However, a misrouted query would silently return wrong results rather than failing loudly.
 
