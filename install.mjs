@@ -890,7 +890,7 @@ async function cmdDoctor() {
       const row = db.prepare("SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1").get();
       db.close();
       const dbVer = row?.version ?? 0;
-      const codeVer = 1;
+      const codeVer = 3;
       checks.push(dbVer <= codeVer
         ? { name: "schema",        status: "ok",   message: `DB v${dbVer}, code v${codeVer}` }
         : { name: "schema",        status: "fail", message: `DB v${dbVer} is newer than code v${codeVer}`, fix: "upgrade wicked-testing: `npm install -g wicked-testing@latest`" });
