@@ -3,7 +3,7 @@ name: adversarial-review-v0.9.0
 title: "wicked-testing v0.9.0 — Adversarial Review"
 status: PASS
 date: 2026-07-21
-reviewer: claude-adversarial (independent review session)
+reviewer: claude-council-adversarial (independent review session)
 scope: v0.9.0 release candidate — 48 skills, DomainStore, oracle, acceptance pipeline, doctor
 ---
 
@@ -11,7 +11,7 @@ scope: v0.9.0 release candidate — 48 skills, DomainStore, oracle, acceptance p
 
 ## Overall Verdict: PASS
 
-All five CRITICAL requirements are satisfied with code-level evidence. No CRITICAL or HIGH severity findings are OPEN. Three MEDIUM and two LOW findings are noted as coverage gaps and documented known gaps; none block release.
+All five CRITICAL requirements are satisfied with code-level evidence. No CRITICAL or HIGH severity findings are OPEN. Three MEDIUM findings are open coverage gaps. One LOW finding (L-01) is an acknowledged gap; one LOW finding (L-02) passes its assertion check. None block release.
 
 ---
 
