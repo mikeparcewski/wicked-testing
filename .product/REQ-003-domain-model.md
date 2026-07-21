@@ -169,4 +169,4 @@ the DomainStore API.
 
 A seventh table, `schema_migrations`, is managed by `lib/migrate.mjs` and
 tracks which migration scripts have been applied. It is not part of the domain
-entity model. Current schema version: 2.
+entity model. Current schema version: 3.

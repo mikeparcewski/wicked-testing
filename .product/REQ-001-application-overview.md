@@ -86,7 +86,7 @@ User: `/wicked-testing:acceptance-testing scenarios/login-positive.md`
    reasoning. Evaluates assertions against artifacts. Returns
    `PASS | FAIL | PARTIAL | INCONCLUSIVE`.
 6. Run record updated to terminal status; verdict record written.
-7. Evidence manifest (`manifest.json`) written to `evidence/<run-id>/`.
+7. Evidence manifest (`manifest.json`) written to `.wicked-testing/evidence/<run-id>/`.
 8. Emits `wicked.test.run.completed` and `wicked.test.verdict.created` on
    wicked-bus.
 
@@ -115,7 +115,7 @@ suite health.
 wicked-vault (`bin/wicked-vault.mjs`) is the evidence backend. Specialist
 skills (primarily `acceptance-test-executor`) call vault to record and
 cryptographically sign evidence entries. The public output of each run is
-`evidence/<run-id>/manifest.json`, whose schema is defined by
+`.wicked-testing/evidence/<run-id>/manifest.json`, whose schema is defined by
 `schemas/evidence.json`. Downstream consumers (wicked-garden, CI checks) read
 only the manifest — never the SQLite database.
 

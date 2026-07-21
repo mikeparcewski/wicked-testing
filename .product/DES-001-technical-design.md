@@ -56,7 +56,7 @@ test-strategist, testability-reviewer
 Internal. May be added, renamed, or removed without a breaking change.
 
 a11y-test-engineer, ai-feature-test-engineer, chaos-test-engineer,
-compliance-test-engineer, contract-testing-engineer, coverage-archaeologist,
+compliance-test-engineer, coverage-archaeologist,
 data-quality-tester, e2e-orchestrator, exploratory-tester, flaky-test-hunter,
 fuzz-property-engineer, iac-test-engineer, incident-to-scenario-synthesizer,
 integration-test-engineer, load-performance-engineer,
@@ -147,7 +147,7 @@ tasks          (id, project_id, title, status, assignee_skill,
 schema_migrations  (version, applied_at, description)
 ```
 
-Current schema version: 2. Future migrations: `lib/migrations/NNN_*.sql`.
+Current schema version: 3. Future migrations: `lib/migrations/NNN_*.sql`.
 
 ### Dual-Write Protocol
 

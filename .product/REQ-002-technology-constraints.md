@@ -90,7 +90,7 @@ visible in version control (if committed).
 ## Schema Versioning
 
 The SQLite schema is versioned via `lib/migrations/NNN_*.sql` applied in
-numeric order on DomainStore initialization. The current schema version is 2.
+numeric order on DomainStore initialization. The current schema version is 3.
 The store refuses to write if the database version exceeds the code's known
 version, and prints an upgrade message.
 
