@@ -378,3 +378,39 @@ test("every valid verdict value (incl. CONDITIONAL) persists and reads back from
   assert.equal(store.stats().drift_count, 0, "no valid verdict may trip the CHECK / cause drift");
   assert.equal(store.stats().counts.verdicts, FULL_ENUM.length, "every valid verdict must be indexed");
 });
+
+// --- L2-10: JSON written BEFORE SQLite INSERT (explicit ordering assertion) ---
+// Intercepts _dbInsert by subclassing; asserts the canonical JSON file already
+// exists on disk at the moment the SQLite INSERT fires. This directly proves the
+// "canonical JSON FIRST" comment at domain-store.mjs:41 and satisfies DoD L2-10.
+
+test("create() writes canonical JSON BEFORE the SQLite INSERT fires (dual-write order)", () => {
+  let jsonExistedAtInsertTime = null;
+  let capturedId = null;
+
+  class OrderCheckStore extends DomainStore {
+    _dbInsert(table, record) {
+      capturedId = record.id;
+      // At this point the JSON write (step 1 in create()) should already be done.
+      const jsonPath = join(root, table, `${record.id}.json`);
+      jsonExistedAtInsertTime = existsSync(jsonPath);
+      super._dbInsert(table, record);
+    }
+  }
+
+  const orderStore = new OrderCheckStore(root);
+  try {
+    const project = orderStore.create("projects", { name: "order-test", description: "L2-10" });
+
+    assert.ok(capturedId, "_dbInsert must have been called (SQLite available in test env)");
+    assert.equal(
+      jsonExistedAtInsertTime,
+      true,
+      "canonical JSON must exist on disk BEFORE _dbInsert fires — JSON-first ordering violated"
+    );
+    // And the final record is complete in both stores.
+    assert.equal(orderStore.get("projects", project.id).name, "order-test");
+  } finally {
+    try { orderStore.close(); } catch { /* ignore */ }
+  }
+});
