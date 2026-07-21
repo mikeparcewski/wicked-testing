@@ -69,7 +69,7 @@ gate.
 | L3-4 | `CHANGELOG.md` entry exists for the release version | File inspection | ✓ 2026-07-21 — `CHANGELOG.md` `[0.9.0]` section has the doctor schema fix entry (moved from `[Unreleased]` per reviewer feedback — v0.9.0 has not yet been published to npm, so the fix belongs in the v0.9.0 section). |
 | L3-5 | `npm publish --access public` exits 0 and the package is visible on npm | Post-publish `npm view wicked-testing version` | — |
 | L3-6 | `npx wicked-testing install` from the freshly published version installs cleanly on a clean environment | CI `release.yml` smoke step | — |
-| L3-7 | No known open P0 or P1 bugs in the issue tracker | Manual check before tag | ✓ 2026-07-21 — `gh issue list --repo mikeparcewski/wicked-testing --state open --label "bug"` returns empty; only open issue is #96 (Dependency Dashboard, Renovate bot — not a P0/P1 bug). |
+| L3-7 | No known open P0 or P1 bugs in the issue tracker | Manual check before tag | ✓ 2026-07-21 — `gh issue list --label "priority:P0"` returns empty; `gh issue list --label "priority:P1"` returns empty. Only open issue is #96 (Dependency Dashboard, Renovate bot — no priority label). |
 
 ---
 
