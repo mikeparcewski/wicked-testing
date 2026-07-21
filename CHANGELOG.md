@@ -6,6 +6,9 @@ All notable changes to `wicked-testing`. Format loosely follows
 
 ## [Unreleased]
 
+### Fixed
+- **`doctor` schema version check no longer false-positives on migrated databases.** `install.mjs` had a hardcoded `const codeVer = 1` that caused `doctor` to report "DB v2 is newer than code v1" (and "DB v3 is newer than code v1") on any database that had been migrated to schema version 2 or 3. Fixed by exporting `SCHEMA_VERSION` from `lib/domain-store.mjs` and importing it dynamically in `install.mjs` — the two values can no longer drift. The `scenarios/test-runner.md` scenario assertion `A4` and Step 3 expected query count were also updated to reflect the current state (`SCHEMA_VERSION = 3`, 13 named oracle queries).
+
 ### Changed
 - **Evidence bus events reconciled onto the 4-segment `wicked.<domain>.<noun>.<verb>` catalog.** The divergent 3-segment emits are renamed:
   - `wicked.evidence.captured` → **`wicked.test.evidence.captured`** (both emit sites: the verdict path in `lib/bus-emit.mjs` and the manifest path in `skills/acceptance-testing/SKILL.md`). The two sites now share a **union payload** — common `{ project_id, run_id, evidence_path, wicked_testing_version }` plus optional `{ verdict_id, vault_payload_sha, artifact_count }`, each `null` when the emitting site lacks it — so one subscriber schema serves both.
