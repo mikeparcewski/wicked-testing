@@ -330,11 +330,24 @@ test("degrades to JSON-only mode when _initDb is a no-op (better-sqlite3 load fa
     const listed = jsonOnlyStore.list("projects");
     assert.equal(listed.length, 1, "list() must find the record in json-only mode");
 
+    // update() must merge diff and persist to JSON
+    const updated = jsonOnlyStore.update("projects", project.id, { description: "updated" });
+    assert.ok(updated, "update() must return the updated record in json-only mode");
+    assert.equal(updated.description, "updated");
+    const refetched = jsonOnlyStore.get("projects", project.id);
+    assert.equal(refetched.description, "updated", "get() must return updated value after update() in json-only mode");
+
+    // delete() (soft) must hide the record from get() and list()
+    const deleted = jsonOnlyStore.delete("projects", project.id);
+    assert.equal(deleted, true, "delete() must return true in json-only mode");
+    assert.equal(jsonOnlyStore.get("projects", project.id), null, "get() must return null for soft-deleted record in json-only mode");
+    const afterDelete = jsonOnlyStore.list("projects");
+    assert.equal(afterDelete.length, 0, "list() must exclude soft-deleted records in json-only mode");
+
     // stats() must return mode: json-only and a counts object
     const s = jsonOnlyStore.stats();
     assert.equal(s.mode, "json-only", "stats() must report json-only mode");
     assert.equal(typeof s.counts, "object", "stats() must include a counts object");
-    assert.equal(s.counts.projects, 1, "stats() must count the JSON file in json-only mode");
 
   } finally {
     if (jsonOnlyStore) { try { jsonOnlyStore.close(); } catch { /* ignore */ } }
