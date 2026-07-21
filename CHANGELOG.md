@@ -22,6 +22,7 @@ All notable changes to `wicked-testing`. Format loosely follows
   "DB v2 is newer than code v1" on any database migrated to schema v2 or v3. Fixed by
   exporting `SCHEMA_VERSION` from `lib/domain-store.mjs` and importing it dynamically in
   `install.mjs` — the two values can no longer drift.
+- **OpenCode skills now actually load.** `install.mjs` copied skills to `~/.config/opencode/skills/`, but OpenCode only loads skills declared in `opencode.jsonc`'s `skills.paths` (or scanned under `~/.claude`/`~/.agents`) — so they installed invisible. The installer now registers the skills dir in `skills.paths` (JSONC-comment-safe, idempotent). Pi is unaffected (it auto-scans `~/.pi/agent/skills/`).
 
 ### Changed
 - **Test-lifecycle bus event names aligned to the `wicked-bus` SPEC map** (`wicked-bus/reqs/SPEC.md`, `wicked.test.<noun>.<past-verb>`). Renamed the three emitted types in `lib/bus-emit.mjs`:
@@ -30,9 +31,6 @@ All notable changes to `wicked-testing`. Format loosely follows
   - `wicked.teststrategy.authored` → `wicked.test.strategy.generated`
 
   Payloads are unchanged. `wicked.testrun.started`, `wicked.scenario.authored`, `wicked.evidence.captured`, and `wicked.contract.published` are unchanged. The QE **acceptance** gate events (`wicked.qe.gate.passed/failed/conditional`, `wicked.qe.deploy.completed`) are a distinct gate and are **not** renamed. **Breaking for bus subscribers** — update filters to the new names.
-
-### Fixed
-- **OpenCode skills now actually load.** `install.mjs` copied skills to `~/.config/opencode/skills/`, but OpenCode only loads skills declared in `opencode.jsonc`'s `skills.paths` (or scanned under `~/.claude`/`~/.agents`) — so they installed invisible. The installer now registers the skills dir in `skills.paths` (JSONC-comment-safe, idempotent). Pi is unaffected (it auto-scans `~/.pi/agent/skills/`).
 
 ## [0.8.0] — 2026-07-12
 
