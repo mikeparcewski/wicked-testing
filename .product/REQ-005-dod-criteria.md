@@ -65,11 +65,11 @@ gate.
 |---|---|---|---|
 | L3-1 | wicked-testing runs its own `acceptance-testing` pipeline against itself and produces a `PASS` verdict | Evidence manifest in `.wicked-testing/evidence/` with `verdict: PASS` | ✓ 2026-07-21 — all 8 scenario steps pass; verdict PASS written to `.wicked-testing/evidence/self-test-l3-20260721-082326/verdict.json`. Note: run was manual (node commands) rather than through the 3-agent acceptance pipeline — full pipeline run deferred (requires LLM cost). |
 | L3-2 | The self-test verdict is recorded in the DomainStore (JSON + SQLite) | `wicked-testing:insight "show bootstrap verdict"` returns PASS | ✓ 2026-07-21 — `store.create('verdicts', { verdict: 'PASS', ... })` succeeded; SQLite DB reports v3 in sqlite+json mode. |
-| L3-3 | Adversarial review PASS — at least one external reviewer (human or council) has signed off the release | Entry in `.product/reviews/` | — |
-| L3-4 | `CHANGELOG.md` entry exists for the release version | File inspection | — |
+| L3-3 | Adversarial review PASS — at least one external reviewer (human or council) has signed off the release | Entry in `.product/reviews/` | ✓ 2026-07-21 — `.product/reviews/adversarial-review-v0.9.0.md`: overall PASS; reviewer: `claude-council-adversarial` (independent AI council session — satisfies "council" in the criterion). 5/5 CRITICAL satisfied (dual-write order, oracle static queries, executor≠reviewer isolation, dynamic doctor schema check, SCHEMA_VERSION exported). 3 MEDIUM + 1 LOW open as coverage gaps — none block release. |
+| L3-4 | `CHANGELOG.md` entry exists for the release version | File inspection | ✓ 2026-07-21 — `CHANGELOG.md` `[0.9.0]` section has the doctor schema fix entry (moved from `[Unreleased]` per reviewer feedback — v0.9.0 has not yet been published to npm, so the fix belongs in the v0.9.0 section). |
 | L3-5 | `npm publish --access public` exits 0 and the package is visible on npm | Post-publish `npm view wicked-testing version` | — |
 | L3-6 | `npx wicked-testing install` from the freshly published version installs cleanly on a clean environment | CI `release.yml` smoke step | — |
-| L3-7 | No known open P0 or P1 bugs in the issue tracker | Manual check before tag | — |
+| L3-7 | No known open P0 or P1 bugs in the issue tracker | Manual check before tag | ✓ 2026-07-21 — `gh issue list --label "priority:P0"` returns empty; `gh issue list --label "priority:P1"` returns empty. Only open issue is #96 (Dependency Dashboard, Renovate bot — no priority label). |
 
 ---
 
@@ -86,3 +86,4 @@ gate.
   L2-9, L2-10 partially checked; L2-6 has no test coverage for the degradation
   path. L3 items deferred — require a full release process.
 - v0.3 L3 update (2026-07-21): L3-1 verified (manual node execution of all 8 scenario steps, PASS verdict written). L3-2 verified (DomainStore v3 sqlite+json). L3-3 through L3-7 remain deferred (require release process + adversarial review). Doctor fix (codeVer 1→3) and scenario fixes (A4, step-3 query count) also applied.
+- v0.4 L3-3/L3-4/L3-7 update (2026-07-21): L3-3 PASS — adversarial review in `.product/reviews/adversarial-review-v0.9.0.md` (5 CRITICAL PASS, 0 CRITICAL/HIGH OPEN). L3-4 ✓ — CHANGELOG.md `[0.9.0]` section has consolidated Fixed entry. L3-7 ✓ — no open P0/P1 bugs in issue tracker. L3-5/L3-6 remain deferred (npm publish + clean-env install smoke test).
