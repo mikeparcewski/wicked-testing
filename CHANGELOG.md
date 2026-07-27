@@ -17,10 +17,10 @@ All notable changes to `wicked-testing`. Format loosely follows
   **Breaking for any subscriber filtering on the old 3-segment names.** Known consumers are unaffected — per `docs/INTEGRATION.md` § 4, the only documented read surface is `wicked.test.verdict.created` (unchanged). Update filters to the new names.
 
 ### Fixed
-- **`better-sqlite3` updated to v13** (#140) — keeps the ledger store current with upstream Node ABI support.
+- **`better-sqlite3` updated to v13** ([#140](https://github.com/mikeparcewski/wicked-testing/pull/140)) — keeps the ledger store current with upstream Node ABI support.
 
 ### Added
-- **L2-10: explicit JSON-before-SQLite ordering assertion** in the evidence path (#148), and an **L2-6 SQLite-degradation mock-path test** (#147) — both close DoD line items with executable checks.
+- **L2-10: explicit JSON-before-SQLite ordering assertion** in the evidence path ([#148](https://github.com/mikeparcewski/wicked-testing/pull/148)), and an **L2-6 SQLite-degradation mock-path test** ([#147](https://github.com/mikeparcewski/wicked-testing/pull/147)) — both close DoD line items with executable checks.
 
 ## [0.9.0] — 2026-07-12
 
