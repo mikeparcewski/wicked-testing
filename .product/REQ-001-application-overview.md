@@ -112,7 +112,7 @@ suite health.
 
 ### Flow 5: Vault Evidence Recording
 
-wicked-vault (`bin/wicked-vault.mjs`) is the evidence backend. Specialist
+wicked-vault (the published `wicked-vault` package, a runtime dependency) is the evidence backend. Specialist
 skills (primarily `acceptance-test-executor`) call vault to record and
 cryptographically sign evidence entries. The public output of each run is
 `.wicked-testing/evidence/<run-id>/manifest.json`, whose schema is defined by

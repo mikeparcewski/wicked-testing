@@ -129,7 +129,7 @@ the tag matches the package version.
 ## Project Layout Reference
 
 ```
-bin/                  CLI entry points (wicked-testing, wicked-vault)
+bin/                  CLI entry points (wicked-testing, wicked-qe)
 lib/                  Core library (domain-store, migrations, oracle-queries, bus-emit)
 skills/               All 48 skills (workflow + Tier-1 + Tier-2)
 schemas/              Public JSON schemas (evidence.json)

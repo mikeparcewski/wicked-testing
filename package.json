@@ -31,11 +31,11 @@
   "bin": {
     "wicked-testing": "install.mjs",
     "wicked-testing-install": "install.mjs",
-    "wicked-qe": "bin/wicked-qe.mjs",
-    "wicked-vault": "bin/wicked-vault.mjs"
+    "wicked-qe": "bin/wicked-qe.mjs"
   },
   "dependencies": {
-    "better-sqlite3": "^13.0.0"
+    "better-sqlite3": "^13.0.0",
+    "wicked-vault": "^0.4.4"
   },
   "files": [
     "install.mjs",
@@ -43,7 +43,6 @@
     "skills/",
     "hooks/",
     "lib/",
-    "src/",
     "scripts/_python.sh",
     "scenarios/",
     "schemas/",

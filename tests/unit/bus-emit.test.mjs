@@ -11,12 +11,15 @@
  *      wicked.test.evidence.captured] when vault_payload_sha is present (dual-event path)
  *   3. The dual-event path flows end-to-end: store.create("verdicts", { vault_payload_sha })
  *      stores the column — verified by store.get() round-trip
- *   4. vault record() returns payload_sha256 in its result object
+ *
+ * NOTE: vault record()/content-addressing behavior is tested in the wicked-vault
+ * package itself (its own proof scripts) — not here. wicked-testing consumes vault
+ * as a published dependency; it does not test vault's internals.
  */
 
 import { test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -25,7 +28,6 @@ import {
   createDomainStore,
   __resetDomainStoreCacheForTests,
 } from "../../lib/domain-store.mjs";
-import { initVault, record } from "../../src/vault/vault.mjs";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -192,68 +194,4 @@ test("store.create('verdicts', {}) without vault_payload_sha stores null — no 
   // Column exists but is null when not provided.
   assert.ok("vault_payload_sha" in fetched || fetched.vault_payload_sha === undefined || fetched.vault_payload_sha === null,
     "vault_payload_sha should be null/undefined for verdicts without it");
-});
-
-// ---------------------------------------------------------------------------
-// vault record() returns payload_sha256 in result
-// ---------------------------------------------------------------------------
-
-test("vault record() --artifact returns payload_sha256 in result", () => {
-  // Create an isolated vault root and write a test file to capture.
-  const vaultRoot = mkdtempSync(join(tmpdir(), "wt-vault-rec-"));
-  try {
-    initVault(vaultRoot);
-
-    // Write the artifact we'll record.
-    const artPath = join(vaultRoot, "test-artifact.txt");
-    writeFileSync(artPath, "evidence content for unit test\n");
-
-    const result = record(vaultRoot, {
-      artifact: artPath,
-      scope: "unit-test",
-      phase: "build",
-      claim: "artifact-present",
-      kind: "file",
-      source: artPath,
-      criteria: "the artifact file exists and has content",
-    });
-
-    assert.ok(result.payload_sha256, "record() must return payload_sha256");
-    assert.equal(typeof result.payload_sha256, "string");
-    assert.equal(result.payload_sha256.length, 64, "SHA-256 hex digest must be 64 characters");
-    assert.ok(/^[0-9a-f]{64}$/.test(result.payload_sha256), "payload_sha256 must be lowercase hex");
-
-    // Sanity: id and envelope_hash also present (unchanged contract)
-    assert.ok(result.id, "record() must return id");
-    assert.ok(result.envelope_hash, "record() must return envelope_hash");
-  } finally {
-    rmSync(vaultRoot, { recursive: true, force: true });
-  }
-});
-
-test("vault record() payload_sha256 is content-addressed — same content = same sha", () => {
-  const vaultRoot = mkdtempSync(join(tmpdir(), "wt-vault-dedup-"));
-  try {
-    initVault(vaultRoot);
-
-    const artPath = join(vaultRoot, "dedup-art.txt");
-    writeFileSync(artPath, "deterministic content for dedup test\n");
-
-    const r1 = record(vaultRoot, {
-      artifact: artPath, scope: "test", phase: "build",
-      claim: "dedup-claim-1", kind: "file", source: artPath,
-      criteria: "content is deterministic",
-    });
-    const r2 = record(vaultRoot, {
-      artifact: artPath, scope: "test", phase: "build",
-      claim: "dedup-claim-2", kind: "file", source: artPath,
-      criteria: "content is deterministic",
-    });
-
-    assert.equal(r1.payload_sha256, r2.payload_sha256,
-      "same content must produce the same payload_sha256 (content-addressed store)");
-    assert.notEqual(r1.id, r2.id, "distinct records must still have different IDs");
-  } finally {
-    rmSync(vaultRoot, { recursive: true, force: true });
-  }
 });

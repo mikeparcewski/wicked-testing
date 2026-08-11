@@ -199,10 +199,11 @@ Key manifest fields: `run_id`, `scenario` (name + path), `verdict`,
 
 ## 5. wicked-vault Evidence Backend
 
-`bin/wicked-vault.mjs` provides cryptographic signing for evidence records.
-The acceptance pipeline invokes vault as a child process after evidence files
-are written. Vault reads the evidence directory and writes the signed
-`manifest.json`.
+The published `wicked-vault` package (a runtime dependency) provides
+cryptographic signing for evidence records. The acceptance pipeline invokes the
+resolved `wicked-vault` binary (from `node_modules/.bin`, or `npx wicked-vault`)
+as a child process after evidence files are written. Vault reads the evidence
+directory and writes the signed `manifest.json`.
 
 If vault is absent:
 - Evidence files are still written as JSON.
@@ -255,7 +256,7 @@ for which skills are in each tier.
 ```
 npm publish
   └── skills/         ← all 48 skill directories
-  └── bin/            ← wicked-testing, wicked-vault CLIs
+  └── bin/            ← wicked-testing, wicked-qe CLIs
   └── lib/            ← domain-store, oracle-queries, migrations, bus-emit
   └── schemas/        ← evidence.json
   └── install.mjs     ← CLI target detection + file copy logic

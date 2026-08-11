@@ -42,10 +42,11 @@ review-required: true
 
 ### wicked-vault (required for evidence gate)
 
-- `bin/wicked-vault.mjs` is the evidence backend. Records and cryptographically
-  signs evidence entries. Required for the acceptance pipeline to produce a
-  verifiable manifest.
-- Skills invoke vault via child process. If vault is absent, evidence is still
+- The published `wicked-vault` package (a runtime dependency, `wicked-vault@^0.4.4`)
+  is the evidence backend. Records and cryptographically signs evidence entries.
+  Required for the acceptance pipeline to produce a verifiable manifest.
+- Skills invoke the resolved `wicked-vault` binary (from `node_modules/.bin`, or
+  `npx wicked-vault`) via child process. If vault is absent, evidence is still
   written as JSON files but without cryptographic signatures.
 
 ### wicked-brain (optional)
