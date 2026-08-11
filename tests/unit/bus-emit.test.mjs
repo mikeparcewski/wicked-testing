@@ -25,7 +25,10 @@ import {
   createDomainStore,
   __resetDomainStoreCacheForTests,
 } from "../../lib/domain-store.mjs";
-import { initVault, record } from "../../src/vault/vault.mjs";
+// Vault modules are consumed from the published `wicked-vault` package (a
+// dependency), not a local copy — wicked-testing no longer bundles src/vault.
+// The package ships src/vault/* (no exports restriction), so deep import works.
+import { initVault, record } from "wicked-vault/src/vault/vault.mjs";
 
 // ---------------------------------------------------------------------------
 // Helpers

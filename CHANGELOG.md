@@ -6,6 +6,12 @@ All notable changes to `wicked-testing`. Format loosely follows
 
 ## [Unreleased]
 
+### Changed
+- **`wicked-vault` is now consumed as the published infra package (`wicked-vault@^0.4.4`), not bundled.** wicked-testing no longer declares a `wicked-vault` bin or ships `bin/wicked-vault.mjs` + `src/vault/*` — the single `wicked-vault` binary now comes solely from the standalone package, ending the two-bin PATH contention. wicked-garden was rewired to install `wicked-vault` directly, so testing no longer needs to provide it. The one in-process consumer (the `bus-emit` unit test) now imports `wicked-vault/src/vault/vault.mjs` from the dependency. `lib/manifest.mjs`, `schemas/evidence.json`, and the vault DB migration are testing's own and are unchanged.
+
+### Removed
+- **`wicked-vault` bin entry, `bin/wicked-vault.mjs`, and `src/vault/*`** — the vault CLI and its modules are provided by the published `wicked-vault` package. The `wicked-testing`, `wicked-testing-install`, and `wicked-qe` bins are unchanged.
+
 ## [0.10.0] — 2026-07-27
 
 ### Changed
