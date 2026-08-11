@@ -25,7 +25,7 @@ import {
   DomainStore,
   createDomainStore,
   __resetDomainStoreCacheForTests,
-} from "../../lib/domain-store.mjs";
+} from "wicked-ledger";
 
 let root;
 let store;

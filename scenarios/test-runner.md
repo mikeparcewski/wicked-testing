@@ -47,7 +47,7 @@ node --version
 ### Step 2: Verify domain-store.mjs exists and is readable (node)
 
 ```bash
-node -e "import('./lib/domain-store.mjs').then(m => console.log('DomainStore loaded:', typeof m.DomainStore)).catch(e => { console.error('FAIL:', e.message); process.exit(1); })"
+node -e "import('wicked-ledger').then(m => console.log('DomainStore loaded:', typeof m.DomainStore)).catch(e => { console.error('FAIL:', e.message); process.exit(1); })"
 ```
 
 **Expect**: Exit code 0, "DomainStore loaded: function"
@@ -55,7 +55,7 @@ node -e "import('./lib/domain-store.mjs').then(m => console.log('DomainStore loa
 ### Step 3: Verify oracle-queries.mjs exports the query library (node)
 
 ```bash
-node -e "import('./lib/oracle-queries.mjs').then(m => { console.log('Queries:', Object.keys(m.QUERIES).length); if (Object.keys(m.QUERIES).length < 12) { console.error('FAIL: expected 12+ queries'); process.exit(1); } }).catch(e => { console.error('FAIL:', e.message); process.exit(1); })"
+node -e "import('wicked-ledger').then(m => { console.log('Queries:', Object.keys(m.QUERIES).length); if (Object.keys(m.QUERIES).length < 12) { console.error('FAIL: expected 12+ queries'); process.exit(1); } }).catch(e => { console.error('FAIL:', e.message); process.exit(1); })"
 ```
 
 **Expect**: Exit code 0, "Queries: 13" (or more)
@@ -64,7 +64,7 @@ node -e "import('./lib/oracle-queries.mjs').then(m => { console.log('Queries:', 
 
 ```bash
 node -e "
-import('./lib/domain-store.mjs').then(({ DomainStore }) => {
+import('wicked-ledger').then(({ DomainStore }) => {
   const store = new DomainStore('.wicked-testing');
   const project = store.create('projects', {
     name: 'wicked-testing-self-test',
@@ -82,7 +82,7 @@ import('./lib/domain-store.mjs').then(({ DomainStore }) => {
 
 ```bash
 node -e "
-import('./lib/domain-store.mjs').then(({ DomainStore }) => {
+import('wicked-ledger').then(({ DomainStore }) => {
   const store = new DomainStore('.wicked-testing');
   const projects = store.list('projects', { name: 'wicked-testing-self-test' });
   if (!projects.length) { console.error('FAIL: project not found'); process.exit(1); }
@@ -105,7 +105,7 @@ import('./lib/domain-store.mjs').then(({ DomainStore }) => {
 
 ```bash
 node -e "
-import('./lib/domain-store.mjs').then(({ DomainStore }) => {
+import('wicked-ledger').then(({ DomainStore }) => {
   const store = new DomainStore('.wicked-testing');
   const projects = store.list('projects', { name: 'wicked-testing-self-test' });
   const scenarios = store.list('scenarios', { name: 'test-runner-self-test' });
@@ -145,7 +145,7 @@ import('./lib/domain-store.mjs').then(({ DomainStore }) => {
 
 ```bash
 node -e "
-import('./lib/domain-store.mjs').then(({ DomainStore }) => {
+import('wicked-ledger').then(({ DomainStore }) => {
   const store = new DomainStore('.wicked-testing');
   const projects = store.list('projects', { name: 'wicked-testing-self-test' });
   if (!projects.length) { console.error('FAIL: project not found'); process.exit(1); }
@@ -168,7 +168,7 @@ import('./lib/domain-store.mjs').then(({ DomainStore }) => {
 
 ```bash
 node -e "
-import('./lib/domain-store.mjs').then(({ DomainStore }) => {
+import('wicked-ledger').then(({ DomainStore }) => {
   const store = new DomainStore('.wicked-testing');
   const stats = store.stats();
   console.log(JSON.stringify(stats));
@@ -192,7 +192,7 @@ import('./lib/domain-store.mjs').then(({ DomainStore }) => {
 
 ```bash
 node -e "
-import('./lib/oracle-queries.mjs').then(({ routeQuestion, QUERIES }) => {
+import('wicked-ledger').then(({ routeQuestion, QUERIES }) => {
   const tests = [
     ['what scenarios exist for the self-test project?', 'scenarios_for_project'],
     ['what was the last verdict for test-runner?', 'last_verdict_for_scenario'],

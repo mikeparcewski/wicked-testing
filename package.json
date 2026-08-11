@@ -35,6 +35,7 @@
   },
   "dependencies": {
     "better-sqlite3": "^13.0.0",
+    "wicked-ledger": "^0.1.0",
     "wicked-vault": "^0.4.4"
   },
   "files": [

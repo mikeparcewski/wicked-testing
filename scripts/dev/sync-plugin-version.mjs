@@ -19,7 +19,7 @@
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { emitBusEvent } from "../../lib/bus-emit.mjs";
+import { emitBusEvent } from "wicked-ledger";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 const REPO = resolve(__dirname, "..", "..");

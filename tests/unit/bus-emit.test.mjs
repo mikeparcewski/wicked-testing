@@ -23,11 +23,11 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { domainEventToBusEvent } from "../../lib/bus-emit.mjs";
 import {
+  domainEventToBusEvent,
   createDomainStore,
   __resetDomainStoreCacheForTests,
-} from "../../lib/domain-store.mjs";
+} from "wicked-ledger";
 
 // ---------------------------------------------------------------------------
 // Helpers

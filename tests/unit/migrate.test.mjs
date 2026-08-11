@@ -19,15 +19,16 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
 import { readFileSync } from "node:fs";
 
-import { applyMigrations, listMigrations } from "../../lib/migrate.mjs";
+import { applyMigrations, listMigrations } from "wicked-ledger";
 
 const require = createRequire(import.meta.url);
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const MIG_DIR = join(__dirname, "..", "..", "lib", "migrations");
+// The migration SQL now ships inside the wicked-ledger package. Read it from
+// the installed package (located via its exported package.json) rather than a
+// local lib/migrations copy, which no longer exists in wicked-testing.
+const MIG_DIR = join(dirname(require.resolve("wicked-ledger/package.json")), "lib", "migrations");
 
 let Database;
 try {
