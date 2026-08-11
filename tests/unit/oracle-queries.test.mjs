@@ -24,7 +24,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
 import { join, dirname } from "node:path";
 import { readFileSync, readdirSync } from "node:fs";
 
@@ -34,9 +33,8 @@ import {
   buildOracleQuery,
   routeQuestion,
   supportedPatterns,
-} from "../../lib/oracle-queries.mjs";
+} from "wicked-ledger";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const Database = require("better-sqlite3");
 
@@ -144,7 +142,10 @@ function seededDb() {
   // Apply every migration in numeric order so the seeded schema matches the
   // real DB (including 002's verdict CHECK + equivalence_json column). Reading
   // the files directly keeps this test independent of the migration runner.
-  const migDir = join(__dirname, "..", "..", "lib", "migrations");
+  // Migrations ship inside the wicked-ledger package; read the real schema SQL
+  // from the installed package (via its exported package.json) so the seeded
+  // db matches production. No local lib/migrations copy exists any more.
+  const migDir = join(dirname(require.resolve("wicked-ledger/package.json")), "lib", "migrations");
   for (const f of readdirSync(migDir).filter(x => /^\d+_.+\.sql$/.test(x)).sort()) {
     db.exec(readFileSync(join(migDir, f), "utf8"));
   }

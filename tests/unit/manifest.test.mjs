@@ -28,7 +28,7 @@ import { mkdtempSync, rmSync, readFileSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { buildManifest, MANIFEST_VERSION } from "../../lib/manifest.mjs";
+import { buildManifest, MANIFEST_VERSION } from "wicked-ledger";
 
 let evidenceDir;
 

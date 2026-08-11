@@ -125,8 +125,14 @@ detects prejudicial content in this file it returns `INCONCLUSIVE` with reason
 
 ## 3. SQLite Domain Store Schema
 
-`lib/domain-store.mjs` wraps `better-sqlite3`. Schema is applied via
-`lib/migrate.mjs` from numbered migration files in `lib/migrations/`.
+The DomainStore wraps `better-sqlite3`. Schema is applied by the migration
+runner from numbered migration files. These ledger modules (`domain-store`,
+`oracle-queries`, `manifest`, `bus-emit`, `migrate`) and their migration SQL are
+now **consumed from the published `wicked-ledger@^0.1.0` package**, not bundled
+in `lib/` — wicked-testing imports them via `import { createDomainStore } from
+"wicked-ledger"`. The schema below is unchanged (the package was reseeded
+verbatim from testing's former `lib/`); this is a source-of-truth move, not a
+behavior change.
 
 ### Tables
 

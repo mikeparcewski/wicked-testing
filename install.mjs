@@ -890,7 +890,7 @@ async function cmdDoctor() {
       const row = db.prepare("SELECT version FROM schema_migrations ORDER BY version DESC LIMIT 1").get();
       db.close();
       const dbVer = row?.version ?? 0;
-      const { SCHEMA_VERSION: codeVer } = await import("./lib/domain-store.mjs");
+      const { SCHEMA_VERSION: codeVer } = await import("wicked-ledger");
       checks.push(dbVer <= codeVer
         ? { name: "schema",        status: "ok",   message: `DB v${dbVer}, code v${codeVer}` }
         : { name: "schema",        status: "fail", message: `DB v${dbVer} is newer than code v${codeVer}`, fix: "upgrade wicked-testing: `npm install -g wicked-testing@latest`" });
@@ -1223,7 +1223,7 @@ async function selfTest() {
   let bootstrapDir = null;
   let store = null;
   try {
-    const { DomainStore } = await import("./lib/domain-store.mjs");
+    const { DomainStore } = await import("wicked-ledger");
     // Isolate the scratch dir under the OS tmp location, NOT cwd(). Running
     // `npx wicked-testing install` from $HOME or any user dir used to clobber
     // any existing `.wicked-testing-bootstrap/` sibling and could leak on

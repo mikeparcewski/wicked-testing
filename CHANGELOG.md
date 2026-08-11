@@ -7,9 +7,11 @@ All notable changes to `wicked-testing`. Format loosely follows
 ## [Unreleased]
 
 ### Changed
+- **The evidence ledger is now consumed from the published `wicked-ledger@^0.1.0` package, not bundled.** wicked-testing no longer ships `lib/{domain-store,oracle-queries,manifest,bus-emit,migrate}.mjs` or `lib/migrations/*.sql` — those modules and the migration SQL are the source-of-truth in the standalone `wicked-ledger` package and are consumed as a dependency (`import { createDomainStore, buildManifest, domainEventToBusEvent, ... } from "wicked-ledger"`). The package was reseeded verbatim from testing's former `lib/`, so the module code and the on-disk SQLite schema are identical — this is a source-of-truth move, not a behavior change. All consumers (`lib/gate.mjs`, `install.mjs`, `scripts/dev/sync-plugin-version.mjs`, and the ledger unit tests) now import from the package public entry. `better-sqlite3` remains a direct dependency (`install.mjs`'s `doctor`/`status` checks use it directly). testing's own non-ledger `lib/` (`gate.mjs`, `context-md-validator.mjs`, `exec-with-timeout.mjs`) is unchanged.
 - **`wicked-vault` is now consumed as the published infra package (`wicked-vault@^0.4.4`), not bundled.** wicked-testing no longer declares a `wicked-vault` bin or ships `bin/wicked-vault.mjs` + `src/vault/*` — the single `wicked-vault` binary now comes solely from the standalone package, ending the two-bin PATH contention. wicked-garden was rewired to install `wicked-vault` directly, so testing no longer needs to provide it. The one in-process consumer (the `bus-emit` unit test) now imports `wicked-vault/src/vault/vault.mjs` from the dependency. `lib/manifest.mjs`, `schemas/evidence.json`, and the vault DB migration are testing's own and are unchanged.
 
 ### Removed
+- **Bundled ledger modules `lib/{domain-store,oracle-queries,manifest,bus-emit,migrate}.mjs` and `lib/migrations/*.sql`** — provided by the published `wicked-ledger` package. `npm pack` no longer ships them; only the non-ledger `lib/` (`gate.mjs`, `context-md-validator.mjs`, `exec-with-timeout.mjs`) remains.
 - **`wicked-vault` bin entry, `bin/wicked-vault.mjs`, and `src/vault/*`** — the vault CLI and its modules are provided by the published `wicked-vault` package. The `wicked-testing`, `wicked-testing-install`, and `wicked-qe` bins are unchanged.
 
 ## [0.10.0] — 2026-07-27
