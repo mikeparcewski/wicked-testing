@@ -1008,13 +1008,12 @@ async function cmdInstall({ mode }) {
       //   Installed:   {cli}/skills/wicked-testing-acceptance-testing/SKILL.md
       //
       // Namespace dir: no top-level SKILL.md; contains sub-skill dirs.
-      //   Example:     skills/wicked-vault/{init,record-evidence,...}/SKILL.md
-      //   Installed:   {cli}/skills/wicked-vault-init/SKILL.md
-      //                {cli}/skills/wicked-vault-record-evidence/SKILL.md  (etc.)
+      //   Example:     skills/{ns}/{sub}/SKILL.md → {cli}/skills/{ns}-{sub}/SKILL.md
       //
       // CLI skill scanners only look one level deep, so the namespace must be
-      // flattened to a flat prefix at install time. A nested dir
-      // (wicked-testing-wicked-vault/init/) would be invisible.
+      // flattened to a flat prefix at install time. (The former example,
+      // skills/wicked-vault/, was removed in 0.11.0 — wicked-vault ships its
+      // own installer.)
       let skillsInstalledThisTarget = 0;
       for (const skill of skillDirs) {
         const skillDir = join(skillsSrc, skill);

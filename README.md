@@ -1,3 +1,19 @@
+> [!IMPORTANT]
+> ## 📦 wicked-testing is RETIRED (2026-08-12)
+>
+> The name dissolved — everything it did lives on, better-homed (Phase 6c, full fold):
+>
+> | What you used | Where it lives now | Install |
+> |---|---|---|
+> | The 40 specialist + 8 workflow skills | **[wicked-garden](https://github.com/mikeparcewski/wicked-garden)** — the in-catalog `qe` domain: the `wicked-garden-qe` router + `wicked-garden-qe-*` specialists | `claude plugins install wicked-garden` |
+> | The acceptance gate / `wicked-qe gate` | **[wicked-crew](https://github.com/mikeparcewski/wicked-crew)** owns the gate (`GET /runs/:id/acceptance` + the `wicked.qe.gate.*` subscription); the gate-announcement CLI ships inside wicked-garden (`scripts/qe/lib/gate.mjs`) — same event types, same payload | `npm i -g wicked-crew` |
+> | The evidence ledger (DomainStore, oracle, manifest) | **[wicked-ledger](https://github.com/mikeparcewski/wicked-ledger)** — events now stamp `domain: "qe"`, manifest 2.0.0 (`qe_version`) | `npm i wicked-ledger` |
+> | The evidence primitive (`wicked-vault`) | **[wicked-vault](https://github.com/mikeparcewski/wicked-vault)** — its own package, as before | `npm i -g wicked-vault` |
+>
+> Your on-disk data is safe: `.wicked-testing/` was renamed to `.wicked-qe/` with **dual-read** — existing `.wicked-testing/` ledgers keep resolving everywhere (wicked-ledger's `resolveLedgerRoot`, crew's gate, garden's qe skills).
+>
+> This repo is archived read-only; npm `wicked-testing` is deprecated. The final release (0.11.0) is the post-carve state, published so `^0.10` pinners resolve to a truthful package.
+
 ```
            _      _            _       _            _   _             
  __      _(_) ___| | _____  __| |     | |_ ___  ___| |_(_)_ __   __ _ 
@@ -15,7 +31,7 @@ npx wicked-testing install
 
 Works with **Claude Code**, **Antigravity**, **Cursor**, **Codex**, **Kiro**, **Copilot**, **OpenCode**, and **Pi**.
 
-Published to npm as [`wicked-testing`](https://www.npmjs.com/package/wicked-testing) v0.9.0 · site at [wt.wickedagile.com](https://wt.wickedagile.com). The `wicked-qe` rename is pending — the `wicked-qe` bin alias already ships.
+Published to npm as [`wicked-testing`](https://www.npmjs.com/package/wicked-testing) — **final release v0.11.0, deprecated** (see the retirement notice above). Site at [wt.wickedagile.com](https://wt.wickedagile.com).
 
 ---
 

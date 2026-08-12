@@ -7,8 +7,8 @@
     {
       "name": "wicked-testing",
       "source": "./",
-      "description": "Standalone QE library for AI coding CLIs — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, 3-agent acceptance pipeline, optional wicked-bus + wicked-brain integration.",
-      "version": "0.10.0"
+      "description": "RETIRED (Phase 6c) \u2014 folded into the wicked-* ecosystem: skills \u2192 wicked-garden's qe domain (wicked-garden-qe), acceptance gate \u2192 wicked-crew, data layer \u2192 wicked-ledger + wicked-vault. This final version is the truthful post-carve state; install wicked-garden instead.",
+      "version": "0.11.0"
     }
   ],
   "version": "1.0.0"
