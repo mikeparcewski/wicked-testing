@@ -232,7 +232,7 @@ consumer seeing a `1.1.0` payload carrying `equivalence`).
 3. **Only fail closed on a major-version mismatch** or a missing/invalid
    *required* field — never on the mere presence of an additive optional field.
 
-The internal producer validator (`lib/manifest.mjs` `validateShape`)
+The internal producer validator (`validateShape` in `wicked-ledger`'s manifest module)
 deliberately checks required fields + known-field types and does **not** reject
 unknown keys, so it already follows this same additive contract; the published
 `additionalProperties: false` is retained purely to keep the producer's own

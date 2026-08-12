@@ -1,7 +1,7 @@
 /**
  * tests/unit/oracle-queries.test.mjs
  *
- * Trust-module test for the fixed-SQL oracle (lib/oracle-queries.mjs).
+ * Trust-module test for the fixed-SQL oracle (wicked-ledger's oracle-queries).
  *
  * The oracle's safety property is that it is a CLOSED set of human-auditable,
  * parameterized queries — there is NO path that accepts or executes

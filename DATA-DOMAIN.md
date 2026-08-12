@@ -23,7 +23,7 @@ JSON is always written first (best-effort fdatasync — the call is wrapped in t
 
 ## 7-Table Schema
 
-The "7 tables" count **includes** the bookkeeping `schema_migrations` table alongside the six domain tables. If you see the constant `TABLES` in `lib/domain-store.mjs` with 6 entries, that's correct — it's the domain-table list (used for rebuild-index / allowlist); `schema_migrations` is managed by `lib/migrate.mjs` and not part of that list.
+The "7 tables" count **includes** the bookkeeping `schema_migrations` table alongside the six domain tables. If you see the constant `TABLES` in `wicked-ledger`'s domain-store module with 6 entries, that's correct — it's the domain-table list (used for rebuild-index / allowlist); `schema_migrations` is managed by `wicked-ledger`'s migration runner and not part of that list.
 
 | Table | Purpose | Key Columns |
 |-------|---------|-------------|
@@ -37,16 +37,16 @@ The "7 tables" count **includes** the bookkeeping `schema_migrations` table alon
 
 All tables include: `created_at`, `updated_at`, `deleted` (soft-delete), `deleted_at`.
 
-Full DDL: `lib/migrations/001_initial.sql` (previously duplicated as `lib/schema.sql`; the duplicate was removed in Wave 4 in favor of a real migration runner at `lib/migrate.mjs`). Future migrations: `lib/migrations/NNN_description.sql`, applied in numeric order on DomainStore init.
+Full DDL: `lib/migrations/001_initial.sql` in the `wicked-ledger` dependency (formerly bundled here; carved out with the ledger). Future migrations: `lib/migrations/NNN_description.sql` in wicked-ledger, applied in numeric order on DomainStore init.
 
 ---
 
 ## DomainStore API Surface
 
-`lib/domain-store.mjs` exports:
+The `wicked-ledger` dependency exports:
 
 ```javascript
-import { DomainStore, createDomainStore } from './lib/domain-store.mjs';
+import { DomainStore, createDomainStore } from 'wicked-ledger';
 
 const store = new DomainStore('.wicked-testing');
 // or
@@ -91,7 +91,7 @@ The Node.js implementation diverges from wicked-garden's `_domain_store.py` in t
 
 ## Oracle Query Library
 
-The `test-oracle` skill uses `lib/oracle-queries.mjs` — a fixed library of 13 named parameterized queries:
+The `test-oracle` skill uses `wicked-ledger`'s oracle-query library — a fixed library of 13 named parameterized queries:
 
 - `scenarios_for_project`, `last_verdict_for_scenario`, `runs_by_status`
 - `failed_runs_since`, `tasks_by_status`, `tasks_for_project`

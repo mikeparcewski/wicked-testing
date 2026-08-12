@@ -179,7 +179,7 @@ npx --yes wicked-testing doctor --json 2>/dev/null | python3 -c "import json,sys
 
 `wicked-testing`'s SQLite ledger lives at `.wicked-testing/wicked-testing.db`
 (per project). When a `wicked-testing` command next opens it, the migration
-runner in `lib/migrate.mjs` applies any pending migrations in order inside a
+runner in the `wicked-ledger` dependency applies any pending migrations in order inside a
 transaction (see Wave 4 #52). No manual migration step is needed from this
 skill.
 
