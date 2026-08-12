@@ -112,7 +112,7 @@ Created by `/wicked-testing:setup`. Records the project name and detected CLI ca
 Singleton-per-process DomainStore, consumed from the `wicked-ledger` dependency. On construction:
 1. Opens/creates `.wicked-testing/wicked-testing.db`
 2. Applies pending migrations from wicked-ledger's bundled `lib/migrations/NNN_*.sql` in numeric order
-3. Checks schema version against `SCHEMA_VERSION = 2`
+3. Checks schema version against `SCHEMA_VERSION = 3`
 4. Prepares INSERT statements for all 7 tables
 5. Enables WAL mode for concurrent readers
 
@@ -124,7 +124,7 @@ Every `create()` call:
 
 ### Oracle queries (`wicked-ledger`)
 
-Fixed library of 12 named queries. `routeQuestion(question, filters)` does keyword matching to pick the right query name. `buildOracleQuery(name, args)` returns `{ sql, params }` ready for `db.prepare(sql).all(...params)`. No dynamic SQL.
+Fixed library of 13 named queries. `routeQuestion(question, filters)` does keyword matching to pick the right query name. `buildOracleQuery(name, args)` returns `{ sql, params }` ready for `db.prepare(sql).all(...params)`. No dynamic SQL.
 
 ### The 3-Agent Acceptance Pipeline
 
