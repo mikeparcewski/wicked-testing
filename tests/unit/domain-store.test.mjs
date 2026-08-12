@@ -1,7 +1,7 @@
 /**
  * tests/unit/domain-store.test.mjs
  *
- * Trust-module test for the SQLite ledger / DomainStore (lib/domain-store.mjs).
+ * Trust-module test for the SQLite ledger / DomainStore (wicked-ledger's domain-store).
  *
  * Asserts:
  *   - a project → scenario → run → verdict round-trips through create/get/list
@@ -259,7 +259,7 @@ test("a verdict's equivalence_json (baseline-match facet) round-trips through in
 // the CHECK-constraint failure (drift++ + stderr) — leaving the row in JSON but
 // NOT in the index (split-brain: get() returns null while JSON says it exists).
 // create() now validates the verdict against the enum (single source of truth,
-// lib/manifest.mjs VERDICT_VALUES) BEFORE any write and throws, so neither
+// wicked-ledger's VERDICT_VALUES) BEFORE any write and throws, so neither
 // store gets a dangling row.
 
 test("an out-of-enum verdict throws and leaves NO split-brain (neither JSON nor index)", () => {
