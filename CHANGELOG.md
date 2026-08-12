@@ -4,7 +4,17 @@ All notable changes to `wicked-testing`. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follow
 [SemVer](https://semver.org/).
 
-## [Unreleased]
+## [0.11.0] — 2026-08-12
+
+**This is the final release. wicked-testing is retired** (Phase 6c, full fold):
+
+- **Skills** → the `qe` domain of [wicked-garden](https://github.com/mikeparcewski/wicked-garden) (`wicked-garden-qe` router + the `wicked-garden-qe-*` specialists).
+- **Acceptance gate** → [wicked-crew](https://github.com/mikeparcewski/wicked-crew) (`GET /runs/:id/acceptance` + the durable `wicked.qe.gate.*` subscription). The gate-announcement CLI (`wicked-qe gate`) ships in-catalog in wicked-garden (`scripts/qe/lib/gate.mjs`) — event types and payloads unchanged.
+- **Data layer** → [wicked-ledger](https://github.com/mikeparcewski/wicked-ledger) (DomainStore, oracle queries, evidence manifest — now stamping `domain: "qe"` / `qe_version`, manifest 2.0.0) and [wicked-vault](https://github.com/mikeparcewski/wicked-vault) (the evidence primitive).
+- **On-disk root**: `.wicked-testing/` renamed to `.wicked-qe/` with dual-read — legacy roots keep resolving (see wicked-ledger's `resolveLedgerRoot`).
+- This 0.11.0 publish exists so `^0.10` pinners resolve to a truthful post-carve package (npm's previous 0.10.0 was pre-carve). The `skills/wicked-vault/` leftover (unregistered duplicate of wicked-vault's own skills) was removed.
+
+### Changed (post-carve state, previously unreleased)
 
 ### Changed
 - **The evidence ledger is now consumed from the published `wicked-ledger@^0.1.0` package, not bundled.** wicked-testing no longer ships `lib/{domain-store,oracle-queries,manifest,bus-emit,migrate}.mjs` or `lib/migrations/*.sql` — those modules and the migration SQL are the source-of-truth in the standalone `wicked-ledger` package and are consumed as a dependency (`import { createDomainStore, buildManifest, domainEventToBusEvent, ... } from "wicked-ledger"`). The package was reseeded verbatim from testing's former `lib/`, so the module code and the on-disk SQLite schema are identical — this is a source-of-truth move, not a behavior change. All consumers (`lib/gate.mjs`, `install.mjs`, `scripts/dev/sync-plugin-version.mjs`, and the ledger unit tests) now import from the package public entry. `better-sqlite3` remains a direct dependency (`install.mjs`'s `doctor`/`status` checks use it directly). testing's own non-ledger `lib/` (`gate.mjs`, `context-md-validator.mjs`, `exec-with-timeout.mjs`) is unchanged.

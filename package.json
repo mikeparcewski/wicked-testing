@@ -1,8 +1,8 @@
 {
   "name": "wicked-testing",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "type": "module",
-  "description": "Standalone QE library for AI coding CLIs — 5-core testing surface (plan/authoring/execution/review/insight), SQLite ledger with fixed-SQL oracle, 3-agent acceptance pipeline, bus+brain optional integration.",
+  "description": "RETIRED \u2014 folded into the wicked-* ecosystem: skills \u2192 wicked-garden (the qe domain), acceptance gate \u2192 wicked-crew, data layer \u2192 wicked-ledger + wicked-vault. This final release is the post-carve state so ^0.10 pinners resolve to a truthful package.",
   "keywords": [
     "ai",
     "testing",
