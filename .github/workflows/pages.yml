@@ -1,6 +1,8 @@
-# Deploy the wicked-testing marketing site (site/) to GitHub Pages.
+# Deploy the wt.wickedagile.com retirement redirect (site/) to GitHub Pages.
 #
-# Auto-deploys the site on every push to main; also runnable by hand.
+# wicked-testing is retired — absorbed into wicked-garden as the qe domain.
+# site/ is now a static redirect page (meta refresh + canonical to
+# https://wg.wickedagile.com/#qe); no build step required.
 name: Deploy site to GitHub Pages
 
 on:
@@ -18,32 +20,17 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: site
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
-        with:
-          node-version: 24
-      - name: Install dependencies
-        run: npm ci
-      - name: Build with Astro
-        run: npm run build
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
-        with:
-          path: site/dist
-
   deploy:
-    needs: build
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5
+        with:
+          path: site
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5
