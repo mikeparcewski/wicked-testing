@@ -1,13 +1,13 @@
 /**
  * tests/unit/oracle-queries.test.mjs
  *
- * Trust-module test for the fixed-SQL oracle (lib/oracle-queries.mjs).
+ * Trust-module test for the fixed-SQL oracle (wicked-ledger's oracle-queries).
  *
  * The oracle's safety property is that it is a CLOSED set of human-auditable,
  * parameterized queries — there is NO path that accepts or executes
  * LLM-generated SQL. These tests pin that down:
  *
- *   - exactly the 12 named queries ship; no more, no fewer
+ *   - exactly the 13 named queries ship; no more, no fewer
  *   - every query's SQL is a static string (no interpolation hooks beyond the
  *     two whitelisted {{...}} template clauses) and uses ? placeholders only
  *   - buildOracleQuery binds params positionally in declared order and returns

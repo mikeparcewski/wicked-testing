@@ -378,8 +378,7 @@ const verdictRecord = store.create('verdicts', {
 });
 
 // 3. Materialize the public manifest at the contract path
-import { buildManifest } from '../../lib/manifest.mjs';
-import { emitBusEvent } from '../../lib/bus-emit.mjs';
+import { buildManifest, emitBusEvent } from 'wicked-ledger';
 import { readFileSync } from 'node:fs';
 const pkgVersion = JSON.parse(readFileSync('package.json','utf8')).version;
 const runAfter = store.get('runs', run.id);
@@ -394,7 +393,7 @@ const { manifest } = buildManifest({
 // 4. Emit the skill-level evidence.captured event (DomainStore doesn't fire
 //    this one because evidence capture is a skill-orchestration concern, not
 //    a CRUD op).
-// Union payload shared with the verdict-path emit in lib/bus-emit.mjs — this
+// Union payload shared with the verdict-path emit in wicked-ledger's bus-emit — this
 // site has no verdict_id / vault_payload_sha, so they are null here.
 emitBusEvent('wicked.test.evidence.captured', {
   project_id: runAfter.project_id,

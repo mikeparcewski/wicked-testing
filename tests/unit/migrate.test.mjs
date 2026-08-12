@@ -1,7 +1,7 @@
 /**
  * tests/unit/migrate.test.mjs
  *
- * Trust-module test for the versioned SQL migration runner (lib/migrate.mjs)
+ * Trust-module test for the versioned SQL migration runner (wicked-ledger's migrate)
  * and migration 002 (verdict CHECK constraint + verdicts.equivalence_json).
  *
  * The load-bearing claim under test: migration 002 must apply cleanly on a

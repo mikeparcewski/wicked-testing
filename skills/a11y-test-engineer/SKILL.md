@@ -132,7 +132,7 @@ npx --yes playwright test \
 ## 3. Evidence output
 
 Write the following under `.wicked-testing/evidence/<run_id>/`. The run's
-manifest (built by the orchestrator via `lib/manifest.mjs`) picks these
+manifest (built by the orchestrator via `wicked-ledger`'s `buildManifest`) picks these
 up from disk and classifies each by `kind`:
 
 | File                         | manifest `kind`  | Required |
@@ -156,7 +156,7 @@ re-check the raw evidence.
 
 ## 4. DomainStore write
 
-Through `lib/domain-store.mjs` (which dual-writes JSON + SQLite and emits
+Through the `wicked-ledger` DomainStore (which dual-writes JSON + SQLite and emits
 `wicked.test.verdict.created` on the bus):
 
 ```js

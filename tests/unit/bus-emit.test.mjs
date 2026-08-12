@@ -1,7 +1,7 @@
 /**
  * tests/unit/bus-emit.test.mjs
  *
- * Unit tests for lib/bus-emit.mjs (domainEventToBusEvent) and vault payload_sha256
+ * Unit tests for wicked-ledger's bus-emit (domainEventToBusEvent) and vault payload_sha256
  * integration introduced in Phase B of ECOSYSTEM-RATIONALIZATION.md §5a.
  *
  * SIG-3 coverage:

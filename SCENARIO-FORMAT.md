@@ -244,7 +244,7 @@ assertions:
 
 ```bash
 node -e "
-import('./lib/domain-store.mjs').then(({ DomainStore }) => {
+import('wicked-ledger').then(({ DomainStore }) => {
   const store = new DomainStore('.wicked-testing');
   const stats = store.stats();
   const output = JSON.stringify({ok: true, data: stats});
@@ -261,7 +261,7 @@ import('./lib/domain-store.mjs').then(({ DomainStore }) => {
 
 ```bash
 node -e "
-import('./lib/domain-store.mjs').then(({ DomainStore }) => {
+import('wicked-ledger').then(({ DomainStore }) => {
   const store = new DomainStore('.wicked-testing');
   const version = store.schemaVersion();
   console.log('Schema version:', version);

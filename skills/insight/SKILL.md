@@ -67,8 +67,8 @@ Skill(
 - since: {ISO date or null}
 
 ## Instructions
-1. Route the question to a named query in lib/oracle-queries.mjs by keyword
-   matching. NEVER synthesize SQL.
+1. Route the question to a named query in wicked-ledger's oracle-query
+   library by keyword matching. NEVER synthesize SQL.
 2. If no match, return the list of supported question patterns and exit —
    do not fabricate results.
 3. If better-sqlite3 is unavailable, return ERR_SQLITE_UNAVAILABLE exactly.
@@ -104,9 +104,9 @@ questions have a specialist answer:
 ## Oracle safety
 
 The oracle never generates SQL. It keyword-matches the question to one of the
-named parameterized queries in [`lib/oracle-queries.mjs`](../../lib/oracle-queries.mjs).
+named parameterized queries in `wicked-ledger`'s oracle-query library.
 If nothing matches, it returns the list of supported questions — it never
-guesses. See also [`lib/domain-store.mjs`](../../lib/domain-store.mjs) for the
+guesses. See also `wicked-ledger`'s DomainStore for the
 table-name allowlist that backs the CRUD layer.
 
 ## Output
@@ -133,11 +133,11 @@ commands are now questions you ask it (routing per the dispatch table above):
 > create or mutate tasks. Existing task rows remain queryable here
 > ("what tasks are open?", "tasks for <project>") via the `tasks_by_status`
 > and `tasks_for_project` oracle queries. Task *creation/update* via a command
-> is gone in 0.4.0 — use the `DomainStore` API (`lib/domain-store.mjs`) directly
+> is gone in 0.4.0 — use the `DomainStore` API (`import { createDomainStore } from "wicked-ledger"`) directly
 > if a workflow needs it.
 
 ## References
 
 - [`docs/INTEGRATION.md`](../../docs/INTEGRATION.md)
 - `skills/test-oracle/SKILL.md`
-- `lib/oracle-queries.mjs` (internal — query catalog)
+- `wicked-ledger` oracle-queries (consumed dependency — query catalog)

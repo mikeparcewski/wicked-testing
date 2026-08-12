@@ -19,7 +19,7 @@ description: |
   test runs, smart test selection.
 
   <example>
-  Context: A PR touched lib/domain-store.mjs and agents/acceptance-test-reviewer.md.
+  Context: A PR touched lib/gate.mjs and agents/acceptance-test-reviewer.md.
   user: "Which tests are affected by this diff?"
   <commentary>Use test-impact-analyzer — it grepped the diff, ran
   call-graph discovery to find dependent scenarios, queried the ledger for
@@ -150,7 +150,7 @@ Write under `.wicked-testing/evidence/<run_id>/`:
 
 ## 5. DomainStore writes
 
-Through `lib/domain-store.mjs`:
+Through the `wicked-ledger` DomainStore (`import { createDomainStore } from "wicked-ledger"`):
 
 ```js
 // Record the impact analysis as a task with the ranked list so CI can
@@ -170,7 +170,7 @@ store.create("tasks", {
 });
 ```
 
-Also emit (optional, fire-and-forget per `lib/bus-emit.mjs`):
+Also emit (optional, fire-and-forget via `wicked-ledger`'s `emitBusEvent`):
 
 ```
 wicked.testimpact.computed  payload: { diff_ref, top_n, scenario_count, coverage_gap_count }
@@ -203,7 +203,7 @@ the top N and the scenario-executor / acceptance pipeline produces verdicts.
 
 ## References
 
-- [`lib/domain-store.mjs`](../../lib/domain-store.mjs) — table allowlist, parameter binding
-- [`lib/oracle-queries.mjs`](../../lib/oracle-queries.mjs) — query catalog
+- `wicked-ledger` domain-store — table allowlist, parameter binding
+- `wicked-ledger` oracle-queries — query catalog
 - [`skills/execution/SKILL.md`](../../skills/execution/SKILL.md) — `--selective` flag
 - [`skills/coverage-archaeologist/SKILL.md`](../coverage-archaeologist/SKILL.md) — sibling; covers the inverse (untested code), not affected tests

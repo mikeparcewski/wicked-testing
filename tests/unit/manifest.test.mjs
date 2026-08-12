@@ -1,7 +1,7 @@
 /**
  * tests/unit/manifest.test.mjs
  *
- * Trust-module test for the public evidence manifest builder (lib/manifest.mjs).
+ * Trust-module test for the public evidence manifest builder (wicked-ledger's manifest).
  *
  * Covers the two contract-widening changes this release makes to the manifest
  * (which is the one artifact downstream consumers read):

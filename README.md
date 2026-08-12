@@ -189,7 +189,7 @@ When wicked-bus is on PATH, wicked-testing emits on every significant action. Ev
 | `wicked.test.verdict.created` | Reviewer writes a verdict |
 | `wicked.test.evidence.captured` | `evidence/<run-id>/manifest.json` written |
 
-Emission is fire-and-forget: if wicked-bus is absent or the spawn fails, wicked-testing continues without error. See [`lib/bus-emit.mjs`](lib/bus-emit.mjs).
+Emission is fire-and-forget: if wicked-bus is absent or the spawn fails, wicked-testing continues without error. See `emitBusEvent` in the [`wicked-ledger`](https://github.com/mikeparcewski/wicked-ledger) dependency.
 
 ### wicked-brain integration
 

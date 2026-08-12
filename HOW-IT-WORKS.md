@@ -107,12 +107,12 @@ Runs `node install.mjs`. Detects installed AI CLIs (claude, antigravity, codex, 
 
 Created by `/wicked-testing:setup`. Records the project name and detected CLI capabilities (playwright installed: true/false, cypress: true/false, etc.). All workflow skills check for this file — if missing, they return `ERR_NO_CONFIG`.
 
-### lib/domain-store.mjs
+### The DomainStore (`wicked-ledger`)
 
-Singleton-per-process DomainStore. On construction:
+Singleton-per-process DomainStore, consumed from the `wicked-ledger` dependency. On construction:
 1. Opens/creates `.wicked-testing/wicked-testing.db`
-2. Applies pending migrations from `lib/migrations/NNN_*.sql` in numeric order (`lib/migrate.mjs`)
-3. Checks schema version against `SCHEMA_VERSION = 2`
+2. Applies pending migrations from wicked-ledger's bundled `lib/migrations/NNN_*.sql` in numeric order
+3. Checks schema version against `SCHEMA_VERSION = 3`
 4. Prepares INSERT statements for all 7 tables
 5. Enables WAL mode for concurrent readers
 
@@ -122,9 +122,9 @@ Every `create()` call:
 3. Inserts SQLite row inside `db.transaction()`
 4. On SQLite failure: retains JSON, logs warning, continues
 
-### lib/oracle-queries.mjs
+### Oracle queries (`wicked-ledger`)
 
-Fixed library of 12 named queries. `routeQuestion(question, filters)` does keyword matching to pick the right query name. `buildOracleQuery(name, args)` returns `{ sql, params }` ready for `db.prepare(sql).all(...params)`. No dynamic SQL.
+Fixed library of 13 named queries. `routeQuestion(question, filters)` does keyword matching to pick the right query name. `buildOracleQuery(name, args)` returns `{ sql, params }` ready for `db.prepare(sql).all(...params)`. No dynamic SQL.
 
 ### The 3-Agent Acceptance Pipeline
 
@@ -178,7 +178,7 @@ After `/wicked-testing:acceptance-testing scenarios/test-runner.md` completes:
 When you run `node install.mjs`, the installer:
 
 1. Copies all plugin files
-2. Tries to import `lib/domain-store.mjs`
+2. Tries to import the `wicked-ledger` DomainStore
 3. Creates a bootstrap project, scenario, run, and verdict
 4. Verifies the schema version
 5. Reports PASS or FAIL

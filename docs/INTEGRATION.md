@@ -143,7 +143,7 @@ All events include:
 **`wicked.test.run.completed`** — `{ run_id, scenario_id, status, started_at, finished_at, evidence_path }`
 **`wicked.test.verdict.created`** — `{ verdict_id, run_id, verdict: "PASS|FAIL|N-A|SKIP", reviewer, evidence_path }`
 **`wicked.test.evidence.captured`** — union payload so one subscriber schema serves
-both emit sites (the verdict path in `lib/bus-emit.mjs` and the manifest path in
+both emit sites (the verdict path in `wicked-ledger`'s bus-emit and the manifest path in
 `skills/acceptance-testing/SKILL.md`): common `{ project_id, run_id, evidence_path,
 wicked_testing_version }` plus optional `{ verdict_id, vault_payload_sha,
 artifact_count }` — each optional field is `null` when the emitting site lacks it
@@ -259,7 +259,7 @@ To prevent coupling rot, these are explicitly internal:
 - Tier-2 specialist skill names
 - Internal event payload fields not listed above
 - Ledger JSON file format under `.wicked-testing/` (except `evidence/<run>/manifest.json`)
-- Oracle query set in `lib/oracle-queries.mjs`
+- Oracle query set in `wicked-ledger`'s oracle-queries module
 
 Consumers that reach into internals take on their own breakage risk. File an
 issue if you need something promoted to the public contract.
