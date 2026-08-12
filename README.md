@@ -31,7 +31,7 @@ npx wicked-testing install
 
 Works with **Claude Code**, **Antigravity**, **Cursor**, **Codex**, **Kiro**, **Copilot**, **OpenCode**, and **Pi**.
 
-Published to npm as [`wicked-testing`](https://www.npmjs.com/package/wicked-testing) v0.9.0 · site at [wt.wickedagile.com](https://wt.wickedagile.com). The `wicked-qe` rename is pending — the `wicked-qe` bin alias already ships.
+Published to npm as [`wicked-testing`](https://www.npmjs.com/package/wicked-testing) — **final release v0.11.0, deprecated** (see the retirement notice above). Site at [wt.wickedagile.com](https://wt.wickedagile.com).
 
 ---
 
