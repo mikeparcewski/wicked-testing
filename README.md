@@ -5,7 +5,7 @@
 >
 > | What you used | Where it lives now | Install |
 > |---|---|---|
-> | The 40 specialist + 8 workflow skills | **[wicked-garden](https://github.com/mikeparcewski/wicked-garden)** — the in-catalog `qe` domain: the `wicked-garden-qe` router + `wicked-garden-qe-*` specialists | `claude plugins install wicked-garden` |
+> | The 40 specialist + 8 workflow skills | **[wicked-garden](https://github.com/mikeparcewski/wicked-garden)** — the in-catalog `qe` domain: the `wicked-garden-qe` router + `wicked-garden-qe-*` specialists | `claude plugins marketplace add mikeparcewski/wicked-garden && claude plugins install wicked-garden` |
 > | The acceptance gate / `wicked-qe gate` | **[wicked-crew](https://github.com/mikeparcewski/wicked-crew)** owns the gate (`GET /runs/:id/acceptance` + the `wicked.qe.gate.*` subscription); the gate-announcement CLI ships inside wicked-garden (`scripts/qe/lib/gate.mjs`) — same event types, same payload | `npm i -g wicked-crew` |
 > | The evidence ledger (DomainStore, oracle, manifest) | **[wicked-ledger](https://github.com/mikeparcewski/wicked-ledger)** — events now stamp `domain: "qe"`, manifest 2.0.0 (`qe_version`) | `npm i wicked-ledger` |
 > | The evidence primitive (`wicked-vault`) | **[wicked-vault](https://github.com/mikeparcewski/wicked-vault)** — its own package, as before | `npm i -g wicked-vault` |
